@@ -1,11 +1,11 @@
-// types/index.ts
-// Type definitions for Arabic Creative Writing Studio
+// types.ts
+// أنواع وواجهات استوديو الكتابة الإبداعية العربي
 
 export type Language = 'ar' | 'en';
 export type Theme = 'dark' | 'light' | 'auto';
 export type TextDirection = 'rtl' | 'ltr';
 
-// Creative prompt genres
+// أنواع المحفزات الإبداعية
 export type CreativeGenre = 
   | 'fantasy' 
   | 'science_fiction' 
@@ -16,7 +16,7 @@ export type CreativeGenre =
   | 'poetry' 
   | 'cross_genre';
 
-// Writing techniques
+// تقنيات الكتابة
 export type WritingTechnique = 
   | 'character_driven' 
   | 'world_building' 
@@ -26,10 +26,10 @@ export type WritingTechnique =
   | 'atmospheric' 
   | 'experimental';
 
-// Difficulty levels
+// مستويات الصعوبة
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'academic';
 
-// Creative prompt interface
+// واجهة المحفز الإبداعي
 export interface CreativePrompt {
   id: string;
   title: string;
@@ -47,7 +47,7 @@ export interface CreativePrompt {
   relatedPrompts?: string[];
 }
 
-// Creative project interface
+// واجهة المشروع الإبداعي
 export interface CreativeProject {
   id: string;
   title: string;
@@ -64,7 +64,7 @@ export interface CreativeProject {
   qualityScore?: number;
 }
 
-// Text analysis interface
+// واجهة تحليل النص
 export interface TextAnalysis {
   wordCount: number;
   characterCount: number;
@@ -85,7 +85,7 @@ export interface TextAnalysis {
   suggestions: string[];
 }
 
-// App settings interface
+// واجهة إعدادات التطبيق
 export interface AppSettings {
   language: Language;
   theme: Theme;
@@ -99,7 +99,7 @@ export interface AppSettings {
   geminiMaxTokens: number;
 }
 
-// Gemini API settings
+// واجهة إعدادات Gemini API
 export interface GeminiSettings {
   apiKey: string;
   model: string;
@@ -109,7 +109,7 @@ export interface GeminiSettings {
   topK: number;
 }
 
-// API response interface
+// واجهة استجابة API
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -117,7 +117,7 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-// Enhanced prompt data
+// واجهة بيانات المحفز المحسن
 export interface EnhancedPromptData {
   originalPrompt: string;
   enhancedPrompt: string;
@@ -126,7 +126,7 @@ export interface EnhancedPromptData {
   estimatedCost: number;
 }
 
-// Weekly challenge
+// واجهة التحدي الأسبوعي
 export interface WeeklyChallenge {
   id: string;
   week: number;
@@ -138,7 +138,7 @@ export interface WeeklyChallenge {
   participants?: number;
 }
 
-// Daily prompt
+// واجهة محفز اليوم
 export interface DailyPrompt {
   id: string;
   date: string;
@@ -146,7 +146,7 @@ export interface DailyPrompt {
   specialEvent?: string;
 }
 
-// User statistics
+// واجهة إحصائيات المستخدم
 export interface UserStatistics {
   totalProjects: number;
   totalWords: number;
@@ -158,7 +158,7 @@ export interface UserStatistics {
   improvementScore: number;
 }
 
-// Export settings
+// واجهة إعدادات التصدير
 export interface ExportSettings {
   format: 'txt' | 'json' | 'html' | 'rtf' | 'pdf';
   includeMetadata: boolean;
@@ -167,7 +167,7 @@ export interface ExportSettings {
   fontFamily?: string;
 }
 
-// App events
+// نوع أحداث التطبيق
 export type AppEvent = 
   | 'prompt_generated'
   | 'text_analyzed'
@@ -177,7 +177,7 @@ export type AppEvent =
   | 'api_connected'
   | 'challenge_completed';
 
-// App event data
+// واجهة حدث التطبيق
 export interface AppEventData {
   type: AppEvent;
   timestamp: Date;
