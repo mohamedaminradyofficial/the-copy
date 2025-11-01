@@ -1,0 +1,68 @@
+{
+  "reviews": {
+    "auto": true,
+    "exclude": [],
+    "include": [
+      "security_prompt",
+      "error_handling_prompt",
+      "bugs_prompt"
+    ],
+    "autoApprove": false,
+    "codeSuggestions": true,
+    "codeSuggestionsSkipFiles": [
+      "*.md",
+      "*.pdf",
+      "*.jpg",
+      "*.png",
+      "*.gif",
+      "docs/*",
+      "frontend/docs/*",
+      "frontend/analysis/*",
+      "frontend/analysis_output/*",
+      "frontend/reports/*",
+      "frontend/test-results/*",
+      "frontend/coverage/*",
+      "backend/logs/*",
+      "backend/uploads/*",
+      "node_modules/*",
+      ".next/*",
+      "dist/*",
+      "*.log",
+      "*.env",
+      "*.env.*",
+      "package-lock.json",
+      "pnpm-lock.yaml"
+    ],
+    "excludedLabels": [
+      "wontfix",
+      "duplicate",
+      "invalid",
+      "documentation",
+      "good first issue"
+    ],
+    "excludedUsers": [
+      "dependabot[bot]",
+      "github-actions[bot]",
+      "renovate[bot]"
+    ]
+  },
+  "summary": {
+    "auto": true,
+    "level": "detailed",
+    "excludedLabels": [
+      "wontfix",
+      "duplicate",
+      "invalid"
+    ],
+    "excludedUsers": [
+      "dependabot[bot]",
+      "github-actions[bot]",
+      "renovate[bot]"
+    ]
+  },
+  "dependencyBundler": {
+    "enabled": true
+  },
+  "enableCIFixer": true,
+  "guidelinesUrl": "DOCUMENTATION.md"
+}

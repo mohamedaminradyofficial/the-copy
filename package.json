@@ -1,0 +1,15 @@
+{
+  "name": "the-copy-monorepo",
+  "private": true,
+  "scripts": {
+    "start:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "kill:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./kill-dev.ps1"
+  },
+  "dependencies": {
+    "tailwindcss": "^4.1.16",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.6"
+  }
+}
