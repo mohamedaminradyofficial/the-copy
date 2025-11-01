@@ -5,6 +5,11 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CreativeProject, CreativePrompt, AppSettings, TextAnalysis } from '../types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Progress } from '@/components/ui/progress';
 
 interface WritingEditorProps {
   project: CreativeProject | null;
@@ -157,27 +162,31 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
 
   // عرض لوحة الإحصائيات
   const renderStatsPanel = () => (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">📊 إحصائيات النص</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">{textStats.wordCount}</div>
-          <div className="text-sm text-gray-600">كلمة</div>
+    <Card>
+      <CardHeader>
+        <CardTitle>📊 إحصائيات النص</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">{textStats.wordCount}</div>
+            <div className="text-sm text-gray-600">كلمة</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{textStats.characterCount}</div>
+            <div className="text-sm text-gray-600">حرف</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{textStats.paragraphCount}</div>
+            <div className="text-sm text-gray-600">فقرة</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-orange-600">{formatTime(writingTime)}</div>
+            <div className="text-sm text-gray-600">وقت الكتابة</div>
+          </div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">{textStats.characterCount}</div>
-          <div className="text-sm text-gray-600">حرف</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">{textStats.paragraphCount}</div>
-          <div className="text-sm text-gray-600">فقرة</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-orange-600">{formatTime(writingTime)}</div>
-          <div className="text-sm text-gray-600">وقت الكتابة</div>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   // عرض لوحة التحليل
@@ -185,48 +194,47 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
     if (!analysis) return null;
 
     return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">🎯 تحليل جودة النص</h3>
-        <div className="space-y-4">
-          {Object.entries(analysis.qualityMetrics).map(([key, value]) => {
-            const labels: Record<string, string> = {
-              clarity: 'الوضوح',
-              creativity: 'الإبداع',
-              coherence: 'التماسك',
-              impact: 'التأثير'
-            };
+      <Card>
+        <CardHeader>
+          <CardTitle>🎯 تحليل جودة النص</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(analysis.qualityMetrics).map(([key, value]) => {
+              const labels: Record<string, string> = {
+                clarity: 'الوضوح',
+                creativity: 'الإبداع',
+                coherence: 'التماسك',
+                impact: 'التأثير'
+              };
 
-            return (
-              <div key={key}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium">{labels[key]}</span>
-                  <span className="text-sm font-bold">{value}/100</span>
+              return (
+                <div key={key}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">{labels[key]}</span>
+                    <span className="text-sm font-bold">{value}/100</span>
+                  </div>
+                  <Progress value={value} className="w-full" />
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-purple-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${value}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {analysis.suggestions.length > 0 && (
-          <div className="mt-6">
-            <h4 className="font-semibold mb-2">💡 اقتراحات التحسين:</h4>
-            <ul className="space-y-1">
-              {analysis.suggestions.map((suggestion, index) => (
-                <li key={index} className="text-sm text-gray-700 flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
+              );
+            })}
           </div>
-        )}
-      </div>
+
+          {analysis.suggestions.length > 0 && (
+            <div className="mt-6">
+              <h4 className="font-semibold mb-2">💡 اقتراحات التحسين:</h4>
+              <ul className="space-y-1">
+                {analysis.suggestions.map((suggestion, index) => (
+                  <li key={index} className="text-sm text-gray-700 flex items-start">
+                    <span className="text-yellow-500 mr-2">•</span>
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     );
   };
 
@@ -243,14 +251,14 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
   return (
     <div className="max-w-7xl mx-auto">
       {/* شريط الأدوات */}
-      <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
+      <Card className="p-4 mb-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4 space-x-reverse">
-            <input
+            <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-xl font-bold bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-purple-500 rounded px-2"
+              className="text-xl font-bold"
               placeholder="عنوان المشروع..."
             />
             {settings.autoSave && (
@@ -259,55 +267,45 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 space-x-reverse">
-            <button
+            <Button
               onClick={handleAnalyze}
               disabled={isAnalyzing || !content.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              variant="default"
             >
               {isAnalyzing ? '🔄 جاري التحليل...' : '🔍 تحليل النص'}
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={handleSave}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              variant="default"
             >
               💾 حفظ
-            </button>
+            </Button>
 
-            <div className="relative group">
-              <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                📤 تصدير
-              </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                <button
-                  onClick={() => onExport(project, 'txt')}
-                  className="block w-full text-right px-4 py-2 hover:bg-gray-100 transition-colors"
-                >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default">
+                  📤 تصدير
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onExport(project, 'txt')}>
                   📄 نص خالي (TXT)
-                </button>
-                <button
-                  onClick={() => onExport(project, 'html')}
-                  className="block w-full text-right px-4 py-2 hover:bg-gray-100 transition-colors"
-                >
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExport(project, 'html')}>
                   🌐 صفحة ويب (HTML)
-                </button>
-                <button
-                  onClick={() => onExport(project, 'json')}
-                  className="block w-full text-right px-4 py-2 hover:bg-gray-100 transition-colors"
-                >
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExport(project, 'json')}>
                   📋 بيانات منظمة (JSON)
-                </button>
-                <button
-                  onClick={() => onExport(project, 'rtf')}
-                  className="block w-full text-right px-4 py-2 hover:bg-gray-100 transition-colors"
-                >
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onExport(project, 'rtf')}>
                   📝 نص غني (RTF)
-                </button>
-              </div>
-            </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* منطقة الكتابة */}
@@ -361,27 +359,31 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
           {analysis && renderAnalysisPanel()}
 
           {/* نصائح الكتابة */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">💡 نصائح سريعة</h3>
-            <div className="space-y-3 text-sm text-gray-700">
-              <div className="flex items-start">
-                <span className="text-green-500 mr-2">•</span>
-                اكتب بدون توقف لأول 10 دقائق
+          <Card>
+            <CardHeader>
+              <CardTitle>💡 نصائح سريعة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm text-gray-700">
+                <div className="flex items-start">
+                  <span className="text-green-500 mr-2">•</span>
+                  اكتب بدون توقف لأول 10 دقائق
+                </div>
+                <div className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  لا تخف من المسودة الأولى السيئة
+                </div>
+                <div className="flex items-start">
+                  <span className="text-purple-500 mr-2">•</span>
+                  استخدم الحواس الخمس في الوصف
+                </div>
+                <div className="flex items-start">
+                  <span className="text-orange-500 mr-2">•</span>
+                  اقرأ النص بصوت عال للتدقيق
+                </div>
               </div>
-              <div className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
-                لا تخف من المسودة الأولى السيئة
-              </div>
-              <div className="flex items-start">
-                <span className="text-purple-500 mr-2">•</span>
-                استخدم الحواس الخمس في الوصف
-              </div>
-              <div className="flex items-start">
-                <span className="text-orange-500 mr-2">•</span>
-                اقرأ النص بصوت عال للتدقيق
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

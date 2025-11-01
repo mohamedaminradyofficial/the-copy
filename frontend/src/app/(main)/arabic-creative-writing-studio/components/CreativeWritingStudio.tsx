@@ -17,6 +17,10 @@ import { GeminiService } from '../lib/gemini-service';
 import { PromptLibrary } from './PromptLibrary';
 import { WritingEditor } from './WritingEditor';
 import { SettingsPanel } from './SettingsPanel';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface CreativeWritingStudioProps {
   initialSettings?: Partial<AppSettings>;
@@ -95,7 +99,7 @@ export const CreativeWritingStudio: React.FC<CreativeWritingStudioProps> = ({
       id: `project_${Date.now()}`,
       title: prompt ? prompt.title : 'مشروع جديد',
       content: '',
-      promptId: prompt?.id ?? undefined,
+      promptId: prompt?.id || '',
       genre: prompt?.genre || 'cross_genre',
       wordCount: 0,
       characterCount: 0,
@@ -235,38 +239,34 @@ ${project.content}`;
           <span className="text-purple-200">مدعوم بـ Gemini 2.5 Pro</span>
         </div>
         <nav className="flex space-x-4 space-x-reverse">
-          <button
+          <Button
             onClick={() => setCurrentView('home')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              currentView === 'home' ? 'bg-white text-purple-900' : 'hover:bg-purple-800'
-            }`}
+            variant={currentView === 'home' ? 'secondary' : 'ghost'}
+            className={currentView === 'home' ? 'bg-white text-purple-900 hover:bg-white' : 'text-white hover:bg-purple-800'}
           >
             🏠 الرئيسية
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setCurrentView('library')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              currentView === 'library' ? 'bg-white text-purple-900' : 'hover:bg-purple-800'
-            }`}
+            variant={currentView === 'library' ? 'secondary' : 'ghost'}
+            className={currentView === 'library' ? 'bg-white text-purple-900 hover:bg-white' : 'text-white hover:bg-purple-800'}
           >
             📚 مكتبة المحفزات
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setCurrentView('editor')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              currentView === 'editor' ? 'bg-white text-purple-900' : 'hover:bg-purple-800'
-            }`}
+            variant={currentView === 'editor' ? 'secondary' : 'ghost'}
+            className={currentView === 'editor' ? 'bg-white text-purple-900 hover:bg-white' : 'text-white hover:bg-purple-800'}
           >
             ✍️ المحرر
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setCurrentView('settings')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              currentView === 'settings' ? 'bg-white text-purple-900' : 'hover:bg-purple-800'
-            }`}
+            variant={currentView === 'settings' ? 'secondary' : 'ghost'}
+            className={currentView === 'settings' ? 'bg-white text-purple-900 hover:bg-white' : 'text-white hover:bg-purple-800'}
           >
             ⚙️ الإعدادات
-          </button>
+          </Button>
         </nav>
       </div>
     </header>
@@ -276,16 +276,18 @@ ${project.content}`;
   const renderNotification = () => {
     if (!notification) return null;
 
-    const bgColors = {
-      success: 'bg-green-500',
-      error: 'bg-red-500',
-      warning: 'bg-yellow-500',
-      info: 'bg-blue-500'
+    const variants = {
+      success: 'default' as const,
+      error: 'destructive' as const,
+      warning: 'default' as const,
+      info: 'default' as const
     };
 
     return (
-      <div className={`fixed top-4 right-4 ${bgColors[notification.type]} text-white p-4 rounded-lg shadow-lg z-50`}>
-        {notification.message}
+      <div className="fixed top-4 right-4 z-50">
+        <Alert variant={variants[notification.type]}>
+          <AlertDescription>{notification.message}</AlertDescription>
+        </Alert>
       </div>
     );
   };
@@ -303,32 +305,40 @@ ${project.content}`;
               ابدأ رحلتك الإبداعية مع أكثر من 114 محفز كتابة احترافي
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div 
-                className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+              <Card
+                className="cursor-pointer hover:shadow-xl transition-shadow"
                 onClick={() => setCurrentView('library')}
               >
-                <div className="text-4xl mb-4">📚</div>
-                <h3 className="font-bold mb-2">مكتبة المحفزات</h3>
-                <p className="text-gray-600">استكشف مجموعة متنوعة من المحفزات الإبداعية</p>
-              </div>
-              <div 
-                className="bg-white rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-4">📚</div>
+                  <CardTitle className="mb-2">مكتبة المحفزات</CardTitle>
+                  <CardDescription>استكشف مجموعة متنوعة من المحفزات الإبداعية</CardDescription>
+                </CardContent>
+              </Card>
+              <Card
+                className="cursor-pointer hover:shadow-xl transition-shadow"
                 onClick={() => createNewProject()}
               >
-                <div className="text-4xl mb-4">✍️</div>
-                <h3 className="font-bold mb-2">ابدأ الكتابة</h3>
-                <p className="text-gray-600">أنشئ مشروع جديد وابدأ رحلة الإبداع</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="text-4xl mb-4">📝</div>
-                <h3 className="font-bold mb-2">محفز اليوم</h3>
-                <p className="text-gray-600">تحدٍ إبداعي جديد كل يوم</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="text-4xl mb-4">🏆</div>
-                <h3 className="font-bold mb-2">التحدي الأسبوعي</h3>
-                <p className="text-gray-600">شارك في التحديات الأسبوعية</p>
-              </div>
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-4">✍️</div>
+                  <CardTitle className="mb-2">ابدأ الكتابة</CardTitle>
+                  <CardDescription>أنشئ مشروع جديد وابدأ رحلة الإبداع</CardDescription>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-4">📝</div>
+                  <CardTitle className="mb-2">محفز اليوم</CardTitle>
+                  <CardDescription>تحدٍ إبداعي جديد كل يوم</CardDescription>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-4">🏆</div>
+                  <CardTitle className="mb-2">التحدي الأسبوعي</CardTitle>
+                  <CardDescription>شارك في التحديات الأسبوعية</CardDescription>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
@@ -387,12 +397,19 @@ ${project.content}`;
       {renderNotification()}
       <main className="container mx-auto px-4 py-8">
         {loading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">جاري المعالجة... يرجى الانتظار 🔄</p>
-            </div>
-          </div>
+          <Dialog open={loading}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>جاري المعالجة...</DialogTitle>
+                <DialogDescription>
+                  يرجى الانتظار 🔄
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
         {renderMainContent()}
       </main>

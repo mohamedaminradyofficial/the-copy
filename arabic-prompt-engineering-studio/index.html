@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استوديو هندسة الأوامر - مدعوم بـ Gemini 2.5 Pro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1>⚡ استوديو هندسة الأوامر</h1>
+                    <p class="tagline">مدعوم بـ Gemini 2.5 Pro - تحسين متقدم | حوّل أفكارك البسيطة إلى أوامر ذكية متطورة | <span id="totalPromptsDisplay">200+</span> قالب احترافي</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn--secondary btn--sm" id="historyBtn">
+                        <span>📜</span> التاريخ
+                    </button>
+                    <button class="btn btn--secondary btn--sm" id="settingsBtn">
+                        <span>⚙️</span> الإعدادات
+                    </button>
+                    <button class="btn btn--primary btn--sm" id="exportBtn">
+                        <span>📤</span> تصدير
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar - Template Library -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <h3>📚 فئات الأوامر</h3>
+                    <button class="btn-icon" id="toggleSidebar" title="Toggle sidebar">
+                        <span>◀</span>
+                    </button>
+                </div>
+                <div class="sidebar-content">
+                    <div class="template-categories">
+                        <div class="template-category">
+                            <h4>📝 إنشاء المحتوى</h4>
+                            <div class="template-list" id="contentCreation"></div>
+                        </div>
+                        <div class="template-category">
+                            <h4>🔍 التحليل والبحث</h4>
+                            <div class="template-list" id="analysisResearch"></div>
+                        </div>
+                        <div class="template-category">
+                            <h4>💻 البرمجة والتطوير</h4>
+                            <div class="template-list" id="programmingDev"></div>
+                        </div>
+                        <div class="template-category">
+                            <h4>💼 الأعمال والإنتاجية</h4>
+                            <div class="template-list" id="businessProd"></div>
+                        </div>
+                        <div class="template-category">
+                            <h4>🎓 التعليم والتدريب</h4>
+                            <div class="template-list" id="educationTraining"></div>
+                        </div>
+                        <div class="template-category">
+                            <h4>📊 التسويق والمبيعات</h4>
+                            <div class="template-list" id="marketingSales"></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Panel Area -->
+            <div class="panel-container">
+                <!-- Left Panel - Input -->
+                <div class="panel input-panel">
+                    <div class="panel-header">
+                        <h2>✏️ محرر الأوامر</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn--secondary btn--sm" id="clearBtn">مسح</button>
+                            <button class="btn btn--secondary btn--sm" id="analyzeBtn">🔍 تحليل الأمر</button>
+                            <button class="btn btn--primary btn--sm" id="generateBtn">✨ توليد قالب</button>
+                            <button class="btn btn--primary btn--sm" id="enhanceBtn" style="display: none;">🚀 تحسين متقدم بـ AI</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea 
+                            id="promptInput" 
+                            class="prompt-editor" 
+                            placeholder="أدخل فكرتك أو أمرك الأولي هنا...\n\nمثال: أريد كتابة مقال تقني عن تطبيقات الذكاء الاصطناعي في الطب، موجه للمتخصصين، بأسلوب أكاديمي...\n\nاختر فئة وقالب من الشريط الجانبي، أو اكتب أمرك مباشرة."
+                        ></textarea>
+                        
+                        <!-- Framework Selector -->
+                        <div class="framework-selector">
+                            <label class="form-label">اختر إطار التحسين:</label>
+                            <div class="framework-buttons">
+                                <button class="framework-btn active" data-framework="costar">
+                                    <strong>⭐ إطار COSTAR</strong>
+                                    <span>السياق، الهدف، الأسلوب، النبرة، الجمهور، الاستجابة</span>
+                                </button>
+                                <button class="framework-btn" data-framework="clear">
+                                    <strong>💎 إطار CLEAR</strong>
+                                    <span>موجز، منطقي، واضح، قابل للتكيف، تأملي</span>
+                                </button>
+                                <button class="framework-btn" data-framework="ice">
+                                    <strong>🧊 إطار ICE</strong>
+                                    <span>التعليمات، السياق، الأمثلة</span>
+                                </button>
+                                <button class="framework-btn" data-framework="craft">
+                                    <strong>🎨 إطار CRAFT</strong>
+                                    <span>السياق، الدور، العمل، التنسيق، النبرة</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Statistics -->
+                        <div class="analysis-section">
+                            <h3>مقاييس الأمر الفوري</h3>
+                            <div class="analysis-cards">
+                                <div class="analysis-card">
+                                    <div class="card-icon">📊</div>
+                                    <div class="card-content">
+                                        <div class="card-label">نوع الأمر</div>
+                                        <div class="card-value" id="promptType">--</div>
+                                    </div>
+                                </div>
+                                <div class="analysis-card">
+                                    <div class="card-icon">⚡</div>
+                                    <div class="card-content">
+                                        <div class="card-label">الفعالية</div>
+                                        <div class="card-value" id="effectiveness">--/100</div>
+                                    </div>
+                                </div>
+                                <div class="analysis-card">
+                                    <div class="card-icon">💎</div>
+                                    <div class="card-content">
+                                        <div class="card-label">الوضوح</div>
+                                        <div class="card-value" id="clarity">--/100</div>
+                                    </div>
+                                </div>
+                                <div class="analysis-card">
+                                    <div class="card-icon">✅</div>
+                                    <div class="card-content">
+                                        <div class="card-label">الاكتمال</div>
+                                        <div class="card-value" id="completeness">--/100</div>
+                                    </div>
+                                </div>
+                                <div class="analysis-card">
+                                    <div class="card-icon">🔢</div>
+                                    <div class="card-content">
+                                        <div class="card-label">تقدير الرموز</div>
+                                        <div class="card-value" id="tokenCount">-- رمز</div>
+                                    </div>
+                                </div>
+                                <div class="analysis-card">
+                                    <div class="card-icon">💰</div>
+                                    <div class="card-content">
+                                        <div class="card-label">التكلفة المتوقعة</div>
+                                        <div class="card-value" id="estimatedCost">$--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Output -->
+                <div class="panel output-panel">
+                    <div class="panel-header">
+                        <h2>✨ الأمر المحسّن</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn--secondary btn--sm" id="copyBtn">📋 نسخ</button>
+                            <button class="btn btn--secondary btn--sm" id="saveBtn">💾 حفظ</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div id="outputContent" class="output-content">
+                            <div class="empty-state">
+                                <div class="empty-icon">⚡</div>
+                                <h3>ابدأ بإنشاء أمر جديد</h3>
+                                <p>اختر قالباً من الشريط الجانبي، أو أدخل أمرك في المحرر واختر إطار تحسين، ثم انقر "تحليل الأمر" لرؤية التحسينات المقترحة</p>
+                            </div>
+                        </div>
+
+                        <!-- Improvements Section -->
+                        <div class="improvements-section" id="improvementsSection" style="display: none;">
+                            <h3>🎯 التحسينات المطبقة</h3>
+                            <div id="improvementsList" class="improvements-list"></div>
+                        </div>
+
+                        <!-- Framework Components -->
+                        <div class="framework-breakdown" id="frameworkBreakdown" style="display: none;">
+                            <h3>🏗️ مكونات الإطار</h3>
+                            <div id="frameworkComponents" class="components-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Template Variables -->
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">تكوين القالب</h3>
+                <button class="btn-icon" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic form will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" id="cancelTemplate">إلغاء</button>
+                <button class="btn btn--primary" id="applyTemplate">تطبيق القالب</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Export Options -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تصدير المحفز</h3>
+                <button class="btn-icon" id="closeExportModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <button class="export-option" data-format="text">
+                        <span class="option-icon">📄</span>
+                        <span class="option-label">نص عادي</span>
+                    </button>
+                    <button class="export-option" data-format="json">
+                        <span class="option-icon">📊</span>
+                        <span class="option-label">JSON</span>
+                    </button>
+                    <button class="export-option" data-format="markdown">
+                        <span class="option-icon">📝</span>
+                        <span class="option-label">Markdown</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for History -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📜 تاريخ المحفزات</h3>
+                <button class="btn-icon" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="historyList" class="history-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>لا يوجد تاريخ بعد. ابدأ بتحسين المحفزات!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" id="clearHistory">مسح الكل</button>
+                <button class="btn btn--primary" id="closeHistoryBtn">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Settings -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ إعدادات Gemini API</h3>
+                <button class="btn-icon" id="closeSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-form">
+                    <div id="apiKeyStatus" class="api-status" style="margin-bottom: var(--space-16);"></div>
+                    
+                    <div class="form-group">
+                        <label>مفتاح API</label>
+                        <div style="display: flex; gap: var(--space-8);">
+                            <input type="password" id="apiKeyInput" placeholder="أدخل مفتاح Gemini API الخاص بك" class="form-control" style="flex: 1;" />
+                            <button class="btn btn--secondary btn--sm" id="toggleApiKeyVisibility">👁️</button>
+                            <button class="btn btn--secondary btn--sm" id="testApiKey">اختبار</button>
+                        </div>
+                    </div>
+                    
+                    <div class="api-instructions" style="margin: var(--space-16) 0; padding: var(--space-16); background-color: var(--color-bg-2); border-radius: var(--radius-base); border-left: 3px solid var(--color-primary);">
+                        <h4 style="font-size: var(--font-size-md); margin-bottom: var(--space-12);">📋 كيفية الحصول على مفتاح API:</h4>
+                        <ol style="margin-left: var(--space-20); font-size: var(--font-size-sm); line-height: 1.6;">
+                            <li>قم بزيارة <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--color-primary);">Google AI Studio</a></li>
+                            <li>سجل الدخول بحساب Google الخاص بك</li>
+                            <li>انقر "الحصول على مفتاح API" أو "إنشاء مفتاح API"</li>
+                            <li>انسخ مفتاح API المُولد</li>
+                            <li>الصقه أعلاه وانقر "اختبار"</li>
+                        </ol>
+                        <p style="margin-top: var(--space-12); font-size: var(--font-size-xs); color: var(--color-text-secondary);">ملاحظة: يتم تخزين مفتاح API الخاص بك في الذاكرة فقط أثناء هذه الجلسة. لن يتم حفظه بشكل دائم.</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>النموذج</label>
+                        <input type="text" value="gemini-2.0-flash-exp" disabled class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>درجة الحرارة (0.0 - 2.0)</label>
+                        <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" class="form-control" />
+                        <span id="tempValue" class="setting-value">0.7</span>
+                    </div>
+                    <div class="form-group">
+                        <label>أقصى عدد رموز</label>
+                        <input type="number" id="maxTokens" min="256" max="8192" step="256" value="2048" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" id="resetSettings">إعادة تعيين افتراضي</button>
+                <button class="btn btn--primary" id="saveSettings">حفظ الإعدادات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for A/B Testing -->
+    <div class="modal modal-large" id="compareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>مقارنة اختبار A/B</h3>
+                <button class="btn-icon" id="closeCompareModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="compare-container">
+                    <div class="compare-panel">
+                        <h4>النسخة A (الأصلية)</h4>
+                        <div class="compare-content" id="compareVersionA"></div>
+                        <div class="compare-metrics">
+                            <div class="metric">الدرجة: <span id="scoreA">-</span></div>
+                            <div class="metric">الرموز: <span id="tokensA">-</span></div>
+                        </div>
+                    </div>
+                    <div class="compare-panel">
+                        <h4>النسخة B (محسنة)</h4>
+                        <div class="compare-content" id="compareVersionB"></div>
+                        <div class="compare-metrics">
+                            <div class="metric">الدرجة: <span id="scoreB">-</span></div>
+                            <div class="metric">الرموز: <span id="tokensB">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

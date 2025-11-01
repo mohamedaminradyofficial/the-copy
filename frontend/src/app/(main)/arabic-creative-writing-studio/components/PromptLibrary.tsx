@@ -5,6 +5,11 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { CreativePrompt, CreativeGenre, WritingTechnique, DifficultyLevel } from '../types';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface PromptLibraryProps {
   onPromptSelect: (prompt: CreativePrompt) => void;
@@ -178,31 +183,22 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
     const isExpanded = expandedPrompt === prompt.id;
 
     return (
-      <div
-        key={prompt.id}
-        className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow border border-gray-200"
-      >
-        <div className="p-6">
+      <Card key={prompt.id} className="hover:shadow-xl transition-shadow">
+        <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{prompt.title}</h3>
-            <span className={`text-sm font-medium ${DIFFICULTY_LABELS[prompt.difficulty].color}`}>
+            <CardTitle className="text-xl mb-2">{prompt.title}</CardTitle>
+            <Badge variant="secondary" className={DIFFICULTY_LABELS[prompt.difficulty].color}>
               {DIFFICULTY_LABELS[prompt.difficulty].label}
-            </span>
+            </Badge>
           </div>
 
-          <p className="text-gray-600 mb-4">{prompt.description}</p>
+          <CardDescription className="mb-4">{prompt.description}</CardDescription>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
-              {GENRE_LABELS[prompt.genre]}
-            </span>
-            <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-              {TECHNIQUE_LABELS[prompt.technique]}
-            </span>
+            <Badge variant="outline">{GENRE_LABELS[prompt.genre]}</Badge>
+            <Badge variant="outline">{TECHNIQUE_LABELS[prompt.technique]}</Badge>
             {prompt.timeEstimate && (
-              <span className="text-sm bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
-                ⏱️ {prompt.timeEstimate}
-              </span>
+              <Badge variant="outline">⏱️ {prompt.timeEstimate}</Badge>
             )}
           </div>
 
@@ -227,40 +223,37 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="text-sm text-gray-600">🏷️ الكلمات المفتاحية:</span>
                 {prompt.tags.map((tag, index) => (
-                  <span key={index} className="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                    {tag}
-                  </span>
+                  <Badge key={index} variant="secondary">{tag}</Badge>
                 ))}
               </div>
             </div>
           )}
 
           <div className="flex justify-between items-center pt-4 border-t">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setExpandedPrompt(isExpanded ? null : prompt.id)}
-              className="text-purple-600 hover:text-purple-800 font-medium"
             >
               {isExpanded ? '▲ أخفِ التفاصيل' : '▼ عرض التفاصيل'}
-            </button>
+            </Button>
 
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={() => onEnhancePrompt(prompt.arabic, prompt.genre, prompt.technique)}
                 disabled={loading}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 transition-colors"
+                variant="outline"
               >
                 🚀 تحسين
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => onPromptSelect(prompt)}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
                 ✍️ ابدأ الكتابة
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }, [expandedPrompt, onPromptSelect, onEnhancePrompt, loading]);
 
@@ -270,18 +263,17 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         <h2 className="text-3xl font-bold text-gray-800 mb-6">📚 مكتبة المحفزات الإبداعية</h2>
 
         {/* شريط البحث والفلاتر */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <Card className="p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 🔍 البحث
               </label>
-              <input
+              <Input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="ابحث في المحفزات..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -289,51 +281,54 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 📂 النوع الأدبي
               </label>
-              <select
-                value={selectedGenre}
-                onChange={(e) => setSelectedGenre(e.target.value as CreativeGenre | 'all')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="all">جميع الأنواع</option>
-                {Object.entries(GENRE_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
+              <Select value={selectedGenre} onValueChange={(value) => setSelectedGenre(value as CreativeGenre | 'all')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="جميع الأنواع" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع الأنواع</SelectItem>
+                  {Object.entries(GENRE_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 🎯 التقنية
               </label>
-              <select
-                value={selectedTechnique}
-                onChange={(e) => setSelectedTechnique(e.target.value as WritingTechnique | 'all')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="all">جميع التقنيات</option>
-                {Object.entries(TECHNIQUE_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
+              <Select value={selectedTechnique} onValueChange={(value) => setSelectedTechnique(value as WritingTechnique | 'all')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="جميع التقنيات" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع التقنيات</SelectItem>
+                  {Object.entries(TECHNIQUE_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 📊 المستوى
               </label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value as DifficultyLevel | 'all')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="all">جميع المستويات</option>
-                {Object.entries(DIFFICULTY_LABELS).map(([key, { label }]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
+              <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as DifficultyLevel | 'all')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="جميع المستويات" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع المستويات</SelectItem>
+                  {Object.entries(DIFFICULTY_LABELS).map(([key, { label }]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* عداد النتائج */}
         <div className="text-gray-600 mb-4">
