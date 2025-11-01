@@ -6,6 +6,10 @@ import { env } from '@/config/env';
 import { setupMiddleware } from '@/middleware';
 import { AnalysisController } from '@/controllers/analysis.controller';
 import { authController } from '@/controllers/auth.controller';
+import { projectsController } from '@/controllers/projects.controller';
+import { scenesController } from '@/controllers/scenes.controller';
+import { charactersController } from '@/controllers/characters.controller';
+import { shotsController } from '@/controllers/shots.controller';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { logger } from '@/utils/logger';
 
@@ -36,6 +40,35 @@ app.get('/api/auth/me', authMiddleware, authController.getCurrentUser.bind(authC
 // Seven Stations Pipeline endpoints (protected)
 app.post('/api/analysis/seven-stations', authMiddleware, analysisController.runSevenStationsPipeline.bind(analysisController));
 app.get('/api/analysis/stations-info', analysisController.getStationDetails.bind(analysisController));
+
+// Directors Studio - Projects endpoints (protected)
+app.get('/api/projects', authMiddleware, projectsController.getProjects.bind(projectsController));
+app.get('/api/projects/:id', authMiddleware, projectsController.getProject.bind(projectsController));
+app.post('/api/projects', authMiddleware, projectsController.createProject.bind(projectsController));
+app.put('/api/projects/:id', authMiddleware, projectsController.updateProject.bind(projectsController));
+app.delete('/api/projects/:id', authMiddleware, projectsController.deleteProject.bind(projectsController));
+app.post('/api/projects/:id/analyze', authMiddleware, projectsController.analyzeScript.bind(projectsController));
+
+// Directors Studio - Scenes endpoints (protected)
+app.get('/api/projects/:projectId/scenes', authMiddleware, scenesController.getScenes.bind(scenesController));
+app.get('/api/scenes/:id', authMiddleware, scenesController.getScene.bind(scenesController));
+app.post('/api/scenes', authMiddleware, scenesController.createScene.bind(scenesController));
+app.put('/api/scenes/:id', authMiddleware, scenesController.updateScene.bind(scenesController));
+app.delete('/api/scenes/:id', authMiddleware, scenesController.deleteScene.bind(scenesController));
+
+// Directors Studio - Characters endpoints (protected)
+app.get('/api/projects/:projectId/characters', authMiddleware, charactersController.getCharacters.bind(charactersController));
+app.get('/api/characters/:id', authMiddleware, charactersController.getCharacter.bind(charactersController));
+app.post('/api/characters', authMiddleware, charactersController.createCharacter.bind(charactersController));
+app.put('/api/characters/:id', authMiddleware, charactersController.updateCharacter.bind(charactersController));
+app.delete('/api/characters/:id', authMiddleware, charactersController.deleteCharacter.bind(charactersController));
+
+// Directors Studio - Shots endpoints (protected)
+app.get('/api/scenes/:sceneId/shots', authMiddleware, shotsController.getShots.bind(shotsController));
+app.get('/api/shots/:id', authMiddleware, shotsController.getShot.bind(shotsController));
+app.post('/api/shots', authMiddleware, shotsController.createShot.bind(shotsController));
+app.put('/api/shots/:id', authMiddleware, shotsController.updateShot.bind(shotsController));
+app.delete('/api/shots/:id', authMiddleware, shotsController.deleteShot.bind(shotsController));
 
 // 404 handler
 app.use('*', (req, res) => {
