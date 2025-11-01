@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BrainCircuit,
   Layers,
+  Pen,
   PenSquare,
   Sparkles,
   Rocket,
@@ -20,6 +21,11 @@ const menuItems = [
     href: "/editor",
     label: "كتابة",
     icon: PenSquare,
+  },
+  {
+    href: "/arabic-creative-writing-studio",
+    label: "استوديو الكتابة",
+    icon: Pen,
   },
   {
     href: "/analysis",
