@@ -1,4 +1,4 @@
-
+ 
 **Step 1: Environment and Context Discovery**
 1.1. Confirm Project Type: Next.js App Router.
 1.2. Identify Project Conventions:
