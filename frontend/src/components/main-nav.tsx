@@ -9,6 +9,7 @@ import {
   PenSquare,
   Sparkles,
   Rocket,
+  Film,
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -26,6 +27,11 @@ const menuItems = [
     href: "/arabic-creative-writing-studio",
     label: "استوديو الكتابة",
     icon: Pen,
+  },
+  {
+    href: "/directors-studio",
+    label: "استوديو الإخراج",
+    icon: Film,
   },
   {
     href: "/analysis",
