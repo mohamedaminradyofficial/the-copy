@@ -319,9 +319,132 @@ class WebVitalsService {
   }
 
   private measureComponentRenderTime(): void {
-    // Track React component render times using performance marks
-    // Disabled for now to avoid type issues with React.createElement
-    // TODO: Implement using React DevTools or custom hooks
+    // Track React component render times using performance marks and measures
+    if (!("PerformanceObserver" in window) || !window.performance?.mark) {
+      log.warn(
+        "⚠️ Performance API not available for component render tracking",
+        null,
+        "WebVitalsService"
+      );
+      return;
+    }
+
+    try {
+      // Observe performance measures for component renders
+      const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.entryType === "measure") {
+            // Track measures that match component render patterns
+            // Common patterns: "Component.render", "⚛ ComponentName", etc.
+            const isComponentMeasure =
+              entry.name.includes("Component") ||
+              entry.name.includes("⚛") ||
+              entry.name.includes("render");
+
+            if (isComponentMeasure) {
+              const customMetric: CustomMetric = {
+                name: "ComponentRender" as any,
+                value: entry.duration,
+                delta: entry.duration,
+                id: `component-${Date.now()}`,
+                navigationType: "navigate" as any,
+                rating: entry.duration < 16 ? ("good" as any) : ("poor" as any), // 16ms = 60fps
+                entries: [] as any,
+                customData: {
+                  componentName: entry.name,
+                  duration: entry.duration,
+                  startTime: entry.startTime,
+                  detail: (entry as any).detail,
+                },
+              };
+
+              // Only track slow renders (> 16ms for 60fps)
+              if (entry.duration > 16) {
+                this.handleMetric("ComponentRender", customMetric);
+              }
+            }
+          }
+        });
+      });
+
+      observer.observe({ entryTypes: ["measure"] });
+      this.observers.add(observer);
+
+      log.info(
+        "✅ Component render time tracking initialized",
+        null,
+        "WebVitalsService"
+      );
+    } catch (error) {
+      log.error(
+        "❌ Failed to initialize component render tracking",
+        error,
+        "WebVitalsService"
+      );
+    }
+  }
+
+  /**
+   * Public method to mark component render start
+   * Usage: webVitalsService.markComponentRenderStart('MyComponent')
+   */
+  public markComponentRenderStart(componentName: string): void {
+    if (typeof window !== "undefined" && window.performance?.mark) {
+      try {
+        performance.mark(`${componentName}-render-start`);
+      } catch (error) {
+        // Silently fail if marking fails
+      }
+    }
+  }
+
+  /**
+   * Public method to mark component render end and measure duration
+   * Usage: webVitalsService.markComponentRenderEnd('MyComponent')
+   */
+  public markComponentRenderEnd(componentName: string): void {
+    if (typeof window !== "undefined" && window.performance?.mark) {
+      try {
+        const endMark = `${componentName}-render-end`;
+        const startMark = `${componentName}-render-start`;
+
+        performance.mark(endMark);
+
+        // Create a measure between start and end marks
+        try {
+          performance.measure(
+            `⚛ ${componentName} render`,
+            startMark,
+            endMark
+          );
+
+          // Clean up marks to avoid memory leaks
+          performance.clearMarks(startMark);
+          performance.clearMarks(endMark);
+        } catch (measureError) {
+          // Start mark might not exist, which is fine
+        }
+      } catch (error) {
+        // Silently fail if marking fails
+      }
+    }
+  }
+
+  /**
+   * Public method to measure a component render directly
+   * Usage: webVitalsService.measureComponentRender('MyComponent', () => { ... })
+   */
+  public async measureComponentRender<T>(
+    componentName: string,
+    renderFn: () => T | Promise<T>
+  ): Promise<T> {
+    this.markComponentRenderStart(componentName);
+    try {
+      const result = await renderFn();
+      return result;
+    } finally {
+      this.markComponentRenderEnd(componentName);
+    }
   }
 
   private handleMetric(name: string, metric: CustomMetric): void {
