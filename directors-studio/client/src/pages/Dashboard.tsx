@@ -1,22 +1,20 @@
-"use client";
-
-import DashboardHero from "./components/DashboardHero";
-import ProjectStats from "./components/ProjectStats";
-import SceneCard from "./components/SceneCard";
-import CharacterTracker from "./components/CharacterTracker";
-import ScriptUploadZone from "./components/ScriptUploadZone";
+import DashboardHero from "@/components/DashboardHero";
+import ProjectStats from "@/components/ProjectStats";
+import SceneCard from "@/components/SceneCard";
+import CharacterTracker from "@/components/CharacterTracker";
+import ScriptUploadZone from "@/components/ScriptUploadZone";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useProjectScenes, useProjectCharacters } from "@/hooks/useProject";
+import { getCurrentProject } from "@/lib/projectStore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProjectScenes, useProjectCharacters } from "./hooks/useProject";
-import { getCurrentProject } from "./lib/projectStore";
 
-export default function DirectorsStudioPage() {
+export default function Dashboard() {
   const currentProjectId = getCurrentProject();
   const { data: scenes, isLoading: scenesLoading } = useProjectScenes(currentProjectId || undefined);
   const { data: characters, isLoading: charactersLoading } = useProjectCharacters(currentProjectId || undefined);
 
   const hasProject = !!currentProjectId && !!scenes && scenes.length > 0;
-
+  
   const completedScenes = scenes?.filter(s => s.status === "completed").length || 0;
   const totalShots = scenes?.reduce((sum, s) => sum + s.shotCount, 0) || 0;
 
@@ -51,9 +49,9 @@ export default function DirectorsStudioPage() {
             <TabsContent value="scenes" className="space-y-4 mt-6">
               {scenes && scenes.length > 0 ? (
                 scenes.map((scene) => (
-                  <SceneCard
-                    key={scene.id}
-                    {...scene}
+                  <SceneCard 
+                    key={scene.id} 
+                    {...scene} 
                     status={scene.status as "planned" | "in-progress" | "completed"}
                   />
                 ))
@@ -66,12 +64,12 @@ export default function DirectorsStudioPage() {
 
             <TabsContent value="characters" className="mt-6">
               {characters && characters.length > 0 ? (
-                <CharacterTracker
+                <CharacterTracker 
                   characters={characters.map(c => ({
                     ...c,
                     consistencyStatus: c.consistencyStatus as "good" | "warning" | "issue",
                     lastSeen: c.lastSeen || "غير محدد"
-                  }))}
+                  }))} 
                 />
               ) : (
                 <p className="text-center text-muted-foreground py-12">
