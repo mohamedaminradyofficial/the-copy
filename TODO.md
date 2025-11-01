@@ -1,202 +1,142 @@
-### Migration and Integration TODOs for agent execution
+توجيه وكيل الترميز: دمج تطبيق "directors-studio" كتطبيق فرعي منفصل تحت المسار المحدد
+الهدف: نقل/ترجمة ودمج المشروع الموجود في /home/user/the-copy/directors-studio/directors-studio إلى تطبيق فرعي مستقل داخل الشجرة الحالية تحت المسار /home/user/the-copy/frontend/src/app/(main)/directors-studio مع الالتزام الكامل ببنية، أنماط، روتينج، إدارة حالة، Tokens، وRTL المعتمدين في المشروع الرئيسي. عند وجود اختلافات بنيوية في المشروع المصدر، قم بتطبيعها تلقائياً إلى القواعد القياسية للمشروع الهدف.
 
-مهمة الوكيل: دمج تطبيق actorai-arabic/cineai-app كـ sub-app مستقل تحت المسار الموحد frontend/src/app/(main)/cinematography-studio/actorai-arabic بحيث يتوافق تماماً مع بنية، أنماط، روتين، و Tokens المشروع القائم. كل خطوة صالحة للتنفيذ الآلي ويجب أن تكون قابلة للاختبار والتراجع.
+1. نطاق العمل (ملخص سريع)
+إنشاء مجلد التطبيق الفرعي: frontend/src/app/(main)/directors-studio
 
----
+ترحيل كل الملفات المصدرية (components, ui, hooks, lib, pages, assets, server/shared ما يلزم داخل حدود الواجهة الأمامية) وتحويل البنية لتتطابق مع قواعد المشروع الرئيسي
 
-### 1. التحضير والنسخ الأولي
-1. استنساخ الشجرة المصدرية للتطبيق الجديد إلى مكان مؤقت داخل repo الهدف  
-   - أمر قابل للتنفيذ: cp -a actorai-arabic/cineai-app frontend/src/app/(main)/cinematography-studio/actorai-arabic_tmp  
-   - تقدير الزمن: 5-10 دقائق.  
-   - معيار القبول: وجود مجلد actorai-arabic_tmp مع نفس الملفات والمراجع.  
-   - تعليمات تراجع: rm -rf frontend/src/app/(main)/cinematography-studio/actorai-arabic_tmp.
+تكامل بالروتينغ الرئيسي، الإكسس عبر /directors-studio، وتضمين في الـlayout والـnavigation
 
-2. قراءة بنية المشروع الهدف والقواعد القياسية لاستخراج قوالب المسارات، الأسماء، Tokens، والمكتبات المشتركة  
-   - تنفيذ: parse أو اظهار قائمة الملفات من frontend/src/app/(main) + تحميل ملف layout.tsx وملفات صفحة كل sub-app.  
-   - زمن: 5 دقائق.  
-   - قبول: توليد ملف JSON بسيط يصف البنية القياسية (folders, naming conventions, router style, shared components).  
-   - تراجع: حذف الملف الناتج.
+ضمان توافق التصميم (Tokens، CSS/Tailwind، RTL افتراضية) وإعادة استخدام مكتبة المكونات المشتركة
 
----
+تشغيل اختبارات سريعة وبناء محلي وتقديم PR جاهز للمراجعة
 
-### 2. تحديد نوع الراوتر وتخطيط المسارات
-1. كشف روتين المشروع الحالي Next App Router أو SPA Router  
-   - تنفيذ: فحص وجود files مثل frontend/src/app/layout.tsx و presence of page.tsx => Next App Router  
-   - زمن: 2 دقائق.  
-   - قبول: متغير ENV_ROUTER = "next" أو "spa".  
-   - تراجع: لا حاجة.
+2. محاور العمل التفصيلية (قائمة TODO توجيهية لوكيل الترميز)
+تهيئة نقطة دخول التطبيق الفرعي
 
-2. إنشاء خريطة مسارات هدفية ل actorai-arabic وفق الأسلوب المكتشف  
-   - إذا Next: path => frontend/src/app/(main)/actorai-arabic/page.tsx وملفات فرعية داخل actorai-arabic/ (components, lib, styles)  
-   - إذا SPA: إنشاء src/pages/actorai-arabicPage.tsx وربط في router central.  
-   - زمن: 5 دقائق.
+أنشئ المجلد: frontend/src/app/(main)/directors-studio
 
----
+أنشئ ملف الصفحة الرئيسي: page.tsx أو index.tsx طبقاً لروتينج المشروع (Next.js App Router => page.tsx)
 
-### 3. تحويل البنية والأسماء والتنظيم
-1. تطبيع شجرة المجلدات لتتبع النمط القياسي  
-   - مطلوب أن يصبح الشكل: frontend/src/app/(main)/actorai-arabic/page.tsx  
-     frontend/src/app/(main)/actorai-arabic/components  
-     frontend/src/app/(main)/actorai-arabic/ui  
-     frontend/src/app/(main)/actorai-arabic/hooks  
-     frontend/src/app/(main)/actorai-arabic/lib  
-   - أوامر نسخ/نقل قابلة للتنفيذ مع إعادة تسمية ملفات إذا لزم الأمر.  
-   - زمن: 10-30 دقيقة حسب حجم.  
-   - قبول: كل ملف موجود في المسار القياسي، أسماء المجلدات تتبع kebab-case، مكونات React بأسماء PascalCase.  
-   - تراجع: استعادة من actorai-arabic_tmp أو git checkout للملفات المتأثرة.
+ضع صفحة placeholder بسيطة تقوم بتحميل المكونات الأساسية بعد الترحيل.
 
-2. إعادة تسمية المكونات والملفات تلقائياً إن خالفت القواعد  
-   - تنفيذ: سكربت Node/TS يبحث عن export default function|const <oldName> ويعيد تسمية الملف والأماكن المرجعية إلى PascalCase.  
-   - زمن: 20-40 دقيقة.  
-   - قبول: lint passes naming rules; no unresolved imports.  
-   - تراجع: استرجاع من النسخة المؤقتة أو git.
+ترحيل شجرة الملفات والمكونات
 
----
+انسخ المجلدات: client/src/components، client/src/hooks، client/src/lib، client/src/pages (مقترنة) إلى داخل directors-studio مع المحافظة على الهيكل: components, components/ui, hooks, lib, pages.
 
-### 4. توحيد الـ Styling والTokens وRTL
-1. استبدال أو ربط theme و tokens بمكتبة المشروع المشتركة  
-   - تنفيذ: استبدال import local tokens => import { tokens } from 'src/styles/tokens' أو المسار المعتمد.  
-   - زمن: 15-30 دقيقة.  
-   - قبول: components تستخدم tokens بدلاً من قيم صلبة؛ CSS vars أو tailwind tokens متطابقة.  
-   - تراجع: إعادة استيراد القديم من النسخة المؤقتة.
+أعد تسمية/إعادة ترتيب المجلدات إن لزم لتتبع الترقيم والأسماء المعتمدة (dirnames بكـebab-case، Components بـPascalCase).
 
-2. تمكين RTL افتراضياً وضمان دعم اتجاه النص  
-   - تنفيذ: إضافة dir="rtl" في top-level page wrapper أو استخدام project's RTL provider.  
-   - زمن: 10 دقائق.  
-   - قبول: صفحات actorai-arabic تعرض بشكل RTL كما بقية التطبيق؛ اختبار يدوي على صفحة رئيسية.  
-   - تراجع: إزالة التعديل.
+نقل assets: attached_assets/generated_images → frontend/static/ أوالمسار المعتمد لموارد الاستاتيك في المشروع؛ حدّث المسارات داخل الكود.
 
-3. تبديل أي ملفات CSS/SCSS لاتباع نظام المشروع (CSS Modules, Tailwind, Styled Components)  
-   - تنفيذ: تحويل classNames أو استبدال استيرادات .css إلى النظام القياسي.  
-   - زمن: 30-90 دقيقة حسب التعقيد.  
-   - قبول: build لا يخطئ في CSS و الانطباق البصري متناسق مع باقي الواجهات.  
-   - تراجع: إعادة الملفات الأصلية من النسخة المؤقتة.
+تطبيع بنية الكود والتصدير/الاستيراد
 
----
+حل كل الاستيرادات النسبية ومواءمتها لمسار التطبيق الفرعي الجديد (استبدال ../.. الخ بما يناسب).
 
-### 5. إعادة استخدام المكونات المشتركة وإدارة الحالة
-1. استبدال المكونات المحلية بمكالمات للمكتبة المشتركة إن وجدت  
-   - تنفيذ: بحث واستبدال imports لمكونات شبيهة (Palette, Export, Upload, Inspector) إلى المسار المركزي project-ui.  
-   - زمن: 20-60 دقيقة.  
-   - قبول: لا توجد مكونات مزدوجة تقوم بنفس الوظيفة؛ تستورد actorai من project-ui وتعمل كما متوقع.  
-   - تراجع: إعادة استيراد للمكونات الأصلية مؤقتاً.
+استبدال/مواءمة أي استيراد لمكتبات مخصّصة (مثلاً components.json أو تصميمات محلية) لا تتوافق — استخدم المكونات الداخلية الموحدة للمشروع.
 
-2. توحيد إدارة الحالة مع نظام المشروع (zustand, redux, recoil وغيرها)  
-   - تنفيذ: إن كان التطبيق يستخدم store مركزي، إحلال أي state محلي مع selectors/actions المشتركة أو تغليف داخلي للتوافق.  
-   - زمن: 30-120 دقيقة.  
-   - قبول: حالات الملاحة، جلسات المستخدم، tokens مشتركة متاحة عبر store؛ لا يستخدم actorai state مستقل لا مبرر له.  
-   - تراجع: إعادة الحالة المحلية أو فصلها مؤقتاً في branch.
+تأكد أن جميع المكونات تستخدم PascalCase، وأن ملفات الصفحات تتبع قواعد التسمية للمشروع.
 
----
+تكييف نظام الروتينغ (Routing)
 
-### 6. الروتينغ والروتر والربط بالملاحة الرئيسية
-1. إدراج صفحة التسجيل في navigation tree أو sidebar linker  
-   - تنفيذ: إضافة ملف route entry في مكان تعريف الروابط، label، icon إذا مطلوب.  
-   - زمن: 10 دقائق.  
-   - قبول: رابط /actorai-arabic يظهر في القوائم ويؤدي إلى frontend/src/app/(main)/actorai-arabic/page.tsx.  
-   - تراجع: إزالة الإدخال.
+إن كان المشروع يستخدم Next.js App Router: ضمّن صفحة الـroute داخل frontend/src/app/(main)/directors-studio/page.tsx مع ملفات route-specific (e.g., /scenes => frontend/src/app/(main)/directors-studio/scenes/page.tsx) عند الحاجة.
 
-2. ضمان حماية المسارات وحقوق الوصول متطابقة مع بقية التطبيقات  
-   - تنفيذ: إرفاق middleware أو HOC للحماية إذا كان موجوداً.  
-   - زمن: 15-30 دقيقة.  
-   - قبول: الوصول للمسار يتبع سياسات auth الحالية.  
-   - تراجع: إزالة middleware المضافة.
+إن كان المشروع SPA بReact Router: أنشئ صفحة مرجعية في مسارات الراوتر الرئيسي واربطها بالمسار /directors-studio.
 
----
+أضف روابط التنقل في ملف الـlayout أو الـsidebar المركزي ليتظهر التطبيق ضمن القوائم الحالية.
 
-### 7. التوافق مع TypeScript و ESLint و Prettier والاختبارات
-1. مزامنة tsconfig و lint rules مع الجذر  
-   - تنفيذ: دمج أو تحديث extends في tsconfig.json و .eslintrc بحيث يستخدم قواعد المشروع.  
-   - زمن: 10-20 دقيقة.  
-   - قبول: tsc --noEmit ينجح على actorai subtree؛ eslint لا يعطي أخطاء جديدة بخلاف القواعد القائمة.  
-   - تراجع: استرجاع tsconfig من النسخة المؤقتة.
+التوافق مع التصميم والـTokens
 
-2. إضافة/تحديث اختبارات وحدية وواجهات end-to-end بنمط المشروع  
-   - تنفيذ: إنشاء أمثلة اختبارية لـ page load و key components وفق إطار المشروع (Jest/RTL أو Playwright).  
-   - زمن: 60-180 دقيقة.  
-   - قبول: اختبارات وحدية أساسية تمر في CI.  
-   - تراجع: إزالة الاختبارات أو فصلها عن CI مؤقتاً.
+استعمل نفس ملف Tokens/Theme (الألوان، الفراغات، الظلال، الخطوط، transitions) من المشروع الرئيسي.
 
----
+اعمل override إن لزم داخل ملف tailwind.config.ts أو theme provider المستخدم.
 
-### 8. البنية الخادمية والتكامل مع server side
-1. دمج endpoints server الموجود في cineai-app/server إلى بنية API للمشروع  
-   - تنفيذ: ترجمة ملفات server/src إلى المسار المتوقع مثل frontend/src/app/api/actorai-arabic/route.ts أو نقل إلى backend monorepo حسب المعمول.  
-   - زمن: 30-120 دقيقة.  
-   - قبول: نفس الواجهات (URLs, payload) أو توثيق جديد متوافق؛ integration tests تمر.  
-   - تراجع: إعادة endpoints إلى النسخة المؤقتة أو إيقاف التعريفات الجديدة.
+فعّل RTL افتراضياً داخل هذا التطبيق الفرعي (wrap root بمقدّم اتجاه RTL أو استخدم الـdir="rtl" حسب النظام).
 
-2. مراجعة الأذونات وسرية المتغيرات البيئية وربطها بـ secrets manager  
-   - تنفيذ: تحديث استخدام ENV_NAMES لتتطابق مع مشروع، إضافة إلى .env.example.  
-   - زمن: 15-30 دقيقة.  
-   - قبول: لا وجود لأي قِيَم حساسة مضمّنة في الكود؛ env keys موثقة.  
-   - تراجع: إعادة المتغيرات إلى السابقة.
+إدارة الحالة والمزامنة مع البنية المعتمدة
 
----
+إذا كان المشروع الرئيسي يستخدم store مشتركة (context, Zustand, Redux, أو react-query): عدّل hooks/lib لتستخدم نفس آلية الحالة.
 
-### 9. البناء والاختبار الشامل وCI
-1. تعديل سكربتات package.json إن لزم لإدماج البناء في CI  
-   - تنفيذ: إضافة build:actorai و test:actorai أو دمج ضمن existing build pipeline.  
-   - زمن: 10-20 دقيقة.  
-   - قبول: npm run build:actorai ينجح محلياً.  
-   - تراجع: استرجاع package.json.
+استبدل أي آلية محلية (مثلاً local store منفصل) بواجهات التوافق أو وصلها عبر adapters إن لزم.
 
-2. تشغيل full build و E2E smoke tests في بيئة CI staging  
-   - تنفيذ: تشغيل pipeline محلياً أو عبر runner.  
-   - زمن: 30-90 دقيقة.  
-   - قبول: كل خطوات pipeline المتعلقة بالـ actorai تمر؛ صفحة actorai تصلح للنشر.  
-   - تراجع: revert commit branch أو تعطيل خطوة CI.
+حقن الـqueryClient أو providers اللازمة في مستوى التطبيق الفرعي أو اعتمد providers المركزيين إن كانوا متاحين.
 
----
+المكونات المشتركة وإعادة الاستخدام
 
-### 10. مراجعة الكود وPR وقائمة التحقق قبل الدمج
-1. إنشاء فرع feature/actorai-integration وفتح PR مع checklist آلية  
-   - Checklist items to enforce: renamed files OK; lints pass; tsc pass; unit tests pass; visual smoke test; RTL confirmed; shared tokens used; routes added; server endpoints integrated.  
-   - زمن: 10 دقائق لإعداد الشابلون.  
-   - قبول: PR يحتوي على كل المعايير مفحوصة وموافق عليها من صاحب المراجعة.  
-   - تراجع: إغلاق PR و revert branch.
+تأكد من استدعاء المكونات المشتركة (Palette, Export, Upload, Inspector، إلخ) من المكتبة المشتركة للمشروع بدلاً من نسخ مكرّر.
 
-2. تعليمات التحقق اليدوي للـ QA  
-   - خطوات: فتح الصفحة، فحص RTL، تحميل مكون Upload، تجربة Export، فحص console errors، اختبار navigation.  
-   - زمن: 30-60 دقيقة.  
-   - قبول: QA sign-off في PR.
+إن احتاجت مكونات المشروع الجديد لتعديلات طفيفة لتطابق النظام، قم بإنشاء wrappers محلية داخل components/ui لتطبيق الفروق فقط.
 
----
+RTL والLocalization
 
-### 11. النشر والمراقبة والرجوع
-1. نشر إلى staging ثم production بعد موافقة QA  
-   - تنفيذ: إطلاق نسخة staging ثم مراقبة health checks و Sentry/monitoring logs.  
-   - زمن: 30-60 دقيقة للنشر والتحقق.  
-   - قبول: لا أخطاء حيوية خلال 30 دقيقة في staging وبيانات الاستخدام سليمة.  
-   - تراجع: استخدام documented rollback script لإعادة النسخة السابقة من deployment أو إعادة توجيه route إلى القديم.
+فعّل RTL افتراضياً داخل التطبيق الفرعي، مع مدخلات للغات مستقبلية.
 
-2. مراقبة الأدلة والقياسات لمدة 48 ساعة  
-   - مؤشرات: error rate, latency, front-end bundle size, rendering issues on RTL locales.  
-   - قبول: مؤشرات ضمن حدود SLA المحددة.  
-   - تراجع: تفعيل hotfix branch بناءً على السبب.
+احفظ أي نص عربي/انجليزي في ملفات i18n / static-source المتبعة بالمشروع، ولا تترك سلاسل نصية مضمّنة داخل JSX.
 
----
+اختبارات وتجميع محلي
 
-### مقتطفات أوامر وملفات مفيدة جاهزة للنسخ
-- إنشاء مجلد الهدف ونقل الشجرية  
-  - cp -a actorai-arabic/cineai-app frontend/src/app/(main)/cinematography-studio/actorai-arabic_tmp
+شغّل build محلي (yarn/npm build) وتأكد من عدم وجود أخطاء TypeScript أو Vite/Next config.
 
-- إعادة تسمية ذكية للملفات (مثال Node script placeholder)  
-  - node scripts/normalize-names.mjs --src=actorai-arabic_tmp --pattern=PascalCase
+نفّذ أي اختبارات وحدة/تكامل قائمة أو شغّل smoke tests يدوياً: تصفّح الصفحات، التأكد من الروتينغ، تحميل الصور والـassets.
 
-- دمج tokens و CSS  
-  - sed -i 's|./local-tokens|src/styles/tokens|g' $(grep -rl "./local-tokens" actorai-arabic_tmp)
+سجل أي تحذيرات متعلقة بالـbundle size أو استيراد غير مستخدم.
 
-- تشغيل TypeScript و ESLint للتحقق  
-  - pnpm -w tsc --noEmit --project frontend/tsconfig.json  
-  - pnpm -w eslint frontend/src/app/(main)/actorai-arabic --fix
+تنظيف وتهيئة PR
 
----
+احذف أي ملفات dev-only أو تكوينات Replit غير مطلوبة في الواجهة الأمامية.
 
-### قواعد تكميلية لإجبار الوكيل على الاتساق
-- لا تُدخل مكتبات جديدة بدون ملف RFC و approval.  
-- أي تغيير في API يجب أن يصاحبه ملف OpenAPI صغير أو doc/api/actorai-arabic.md.  
-- كل تعديل بصري يحتاج snapshot test أو visual diff proof.  
-- كل خطوة كبيرة (rename > 5 ملفات، تعديل state root) تفتح branch مستقل وتطلب مراجعة يدوية.
+أنشئ فرع Git جديد: feature/integrate-directors-studio
 
----
+جهّز PR يتضمن: وصف التغييرات، نقاط التحقق (checklist)، أي تغييرات config (tailwind, tsconfig, vite/next) وتأثيرها، وخطوات التشغيل محلياً.
+
+3. قواعد التطبيع والأولويات عند وجود تعارضات
+لا تُدرج أنماط تصميم أو معماريات جديدة. إذا كان مصدر التطبيق يستخدم نمط مختلف، قم بتحويله إلى:
+
+نفس الـRouting المستخدم بالمشروع الرئيسي.
+
+نفس نظام إدارة الحالة.
+
+نفس التسمية للمكونات والمجلدات.
+
+استخدام Tokens والـTheme المركزيين.
+
+عند تعارض أسماء أو نسخ متكررة للمكونات المشتركة: الأفضلية لمكتبة المركزية؛ احتفظ بwrappers محلية إن لزم لتوافق API.
+
+اجعل RTL افتراضيًا داخل هذا التطبيق الفرعي دون تغيير سلوك بقية الموقع.
+
+4. قائمة تحقق (Checklist جاهز للتوقيع قبل إغلاق المهمة)
+[ ] مجلد frontend/src/app/(main)/directors-studio مُنشأ والملفات الأساسية توجد فيه
+
+[ ] كل المكونات/hooks/lib المنقولة وتطبيع الاستيرادات
+
+[ ] استبدال/إعادة استخدام المكونات المشتركة للمشروع
+
+[ ] الصور والـassets في المسار المعتمد في المشروع وتُحمّل بنجاح
+
+[ ] صفحة route تعمل عند /directors-studio وتظهر في الـnavigation
+
+[ ] RTL مفعل افتراضياً داخل المجلد الفرعي
+
+[ ] TypeScript خالي من أخطاء، وbuild ناجح محلياً
+
+[ ] Provider للمحافظة على حالة التطبيق مدمج بشكل صحيح
+
+[ ] تغييرات التكوين (tailwind, tsconfig, vite/next) موثقة وموجودة في PR
+
+[ ] فرع Git وPR جاهز مع وصف وتوجيهات المراجعة
+
+5. مخرجات متوقعة من الوكيل بعد التنفيذ (مطلوبة في الرد/الـPR)
+قائمة الملفات/المجلدات الجديدة ضمن frontend/src/app/(main)/directors-studio مع ملاحظة عن أي ملفات تم تعديلها في المستودع المركزي
+
+ملخّص التعديلات في ملفات التكوين (tailwind.config.ts, tsconfig.json, vite.config.ts أو next.config.js)
+
+سجل اختبارات بسيطة ونتيجة build (نجاح/فشل) + أهم التحذيرات إن وجدت
+
+رابط/مرجع فرع Git وPR (عنوان + وصف مختصر) أو مخرجات commit إن لم يكن نظام Git متاحاً
+
+6. ملاحظات تنفيذية قصيرة للمطور
+اعمل بخطوات صغيرة: ترحيل هيكل المجلدات أولاً → ضبط الاستيرادات → تكييف القيم الـTheme → تصحيح الأخطاء ثم build نهائي.
+
+عند أي اعتماد خارجي غير موجود في المشروع الرئيسي، ضعه كـpeer-dependency أو استبدله بالمكوّن المعتمد.
+
+حافظ على التوثيق داخل README الفرعي ضمن directors-studio يشرح نقاط التكامل والاختلاف المهمة.
