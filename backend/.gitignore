@@ -1,6 +1,7 @@
-# Backend (Express.js) specific gitignore
+# Backend (Express.js) - The Copy
 
 # Dependencies
+node_modules/
 /.pnp
 .pnp.*
 
@@ -14,6 +15,7 @@
 # Build output
 /dist
 /build
+build/Release
 
 # Logs
 logs/
@@ -22,63 +24,51 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Coverage directory used by tools like istanbul
+# Coverage and testing
 coverage/
+*.lcov
 .nyc_output/
+lib-cov
 
 # TypeScript
 *.tsbuildinfo
+typings/
 
-# Optional npm cache directory
+# Cache directories
 .npm
-
-# Optional eslint cache
 .eslintcache
-
-# Microbundle cache
+.cache
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
+.grunt
 
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
+# Package files
 *.tgz
-
-# Yarn Integrity file
 .yarn-integrity
+.node_repl_history
+.lock-wscript
 
-# Uploaded files
+# Application specific
 uploads/
-
-# Database files
 *.db
 *.sqlite
 *.sqlite3
 
-# Misc
+# System files
 .DS_Store
 *.pem
 
-# PM2
+# Tools
+.vscode/
 .pm2/
-
-
-
-# User-specific tool folders
-.amazonq/
-.claude/
-.clinerules/
-.kombai/
-.kilocode/
-.qodo/
-.optibot/

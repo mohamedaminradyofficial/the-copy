@@ -1,85 +1,86 @@
-# Root level gitignore for The Copy project
+# The Copy - النسخة
+# Unified .gitignore for Frontend (Next.js) and Backend (Express.js)
 
 # Dependencies
+node_modules/
+jspm_packages/
+bower_components/
+/.pnp
+.pnp.*
 
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Environment files
+# Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.production
+.env.test
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Build outputs
-dist/
-build/
+# Build output
+/dist
+/build
+build/Release
+.next/
 out/
+.nuxt/
+dist/
+.svelte-kit
+.docusaurus
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# Documentation builds
-docs/_build/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Temporary files
-tmp/
-temp/
-
-# Coverage reports
+# Coverage and testing
 coverage/
+*.lcov
 .nyc_output/
+lib-cov
 
-# Firebase
-firebase-debug.log
-firestore-debug.log
+# TypeScript
+*.tsbuildinfo
+typings/
 
-# AI/ML cache
-.genkit/
+# Cache directories
+.npm
+.eslintcache
+.cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.grunt
 
-# Package manager files
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# Package files
+*.tgz
+.yarn-integrity
+.node_repl_history
+.lock-wscript
 
+# Application specific
+uploads/
+*.db
+*.sqlite
+*.sqlite3
 
-# User-specific tool folders
-.amazonq/
-.claude/
-.clinerules/
-.kombai/
-.kilocode/
-.qodo/
-.optibot/
+# System files
+.DS_Store
+*.pem
 
-# Ignore external tool configs and secrets
-.kilocode/
-.clinerules/
-.kombai/
-.env
-../.codeoss-cloudworkstations/data/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json
+# IDE and tools
+.vscode/
+.pm2/
 
-# External design system repositories (used as reference)
-Design-System-Documentation-*/
-node_modules
+# User-specific
+/home/user/the-copy-/.kilocode/mcp.json
