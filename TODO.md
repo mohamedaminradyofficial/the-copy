@@ -1,57 +1,404 @@
-✅ تم إنجاز جميع المهام!
+دي مسارات  ال front end 
+السؤال اللي بيفرض نفسه ليه  الصفح الاولانية للتطبيق  اللي موجود  منها داخل مسار ال 
+/app/(main) 
+ال
+page.tsx
+وما له علاقة بها و باقي كل المجلدات في اماكنها الاخرى بينما التطبيقات التي قمت النت بنقلها و انشائها  ...
 
-## ما تم إنجازه:
+تحتوي على مجلدات  التطبيق نفسه مثل 
 
-### 1. Backend API Routes ✅
-تم إنشاء جميع API endpoints المطلوبة:
-- ✅ /api/projects - إدارة المشاريع (GET, POST, PUT, DELETE)
-- ✅ /api/projects/[id]/analyze - تحليل السيناريو
-- ✅ /api/scenes - إدارة المشاهد (GET, POST, PUT, DELETE)
-- ✅ /api/characters - إدارة الشخصيات (GET, POST, PUT, DELETE)
-- ✅ /api/shots - إدارة اللقطات (GET, POST, PUT, DELETE)
+components
 
-**الملفات المنشأة:**
-- backend/src/controllers/projects.controller.ts
-- backend/src/controllers/scenes.controller.ts
-- backend/src/controllers/characters.controller.ts
-- backend/src/controllers/shots.controller.ts
-- backend/src/server.ts (تم تحديثه لإضافة الروابط)
 
-### 2. Database Setup ✅
-- ✅ تم إضافة جميع الجداول إلى backend/src/db/schema.ts:
-  - projects (مع userId للربط بالمستخدمين)
-  - scenes (مع projectId)
-  - characters (مع projectId)
-  - shots (مع sceneId)
-- ✅ تم استخدام Drizzle ORM مع PostgreSQL
-- ✅ تم إضافة العلاقات والـ cascading deletes
+يجب   تصحيح هيكل المشروع 
 
-### 3. Sub-Pages / Routes ✅
-تم إنشاء جميع الصفحات الفرعية:
-- ✅ /directors-studio/scenes - صفحة إدارة المشاهد
-- ✅ /directors-studio/characters - صفحة إدارة الشخصيات
-- ✅ /directors-studio/shots - صفحة تخطيط اللقطات
-- ✅ /directors-studio/ai-assistant - صفحة مساعد AI
-- ✅ /directors-studio/script - صفحة محرر السيناريو
+/home/user/the-copy/frontend/scripts
+/home/user/the-copy/frontend/scripts/bundle-analysis.js
+/home/user/the-copy/frontend/scripts/check-forbidden-term.js
+/home/user/the-copy/frontend/scripts/dev-with-fallback.js
+/home/user/the-copy/frontend/scripts/enforce-coverage.js
+/home/user/the-copy/frontend/scripts/find-untested-files.js
+/home/user/the-copy/frontend/scripts/performance-report.js
+/home/user/the-copy/frontend/src
+/home/user/the-copy/frontend/src/ai
+/home/user/the-copy/frontend/src/ai/ai-team-brainstorming.ts
+/home/user/the-copy/frontend/src/ai/dev.ts
+/home/user/the-copy/frontend/src/ai/genkit.ts
+/home/user/the-copy/frontend/src/app
 
-**الملفات المنشأة:**
-- frontend/src/app/(main)/directors-studio/scenes/page.tsx
-- frontend/src/app/(main)/directors-studio/characters/page.tsx
-- frontend/src/app/(main)/directors-studio/shots/page.tsx
-- frontend/src/app/(main)/directors-studio/ai-assistant/page.tsx
-- frontend/src/app/(main)/directors-studio/script/page.tsx
 
-### 4. Navigation Integration ✅
-- ✅ تم إضافة رابط "استوديو الإخراج" في الـ navigation الرئيسي
-- ✅ تم تحديث frontend/src/components/main-nav.tsx
-- ✅ تم إضافة أيقونة Film للتطبيق
+/home/user/the-copy/frontend/src/app/(main)
+/home/user/the-copy/frontend/src/app/(main)/actorai-arabic
+/home/user/the-copy/frontend/src/app/(main)/actorai-arabic/components
+/home/user/the-copy/frontend/src/app/(main)/actorai-arabic/static-source
+/home/user/the-copy/frontend/src/app/(main)/actorai-arabic/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/actorai-arabic/README.md
+/home/user/the-copy/frontend/src/app/(main)/analysis
+/home/user/the-copy/frontend/src/app/(main)/analysis/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/analysis/seven-stations.tsx
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio/components
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio/lib
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio/types
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/arabic-creative-writing-studio/README.md
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/components
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/lib
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/types
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/layout.tsx
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/loading.tsx
+/home/user/the-copy/frontend/src/app/(main)/arabic-prompt-engineering-studio/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/brainstorm
+/home/user/the-copy/frontend/src/app/(main)/brainstorm/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/breakdown
+/home/user/the-copy/frontend/src/app/(main)/breakdown/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/cinematography-studio
+/home/user/the-copy/frontend/src/app/(main)/cinematography-studio/cineai-tmp
+/home/user/the-copy/frontend/src/app/(main)/cinematography-studio/components
+/home/user/the-copy/frontend/src/app/(main)/cinematography-studio/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/cinematography-studio/README.md
+/home/user/the-copy/frontend/src/app/(main)/development
+/home/user/the-copy/frontend/src/app/(main)/development/creative-development.tsx
+/home/user/the-copy/frontend/src/app/(main)/development/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/directors-studio
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/ai-assistant
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/characters
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/components
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/hooks
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/lib
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/scenes
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/script
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/shared
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/shots
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/layout.tsx
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/directors-studio/README.md
+/home/user/the-copy/frontend/src/app/(main)/editor
+/home/user/the-copy/frontend/src/app/(main)/editor/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/editor/screenplay-editor.tsx
+/home/user/the-copy/frontend/src/app/(main)/new
+/home/user/the-copy/frontend/src/app/(main)/new/new-feature.tsx
+/home/user/the-copy/frontend/src/app/(main)/new/page.test.tsx
+/home/user/the-copy/frontend/src/app/(main)/new/page.tsx
+/home/user/the-copy/frontend/src/app/(main)/ui
+/home/user/the-copy/frontend/src/app/(main)/ui/components
+/home/user/the-copy/frontend/src/app/(main)/ui/pages
+/home/user/the-copy/frontend/src/app/(main)/ui/tokens
+/home/user/the-copy/frontend/src/app/(main)/ui/index.ts
+/home/user/the-copy/frontend/src/app/(main)/ui/README.md
+/home/user/the-copy/frontend/src/app/(main)/layout.tsx
 
-## 🎯 الوصول للتطبيق:
-**Route:** `/directors-studio`
 
-## 📝 ملاحظات:
-- جميع API endpoints محمية بـ authMiddleware
-- جميع العمليات تتحقق من صلاحية المستخدم
-- تم استخدام TanStack Query للـ data fetching في الصفحات
-- تم استخدام shadcn/ui للمكونات
-- التطبيق جاهز للاستخدام بعد إعداد قاعدة البيانات
+/home/user/the-copy/frontend/src/app/api
+/home/user/the-copy/frontend/src/app/api/analysis/seven-stations
+/home/user/the-copy/frontend/src/app/api/analysis/seven-stations/route.ts
+/home/user/the-copy/frontend/src/app/api/cineai
+/home/user/the-copy/frontend/src/app/api/cineai/color-grading
+/home/user/the-copy/frontend/src/app/api/cineai/color-grading/route.ts
+/home/user/the-copy/frontend/src/app/api/cineai/generate-shots
+/home/user/the-copy/frontend/src/app/api/cineai/generate-shots/route.ts
+/home/user/the-copy/frontend/src/app/api/cineai/validate-shot
+/home/user/the-copy/frontend/src/app/api/cineai/validate-shot/route.ts
+/home/user/the-copy/frontend/src/app/api/health
+/home/user/the-copy/frontend/src/app/api/health/route.ts
+/home/user/the-copy/frontend/src/app/api/review-screenplay
+/home/user/the-copy/frontend/src/app/api/review-screenplay/route.ts
+/home/user/the-copy/frontend/src/app/actions.ts
+/home/user/the-copy/frontend/src/app/favicon.ico
+/home/user/the-copy/frontend/src/app/globals.css
+/home/user/the-copy/frontend/src/app/images.ts
+/home/user/the-copy/frontend/src/app/layout.tsx
+/home/user/the-copy/frontend/src/app/loading.tsx
+/home/user/the-copy/frontend/src/app/page.test.tsx
+/home/user/the-copy/frontend/src/app/page.tsx
+/home/user/the-copy/frontend/src/app/slider.css
+/home/user/the-copy/frontend/src/components
+/home/user/the-copy/frontend/src/components/ui
+/home/user/the-copy/frontend/src/components/agent-report-viewer.d.ts
+/home/user/the-copy/frontend/src/components/agent-report-viewer.tsx
+/home/user/the-copy/frontend/src/components/agent-reports-exporter.d.ts
+/home/user/the-copy/frontend/src/components/agent-reports-exporter.tsx
+/home/user/the-copy/frontend/src/components/analysis-submit-button.tsx
+/home/user/the-copy/frontend/src/components/ErrorBoundary.test.tsx
+/home/user/the-copy/frontend/src/components/ErrorBoundary.tsx
+/home/user/the-copy/frontend/src/components/file-upload.tsx
+/home/user/the-copy/frontend/src/components/logo.tsx
+/home/user/the-copy/frontend/src/components/main-nav.tsx
+/home/user/the-copy/frontend/src/components/particle-background.tsx
+/home/user/the-copy/frontend/src/components/seven-stations-interface.tsx
+/home/user/the-copy/frontend/src/components/station-card.tsx
+/home/user/the-copy/frontend/src/components/stations-pipeline.tsx
+/home/user/the-copy/frontend/src/components/v0-component.tsx
+/home/user/the-copy/frontend/src/hooks
+/home/user/the-copy/frontend/src/lib
+/home/user/the-copy/frontend/src/lib/ai
+/home/user/the-copy/frontend/src/lib/ai/constitutional
+/home/user/the-copy/frontend/src/lib/ai/constitutional/multi-agent-debate.d.ts
+/home/user/the-copy/frontend/src/lib/ai/constitutional/multi-agent-debate.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/multi-agent-debate.js
+/home/user/the-copy/frontend/src/lib/ai/constitutional/multi-agent-debate.js.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/multi-agent-debate.ts
+/home/user/the-copy/frontend/src/lib/ai/constitutional/principles.d.ts
+/home/user/the-copy/frontend/src/lib/ai/constitutional/principles.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/principles.js
+/home/user/the-copy/frontend/src/lib/ai/constitutional/principles.js.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/principles.ts
+/home/user/the-copy/frontend/src/lib/ai/constitutional/uncertainty-quantification.d.ts
+/home/user/the-copy/frontend/src/lib/ai/constitutional/uncertainty-quantification.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/uncertainty-quantification.js
+/home/user/the-copy/frontend/src/lib/ai/constitutional/uncertainty-quantification.js.map
+/home/user/the-copy/frontend/src/lib/ai/constitutional/uncertainty-quantification.ts
+/home/user/the-copy/frontend/src/lib/ai/core
+/home/user/the-copy/frontend/src/lib/ai/core/models
+/home/user/the-copy/frontend/src/lib/ai/core/models/base-entities.d.ts
+/home/user/the-copy/frontend/src/lib/ai/core/models/base-entities.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/core/models/base-entities.js
+/home/user/the-copy/frontend/src/lib/ai/core/models/base-entities.js.map
+/home/user/the-copy/frontend/src/lib/ai/core/models/base-entities.ts
+/home/user/the-copy/frontend/src/lib/ai/core/models/station-types.ts
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline/base-station.d.ts
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline/base-station.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline/base-station.js
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline/base-station.js.map
+/home/user/the-copy/frontend/src/lib/ai/core/pipeline/base-station.ts
+/home/user/the-copy/frontend/src/lib/ai/core/base-station.ts
+/home/user/the-copy/frontend/src/lib/ai/flows
+/home/user/the-copy/frontend/src/lib/ai/flows/analyze-text-for-characters-relationships.ts
+/home/user/the-copy/frontend/src/lib/ai/flows/diagnose-and-refine-conflict-networks.ts
+/home/user/the-copy/frontend/src/lib/ai/flows/generate-conflict-network.ts
+/home/user/the-copy/frontend/src/lib/ai/flows/identify-themes-and-genres.ts
+/home/user/the-copy/frontend/src/lib/ai/flows/measure-text-efficiency-and-effectiveness.ts
+/home/user/the-copy/frontend/src/lib/ai/flows/visualize-analysis-results.ts
+/home/user/the-copy/frontend/src/lib/ai/interfaces
+/home/user/the-copy/frontend/src/lib/ai/interfaces/stations.ts
+/home/user/the-copy/frontend/src/lib/ai/rag
+/home/user/the-copy/frontend/src/lib/ai/rag/context-retriever.ts
+/home/user/the-copy/frontend/src/lib/ai/rag/text-chunking.ts
+/home/user/the-copy/frontend/src/lib/ai/services
+/home/user/the-copy/frontend/src/lib/ai/services/gemini-service.d.ts
+/home/user/the-copy/frontend/src/lib/ai/services/gemini-service.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/services/gemini-service.js
+/home/user/the-copy/frontend/src/lib/ai/services/gemini-service.js.map
+/home/user/the-copy/frontend/src/lib/ai/services/gemini-service.ts
+/home/user/the-copy/frontend/src/lib/ai/stations
+/home/user/the-copy/frontend/src/lib/ai/stations/base-station.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/base-station.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/base-station.js
+/home/user/the-copy/frontend/src/lib/ai/stations/base-station.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/base-station.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/gemini-service.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/gemini-service.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/gemini-service.js
+/home/user/the-copy/frontend/src/lib/ai/stations/gemini-service.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/gemini-service.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/network-diagnostics.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/network-diagnostics.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/network-diagnostics.js
+/home/user/the-copy/frontend/src/lib/ai/stations/network-diagnostics.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/network-diagnostics.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/orchestrator.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/orchestrator.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/orchestrator.js
+/home/user/the-copy/frontend/src/lib/ai/stations/orchestrator.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/orchestrator.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/run-all-stations.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station1-text-analysis.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station1-text-analysis.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station1-text-analysis.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station1-text-analysis.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station1-text-analysis.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station2-conceptual-analysis.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station2-conceptual-analysis.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station2-conceptual-analysis.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station2-conceptual-analysis.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station2-conceptual-analysis.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station3-network-builder.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station3-network-builder.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station3-network-builder.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station3-network-builder.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station3-network-builder.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station4-efficiency-metrics.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station4-efficiency-metrics.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station4-efficiency-metrics.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station4-efficiency-metrics.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station4-efficiency-metrics.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station5-dynamic-symbolic-stylistic.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station5-dynamic-symbolic-stylistic.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station5-dynamic-symbolic-stylistic.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station5-dynamic-symbolic-stylistic.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station5-dynamic-symbolic-stylistic.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station6-diagnostics-treatment.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station6-diagnostics-treatment.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station6-diagnostics-treatment.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station6-diagnostics-treatment.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station6-diagnostics-treatment.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station7-finalization.d.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/station7-finalization.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station7-finalization.js
+/home/user/the-copy/frontend/src/lib/ai/stations/station7-finalization.js.map
+/home/user/the-copy/frontend/src/lib/ai/stations/station7-finalization.ts
+/home/user/the-copy/frontend/src/lib/ai/stations/types.ts
+/home/user/the-copy/frontend/src/lib/ai/utils
+/home/user/the-copy/frontend/src/lib/ai/utils/logger.d.ts
+/home/user/the-copy/frontend/src/lib/ai/utils/logger.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/utils/logger.js
+/home/user/the-copy/frontend/src/lib/ai/utils/logger.js.map
+/home/user/the-copy/frontend/src/lib/ai/utils/logger.ts
+/home/user/the-copy/frontend/src/lib/ai/utils/saveText.d.ts
+/home/user/the-copy/frontend/src/lib/ai/utils/saveText.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/utils/saveText.js
+/home/user/the-copy/frontend/src/lib/ai/utils/saveText.js.map
+/home/user/the-copy/frontend/src/lib/ai/utils/saveText.ts
+/home/user/the-copy/frontend/src/lib/ai/utils/text-utils.d.ts
+/home/user/the-copy/frontend/src/lib/ai/utils/text-utils.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/utils/text-utils.js
+/home/user/the-copy/frontend/src/lib/ai/utils/text-utils.js.map
+/home/user/the-copy/frontend/src/lib/ai/utils/text-utils.ts
+/home/user/the-copy/frontend/src/lib/ai/gemini-core.d.ts
+/home/user/the-copy/frontend/src/lib/ai/gemini-core.d.ts.map
+/home/user/the-copy/frontend/src/lib/ai/gemini-core.js
+/home/user/the-copy/frontend/src/lib/ai/gemini-core.js.map
+/home/user/the-copy/frontend/src/lib/ai/gemini-core.ts
+/home/user/the-copy/frontend/src/lib/ai/gemini-service.ts
+/home/user/the-copy/frontend/src/lib/ai/pipeline-orchestrator.ts
+/home/user/the-copy/frontend/src/lib/ai/stations.ts
+/home/user/the-copy/frontend/src/lib/ai/text-chunking.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/adaptiveRewriting
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/analysis
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/audienceResonance
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/characterDeepAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/characterNetwork
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/characterVoice
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/completion
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/conflictDynamics
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/creative
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/culturalHistoricalAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/dialogueAdvancedAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/dialogueForensics
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/integrated
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/literaryQualityAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/platformAdapter
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/plotPredictor
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/producibilityAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/recommendationsGenerator
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/rhythmMapping
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/rhythmMapping/agent.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/rhythmMapping/instructions.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/sceneGenerator
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/shared
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/styleFingerprint
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/targetAudienceAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/tensionOptimizer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/thematicMining
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/themesMessagesAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/visualCinematicAnalyzer
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/worldBuilder
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/AGENTS_STATUS.md
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/index.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/LEGACY_FILES_README.md
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/taskInstructions.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/upgradedAgents.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/agents/upgradedAgents.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/config
+/home/user/the-copy/frontend/src/lib/drama-analyst/config/environment.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/core
+/home/user/the-copy/frontend/src/lib/drama-analyst/core/types.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/agentFactory.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/agentFactory.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/constitutionalAI.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/executor.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/executor.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/multiAgentDebate.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/orchestration.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/orchestration.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/promptBuilder.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/orchestration/promptBuilder.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/analyticsService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/apiService.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/apiService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/backendService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/cacheService.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/cacheService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/errorHandler.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/errorHandler.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/fileReaderService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/fontOptimizer.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/geminiService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/hallucinationService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/loggerService.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/loggerService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/observability.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/ragService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/sanitizationService.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/sanitizationService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/uncertaintyService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/uptimeMonitoringService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/services/webVitalsService.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/config.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/constants.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/constants.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/enums.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/enums.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/index.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/types.test.ts
+/home/user/the-copy/frontend/src/lib/drama-analyst/types.ts
+/home/user/the-copy/frontend/src/lib/types
+/home/user/the-copy/frontend/src/lib/types/contexts.d.ts
+/home/user/the-copy/frontend/src/lib/types/contexts.d.ts.map
+/home/user/the-copy/frontend/src/lib/types/contexts.js
+/home/user/the-copy/frontend/src/lib/types/contexts.js.map
+/home/user/the-copy/frontend/src/lib/types/contexts.ts
+/home/user/the-copy/frontend/src/lib/utils
+/home/user/the-copy/frontend/src/lib/utils/kv-utils.ts
+/home/user/the-copy/frontend/src/lib/utils/text-protocol.ts
+/home/user/the-copy/frontend/src/lib/placeholder-images.json
+/home/user/the-copy/frontend/src/lib/placeholder-images.ts
+/home/user/the-copy/frontend/src/lib/utils.ts
+/home/user/the-copy/frontend/src/lib/web-components.ts
+/home/user/the-copy/frontend/src/lib/web-vitals.ts
+/home/user/the-copy/frontend/src/env.ts
+/home/user/the-copy/frontend/src/middleware.ts
+/home/user/the-copy/frontend/tests
+/home/user/the-copy/frontend/.eslintrc.json
+/home/user/the-copy/frontend/.firebaserc
+/home/user/the-copy/frontend/.gitignore
+/home/user/the-copy/frontend/.npmrc
+/home/user/the-copy/frontend/.nvmrc
+/home/user/the-copy/frontend/.prettierignore
+/home/user/the-copy/frontend/.prettierrc
+/home/user/the-copy/frontend/apphosting.yaml
+/home/user/the-copy/frontend/components.json
+/home/user/the-copy/frontend/DEPLOYMENT_SETUP.md
+/home/user/the-copy/frontend/firebase.env.example
+/home/user/the-copy/frontend/firebase.json
+/home/user/the-copy/frontend/FIXES_SUMMARY_AR.md
+/home/user/the-copy/frontend/FRONTEND_DOCUMENTATION.md
+/home/user/the-copy/frontend/jest.setup.ts
+/home/user/the-copy/frontend/next-env.d.ts
+/home/user/the-copy/frontend/next.config.ts
+/home/user/the-copy/frontend/package.json
+/home/user/the-copy/frontend/PIPELINE_VALIDATION_FIX.md
+/home/user/the-copy/frontend/playwright.config.ts
+/home/user/the-copy/frontend/POST_MERGE_VALIDATION.md
+/home/user/the-copy/frontend/postcss.config.mjs
+/home/user/the-copy/frontend/QUICK_REFERENCE.md
+/home/user/the-copy/frontend/QUICK_START.md
+/home/user/the-copy/frontend/README.md
+/home/user/the-copy/frontend/RUNTIME_UI_CONFIG_FIX.md
+/home/user/the-copy/frontend/sentry.client.config.ts
+/home/user/the-copy/frontend/sentry.edge.config.ts
+/home/user/the-copy/frontend/sentry.server.config.ts
+/home/user/the-copy/frontend/SETUP_INSTRUCTIONS_AR.md
+/home/user/the-copy/frontend/tailwind.config.ts
+/home/user/the-copy/frontend/TESTING_GUIDELINES.md
+/home/user/the-copy/frontend/TEXT_ONLY_PIPELINE.md
+/home/user/the-copy/frontend/tsconfig.json
+/home/user/the-copy/frontend/vitest.config.ts
