@@ -12,7 +12,7 @@ import {
   AIRequest,
 } from "@/lib/drama-analyst/types";
 import { submitTask } from "@/lib/drama-analyst/orchestration/executor";
-import { runFullPipeline } from "@/app/actions";
+import { runFullPipeline } from "@/lib/actions/analysis";
 import {
   MIN_FILES_REQUIRED,
   TASKS_REQUIRING_COMPLETION_SCOPE,

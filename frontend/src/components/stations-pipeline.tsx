@@ -17,7 +17,7 @@ import {
   Download,
 } from "lucide-react";
 
-import { runFullPipeline } from "@/app/actions";
+import { runFullPipeline } from "@/lib/actions/analysis";
 import { useToast } from "@/hooks/use-toast";
 import { textChunker, type ContextMap } from "@/lib/ai/text-chunking";
 import { Button } from "./ui/button";
@@ -424,4 +424,4 @@ const StationsPipeline = () => {
   );
 };
 
-export default StationsPipeline;
+export { StationsPipeline };

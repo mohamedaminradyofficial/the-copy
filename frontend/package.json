@@ -15,8 +15,8 @@
     "build:production": "NODE_ENV=production ESLINT_NO_DEV_ERRORS=true next build",
     "start": "next start -p 5000 -H 0.0.0.0",
     "analyze": "ANALYZE=true npm run build",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings=10",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix --max-warnings=10",
+    "lint": "eslint . --max-warnings=10",
+    "lint:fix": "eslint . --fix --max-warnings=10",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit --skipLibCheck",
@@ -33,7 +33,9 @@
     "performance:report": "node scripts/performance-report.js",
     "a11y:ci": "playwright test --grep @a11y",
     "perf:ci": "playwright test --grep @performance",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next",
+    "prepush": "pnpm lint && pnpm typecheck && pnpm test",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
