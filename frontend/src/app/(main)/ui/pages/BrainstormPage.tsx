@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { ExportHub } from "../components/ExportHub";
-import { Button } from "../components/ui/button";
-import { Card } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
-import { Plus, Pin, Trash2, Grid3x3, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Pin, Trash2, Grid3x3, Layers, Lightbulb } from "lucide-react";
 
 interface IdeaCard {
   id: string;

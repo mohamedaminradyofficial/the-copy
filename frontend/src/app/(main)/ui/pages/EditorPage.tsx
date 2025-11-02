@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { SceneCard } from "../components/SceneCard";
 import { NarrativeTimeline } from "../components/NarrativeTimeline";
 import { InspectorPanel } from "../components/InspectorPanel";
 import { ExportHub } from "../components/ExportHub";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Plus, Grid3x3, List } from "lucide-react";
 
 interface Scene {

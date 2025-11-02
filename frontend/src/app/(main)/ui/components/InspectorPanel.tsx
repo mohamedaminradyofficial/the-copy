@@ -18,8 +18,12 @@ interface InspectorPanelProps {
     beats?: string[];
     duration?: string;
     characters?: string[];
-    linksIn?: string[];
-    linksOut?: string[];
+    linksIn?: string[] | number | undefined;
+    linksOut?: string[] | number | undefined;
+    status?: "draft" | "final" | "alt" | "flagged" | undefined;
+    branch?: "A" | "B" | "C" | undefined;
+    act?: number | undefined;
+    beat?: string | undefined;
   };
   onUpdate?: (data: any) => void;
 }
@@ -176,7 +180,7 @@ export function InspectorPanel({
               الروابط الواردة
             </Label>
             <div className="text-[var(--color-muted)]" dir="rtl">
-              {sceneData.linksIn?.length || 0} مشهد
+              {typeof sceneData.linksIn === 'number' ? sceneData.linksIn : (sceneData.linksIn?.length || 0)} مشهد
             </div>
           </div>
 
@@ -186,7 +190,7 @@ export function InspectorPanel({
               الروابط الصادرة
             </Label>
             <div className="text-[var(--color-muted)]" dir="rtl">
-              {sceneData.linksOut?.length || 0} مشهد
+              {typeof sceneData.linksOut === 'number' ? sceneData.linksOut : (sceneData.linksOut?.length || 0)} مشهد
             </div>
           </div>
         </div>

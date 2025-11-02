@@ -216,6 +216,8 @@ export class NetworkDiagnostics {
   } {
     const abandonedConflicts: AbandonedConflictIssue[] = [];
 
+    if (!this.network.conflicts) return { totalAbandoned: 0, conflicts: [] };
+
     for (const conflict of this.network.conflicts.values()) {
       const daysSinceLastUpdate = this.calculateDaysSinceLastUpdate(conflict);
 

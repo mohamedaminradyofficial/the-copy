@@ -306,6 +306,8 @@ export function UniverseMap({
                 id={node.id}
                 label={node.label}
                 icon={node.icon}
+                x={node.x}
+                y={node.y}
                 isActive={activeView === node.view}
                 onClick={() => onNavigate?.(node.view)}
               />

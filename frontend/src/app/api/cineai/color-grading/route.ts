@@ -117,14 +117,14 @@ function generateMockPalette(sceneType: string, mood?: string, temperature?: num
     sad: ['#2C3E50', '#34495E', '#7F8C8D', '#95A5A6', '#BDC3C7'],
   };
 
-  const selectedPalette = palettes[sceneType.toLowerCase()] || palettes.indoor;
+  const selectedPalette = palettes[sceneType.toLowerCase()] || palettes.indoor || [];
 
   return NextResponse.json({
     success: true,
     palette: selectedPalette,
-    primaryColor: selectedPalette[0],
-    secondaryColor: selectedPalette[2],
-    accentColor: selectedPalette[4],
+    primaryColor: selectedPalette[0] || '#000000',
+    secondaryColor: selectedPalette[2] || '#000000',
+    accentColor: selectedPalette[4] || '#000000',
     sceneType,
     mood: mood || 'neutral',
     temperature: temperature || 5500,

@@ -4,11 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   BrainCircuit,
+  Camera,
+  Clapperboard,
+  FileText,
   Layers,
+  Lightbulb,
   PenSquare,
   Sparkles,
+  Theater,
+  Users,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,46 +27,35 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import images from "./images";
 import "./slider.css";
+import pagesManifest from "@/config/pages.manifest.json";
 
 const ParticleBackground = dynamic(
   () => import("@/components/particle-background"),
   { ssr: false }
 );
 
-const features = [
-  {
-    icon: PenSquare,
-    title: "كتابة",
-    description:
-      "محرر متخصص لكتابة سيناريوهات الأفلام والمسلسلات باللغة العربية، مع ميزات تنسيق متقدمة.",
-    imageId: "editor-feature",
-    link: "/editor",
-  },
-  {
-    icon: Layers,
-    title: "تحليل",
-    description:
-      "نظام تحليل متقدم يمر بسبع محطات متخصصة لتحليل شامل ومتعمق للنص الدرامي.",
-    imageId: "analysis-feature",
-    link: "/analysis",
-  },
-  {
-    icon: Sparkles,
-    title: "تطوير",
-    description:
-      "احصل على تحليل درامي آلي فوري لنصك، استنادًا إلى أشهر الهياكل القصصية والنماذج الأدبية.",
-    imageId: "development-feature",
-    link: "/development",
-  },
-  {
-    icon: BrainCircuit,
-    title: "الورشة",
-    description:
-      "فريق من وكلاء الذكاء الاصطناعي يتعاونون لتقديم وجهات نظر متنوعة وأفكار مبتكرة لتطوير كتاباتك.",
-    imageId: "brainstorm-feature",
-    link: "/brainstorm",
-  },
-];
+// Icon mapping for each page slug
+const iconMap: Record<string, typeof PenSquare> = {
+  "actorai-arabic": Theater,
+  "analysis": Layers,
+  "arabic-creative-writing-studio": PenSquare,
+  "arabic-prompt-engineering-studio": Zap,
+  "brainstorm": BrainCircuit,
+  "breakdown": FileText,
+  "cinematography-studio": Camera,
+  "development": Sparkles,
+  "directors-studio": Clapperboard,
+  "editor": PenSquare,
+  "new": Lightbulb,
+};
+
+// Generate features from manifest
+const features = pagesManifest.pages.map((page) => ({
+  icon: iconMap[page.slug] || FileText,
+  title: page.title,
+  description: (pagesManifest.metadata as Record<string, {title: string, description: string}>)[page.slug]?.description || "",
+  link: page.path,
+}));
 
 export default function Home() {
   const router = useRouter();
