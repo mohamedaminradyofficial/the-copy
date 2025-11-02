@@ -1,9 +1,9 @@
 import React from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { CheckCircle, Circle, Loader2, Eye } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface StationItem {
   id: number;

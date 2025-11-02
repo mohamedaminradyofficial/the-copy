@@ -79,8 +79,8 @@ export default function SceneFormDialog({
     try {
       const charactersArray = formData.characters
         .split(",")
-        .map(c => c.trim())
-        .filter(c => c.length > 0);
+        .map((c: string) => c.trim())
+        .filter((c: string) => c.length > 0);
 
       if (scene) {
         await updateScene.mutateAsync({

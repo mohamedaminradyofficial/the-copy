@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { UniverseNode } from "./UniverseNode";
 import { ZoomIn, ZoomOut, Grid3x3, Maximize2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   FileEdit,
   BarChart3,

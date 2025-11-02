@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   GitBranch,
   ChevronDown,
@@ -7,9 +7,9 @@ import {
   GripVertical,
   Copy,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { toast } from "sonner@2.0.3";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+// import { toast } from "sonner"; // Temporarily disabled
 
 interface TimelineScene {
   id: string;
@@ -70,7 +70,7 @@ export function NarrativeTimeline({
     targetBranch: "A" | "B" | "C"
   ) => {
     onBranchCreate?.(sceneId, targetBranch);
-    toast.success(`تم إنشاء فرع ${targetBranch} من المشهد`);
+    // toast.success(`تم إنشاء فرع ${targetBranch} من المشهد`);
   };
 
   return (

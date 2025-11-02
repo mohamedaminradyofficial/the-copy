@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, User } from "lucide-react";
-import { CharacterFormDialog } from "../components/CharacterFormDialog";
+import CharacterFormDialog from "../components/CharacterFormDialog";
 import type { Character } from "../shared/schema";
 
 export default function CharactersPage() {
@@ -161,7 +161,7 @@ export default function CharactersPage() {
       <CharacterFormDialog
         open={isDialogOpen}
         onOpenChange={handleDialogClose}
-        character={selectedCharacter}
+        {...(selectedCharacter && { character: selectedCharacter })}
         projectId={currentProjectId}
       />
     </div>

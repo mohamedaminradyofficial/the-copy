@@ -48,7 +48,7 @@ const PostProductionTools: React.FC = () => {
             <Label>Color Temperature: {temperature}K</Label>
             <Slider
               value={[temperature]}
-              onValueChange={(value) => setTemperature(value[0])}
+              onValueChange={(value) => setTemperature(value[0] ?? 5500)}
               min={2000}
               max={10000}
               step={100}

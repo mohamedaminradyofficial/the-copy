@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { SceneFormDialog } from "../components/SceneFormDialog";
+import SceneFormDialog from "../components/SceneFormDialog";
 import type { Scene } from "../shared/schema";
 
 export default function ScenesPage() {
@@ -160,7 +160,7 @@ export default function ScenesPage() {
       <SceneFormDialog
         open={isDialogOpen}
         onOpenChange={handleDialogClose}
-        scene={selectedScene}
+        {...(selectedScene && { scene: selectedScene })}
         projectId={currentProjectId}
       />
     </div>

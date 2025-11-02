@@ -1,6 +1,6 @@
 import React from "react";
-import { motion } from "motion/react";
-import { Badge } from "./ui/badge";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, ArrowLeft, Flag } from "lucide-react";
 
 interface SceneCardProps {

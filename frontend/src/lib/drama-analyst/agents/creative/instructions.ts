@@ -5,3 +5,5 @@ export const CORE_CREATIVE_INSTRUCTIONS = `
 [النص الإبداعي المنتج هنا... حوار، وصف، فصل جديد، إلخ]
 **العملية:** طبق "المراحل الثلاث للإبداع المحاكي".
 `;
+
+export const CREATIVE_MODE_INSTRUCTIONS = CORE_CREATIVE_INSTRUCTIONS;
