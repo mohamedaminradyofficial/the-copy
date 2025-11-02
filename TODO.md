@@ -1,137 +1,144 @@
-# أمر توجيهي حاسم لوكيل الترميز — تنفيذ «المتبقّي» من تقرير التشغيل الآن
 
-> نفّذ البنود المتبقية الموضّحة في تقرير التشغيل المرفق ثم قدِّم أدلة تنفيذية محدثة. (المرجع: تقرير
+# قائمة TODO جديدة — «تنفيذ المتبقي» حتى الجاهزية للدمج
 
-frontend/RUN_REPORT_2025-11-02.md
+> موجّه لوكيل الترميز للتنفيذ الفوري داخل `frontend/`. الهدف: **Build إنتاج ناجح + E2E شاملة + أدلة كاملة + تقرير مُحدّث**.
 
-## [الدور]
+## 1) إنهاء أخطاء Build الإنتاج (TypeScript Strict)
 
-أنت مسؤول عن: إظهار **كل الصفحات** على الصفحة الرئيسية، إصلاح **أخطاء إنتاج** (Production build)، إضافة **اختبارات تفاعلية + لقطات شاشة**، وتحديث التقرير بالأدلة.
+1. **تطبيع الأنواع في طبقة الذكاء الاصطناعي** (`src/lib/ai/**`):
 
-## [نطاق التنفيذ]
+   * عرّف أنواع الاستجابات (Response DTOs) لكل استدعاء خارجي مع **Zod** للتحقق (parse/refine) بدل `any`.
+   * استخدم **discriminated unions** لحالات النجاح/الفشل بدل `boolean`ات فضفاضة.
+   * عالج خصائص اختيارية مع `exactOptionalPropertyTypes`:
+     اكتب `prop?: T | undefined` وتحقق منها قبل الاستخدام.
+   * أزل/صحّح الاستيرادات المكسورة والـ **re-exports** غير الضرورية.
 
-* الجذع: `frontend/`
-* المنافذ/المسارات الحرجة: جميع صفحات `(main)` بما فيها:
+2. **حواجز نوعية حول الأطراف الخارجية**:
 
-  * `editor`, `analysis`, `development`, `brainstorm`, `breakdown`, `new`, `ui`,
-  * `actorai-arabic`, `arabic-creative-writing-studio`, `arabic-prompt-engineering-studio`, `cinematography-studio`, `directors-studio`.
-* مخرجات إلزامية:
+   * أنشئ وحدات *Boundary* لمزودي الذكاء الاصطناعي (مثلاً `geminiServiceBoundary.ts`) تُصدر دوالًا **مؤنطَقة Typed**؛ اجعل بقية النظام تتعامل مع **واجهات ثابتة** داخل المشروع.
 
-  1. نجاح `pnpm build` بلا أخطاء.
-  2. الصفحة الرئيسية تعرض **كل 11 صفحة** كرابط فعّال.
-  3. Playwright E2E تُثبت فتح كل صفحة + حفظ لقطات شاشة.
-  4. تحديث مجلد الأدلة والتقرير النهائي.
-
----
-
-## [خطة التنفيذ الفورية — خطوات مرتّبة]
-
-### 1) تحديث الصفحة الرئيسية لإظهار جميع الصفحات
-
-1. أنشئ «مانيفست» للصفحات تلقائيًا:
-
-   * سكربت Node: `scripts/generate-pages-manifest.ts` يقوم بمسح `src/app/(main)/*/page.tsx`، ويبني ملف `src/config/pages.manifest.json` يحوي `{ slug, path, title }` لكل صفحة.
-   * أضِف سكربت إلى `package.json`:
-
-     ```json
-     { "scripts": { "prebuild": "ts-node --transpile-only scripts/generate-pages-manifest.ts" } }
-     ```
-2. عدّل `src/app/page.tsx` (Server Component) لقراءة `pages.manifest.json` وعرض **بطاقات/روابط** لكل عنصر.
-3. **معيار قبول:** عند زيارة `/` تظهر الروابط الفعّالة لكل الصفحات الـ 11.
-
-### 2) إصلاح أخطاء Production Build (لا تخفّف TypeScript)
-
-1. **الاستيرادات/التبعيات:**
-
-   * ثبّت/عدّل:
-
-     ```bash
-     pnpm -C frontend add sonner @tanstack/react-query drizzle-orm drizzle-zod framer-motion
-     ```
-   * صحّح كل استيراد خاطئ من `motion/react` إلى `framer-motion`.
-   * ثبّت مسارات alias في `tsconfig.json` (`@/*`, `@/components/ui/*` → `src/...`)، وعدّل أي استيراد نسبي مكسور.
-2. **exactOptionalPropertyTypes:** أصلِح الأنواع بدل تعديل `tsconfig`:
-
-   * كل prop/حقل اختياري يجب أن يُعرّف `prop?: T | undefined` ويُفحص قبل الاستخدام.
-3. **directors-studio & ui/components:**
-
-   * أزل أي استيراد غير مستخدم يكسِر البناء.
-   * إن كان `react-query` مطلوبًا: أنشئ `src/components/providers/query-provider.tsx` (Client) ولفِّ صفحات الاستوديو التي تستخدمه به فقط (لا تضعه في `layout` العام إن لم يكن ضروريًا).
-4. شغّل البناء:
+3. **تشغيل البناء حتى النجاح**:
 
    ```bash
    pnpm -C frontend build
    ```
 
-   **معيار قبول:** نجاح البناء دون أخطاء.
+   **معيار قبول:** نجاح بلا أخطاء TypeScript أو تحذيرات كاسرة. (التقرير السابق سجّل فشل build) 
 
-### 3) اختبارات E2E + لقطات شاشة لكل صفحة
+---
 
-1. أضِف Playwright (إن لم يكن مضافًا) وأعد تهيئته لتسجيل HAR ولقطات:
+## 2) إعداد وتشغيل اختبارات E2E (Playwright) مع أدلة
+
+1. **تهيئة Playwright** (إن لم يكن موجودًا بالكامل):
 
    ```bash
    pnpm -C frontend dlx playwright install
    ```
-2. أنشئ ملف `frontend/tests/e2e/pages.spec.ts`:
 
-   * افتح `/` وتحقّق من وجود 11 رابطًا.
-   * زر كل مسار من القائمة أعلاه.
-   * التقط لقطة شاشة لكل صفحة إلى:
-     `frontend/evidence/<DATE>/screens/<slug>.png`
-   * سجّل HAR:
-     `frontend/evidence/<DATE>/network/<slug>.har`
-3. شغّل الخادم محليًا (إن لزم على 5000 كما في التقرير) ثم:
+2. **اختبار تغطية الصفحات الـ 11**:
 
-   ```bash
-   pnpm -C frontend dev --port 5000 &
-   pnpm -C frontend e2e
-   ```
-4. **معيار قبول:** جميع الصفحات تُفتح بنجاح وتُحفظ لقطات شاشة وملفات HAR.
+   * أضف `tests/e2e/pages.spec.ts` لزيارة `/` ثم جميع المسارات المكتشفة من `src/config/pages.manifest.json`.
+   * التقط **لقطة شاشة** لكل صفحة إلى:
+     `frontend/evidence/<YYYY-MM-DD>/screens/<slug>.png`
+   * سجّل **HAR** لكل صفحة إلى:
+     `frontend/evidence/<YYYY-MM-DD>/network/<slug>.har`
 
-### 4) تحديث الأدلة والتقرير
+3. **سيناريوهات وظيفية قصيرة لكل صفحة** (خطوة تحقق دنيا):
 
-1. أكمل بنية الأدلة:
+   * `editor`: إنشاء/حفظ/إعادة فتح مستند قصير.
+   * `analysis`: تشغيل خط الأنابيب حتى محطة 7 على نص قصير (fixture).
+   * `development`: استيراد ناتج التحليل وإنشاء بطاقة تطوير.
+   * `brainstorm`: توليد 3 أفكار والاحتفاظ بها.
+   * `breakdown`: رفع ملف نصّي صغير واستخراج عناصر أولية.
+   * `ui`: تفاعل مكوّن أساسي (زر/حوار).
+   * `new`: إنشاء مشروع/مساحة جديدة وفق تدفق الصفحة.
+
+**معيار قبول:** نجاح `pnpm -C frontend e2e`، وإنشاء جميع لقطات الشاشة وملفات HAR المطلوبة (كان التقرير السابق يفتقدها). 
+
+---
+
+## 3) تحديث الصفحة الرئيسية + الـ Manifest (تحقق نهائي)
+
+* بما أن الوكيل أفاد بإظهار **11/11 صفحة**، أضف اختبارًا وحداتيًا بسيطًا يحمّل `pages.manifest.json` ويقارن العدّاد بـ 11، ويؤكد وجود الروابط على `/`.
+* احفظ ملف `pages-discovered.json` المُولّد ضمن:
+  `frontend/evidence/<YYYY-MM-DD>/logs/pages-discovered.json`
+
+**معيار قبول:** `/` تعرض روابط فعّالة لجميع الصفحات، وملف السجلّ محدث. (التقرير السابق أشار إلى 4/11؛ هذا يغلق الفجوة) 
+
+---
+
+## 4) تقرير وأدلة — تسليم رسمي
+
+1. **هيكل الأدلة**:
 
    ```
    frontend/evidence/<YYYY-MM-DD>/
-     logs/health.json
-     logs/pages-discovered.json
-     screens/*.png
-     network/*.har
+     logs/
+       health.json
+       pages-discovered.json
+     screens/
+       <11 لقطة>
+     network/
+       <11 ملف HAR>
    ```
-2. أنشئ/حدّث:
-   `frontend/RUN_REPORT_<YYYY-MM-DD>.md`
+2. **تقرير مُحدّث**:
+   أنشئ/حدّث `frontend/RUN_REPORT_<YYYY-MM-DD>.md` يتضمن:
 
-   * حدّث الجداول: كل صفحة = ✅ مع روابط الأدلة (screens/*, network/*).
-   * أدرج ملخص البناء: نجاح `pnpm build`.
-   * أدرج ملاحظات مختصرة حول أي تعديلات أنماط/أنواع.
+   * حالة Health + رابط سجلّاته.
+   * جدول الصفحات (11/11 ✅) مع روابط اللقطات/ملفات HAR.
+   * نتيجة `pnpm build` (✅).
+   * نتائج E2E والسيناريوهات المنفّذة.
+   * «قرار الدمج»: **جاهز** بلا تحفظات.
 
----
-
-## [تعريف الاكتمال (DoD)]
-
-* ✅ الصفحة الرئيسية تعرض **كل الصفحات الـ 11** كرابط فعّال.
-* ✅ `pnpm build` ينجح دون أخطاء.
-* ✅ Playwright يمرّ على كل صفحة ويولّد لقطات شاشة وHAR.
-* ✅ `RUN_REPORT_<DATE>.md` محدّث ويحتوي أدلة لكل صفحة.
-* ✅ لا تغييرات على صرامة TypeScript؛ تم إصلاح الأنواع بدل تخفيف القواعد.
+**معيار قبول:** وجود اللقطات وHAR في المسارات المذكورة (التقرير السابق ذكر غيابها). 
 
 ---
 
-## [تسليم ودمج]
+## 5) دمج وتشغيل حواجز CI
 
-1. ادفع التعديلات على نفس الفرع الحالي:
+* أضِف/ثبّت سكربتات `package.json` (إن لزم):
+
+  ```json
+  {
+    "scripts": {
+      "lint": "next lint",
+      "typecheck": "tsc -p tsconfig.json --noEmit",
+      "test": "vitest run",
+      "e2e": "playwright test",
+      "build": "next build",
+      "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm e2e"
+    }
+  }
+  ```
+* اربط pre-push (Husky) بـ `lint && typecheck && test && build`.
+
+**معيار قبول:** فشل الـ push عند أي كسر لنوعية الكود أو البناء.
+
+---
+
+## 6) تسليم فرعي وقرار دمج
+
+1. **تسليم:**
 
    ```bash
    git add -A
-   git commit -m "feat(frontend): expose all pages on Home, fix prod build, add E2E screenshots & HAR, update RUN_REPORT"
+   git commit -m "feat(frontend): fix strict TS in ai layer, add E2E with screenshots+HAR, update RUN_REPORT and evidence"
    git push
    ```
-2. علّق في الـ PR بملخص:
+2. **قرار الدمج** داخل PR:
 
-   * عدد الصفحات المعروضة: 11/11
-   * نجاح البناء: ✅
-   * موقع الأدلة: `frontend/evidence/<DATE>/`
-   * رابط التقرير المحدّث.
+   * Build: ✅
+   * Pages @ Home: ✅ 11/11
+   * E2E + أدلة: ✅
+   * **القرار**: جاهز للدمج إلى `main`.
 
-**نفّذ الآن.**
+---
+
+### ملاحظتان أخيرتان
+
+* إن ظهرت تبعيات مذكورة في التقرير السابق (مثل `sonner`, `framer-motion`, `@tanstack/react-query`) فتثبيتها/إزالتها يجب أن تُحسَم بالنظر إلى **الاستخدام الفعلي** فقط، لتقليل سطح التعقيد. 
+* تأكد أن هذا الفرع موجود وحالي على GitHub قبل فتح PR النهائي. ([GitHub][1])
+
+**نفّذ القائمة أعلاه الآن.**
+
+[1]: https://github.com/mohamedaminradyofficial/the-copy/tree/claude/complete-todo-items-011CUjh8vMgxjNXNnT1Ehdm8 "GitHub - mohamedaminradyofficial/the-copy at claude/complete-todo-items-011CUjh8vMgxjNXNnT1Ehdm8"
