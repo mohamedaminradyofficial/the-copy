@@ -1,20 +1,16 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import typescriptParser from '@typescript-eslint/parser';
-import typescriptPlugin from '@typescript-eslint/eslint-plugin';
-import importPlugin from 'eslint-plugin-import';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
+const typescriptParser = require('@typescript-eslint/parser');
+const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
+const importPlugin = require('eslint-plugin-import');
+const path = require('path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
 });
 
-export default [
+module.exports = [
   // Ignore patterns
   {
     ignores: [
@@ -31,7 +27,7 @@ export default [
     ],
   },
 
-  // Base configuration for all TypeScript/JavaScript files
+  // Base configuration
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     languageOptions: {
@@ -49,7 +45,7 @@ export default [
   // Extend Next.js and Prettier configs
   ...compat.extends('next/core-web-vitals', 'prettier'),
 
-  // TypeScript plugin configuration
+  // TypeScript plugin
   {
     files: ['**/*.ts', '**/*.tsx'],
     plugins: {
@@ -66,18 +62,7 @@ export default [
     },
   },
 
-  // Import plugin configuration - enforce named exports
-  {
-    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
-    plugins: {
-      import: importPlugin,
-    },
-    rules: {
-      'import/no-default-export': 'off', // Default off, will be enabled in next config
-    },
-  },
-
-  // Enforce named exports - disable default exports except in App Router files
+  // Named exports enforcement
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     plugins: {
@@ -87,7 +72,6 @@ export default [
       'import/no-default-export': 'error',
     },
     ignores: [
-      // App Router special files that MUST use default exports
       'src/app/**/page.tsx',
       'src/app/**/layout.tsx',
       'src/app/**/error.tsx',
@@ -96,7 +80,6 @@ export default [
       'src/app/**/template.tsx',
       'src/app/**/default.tsx',
       'src/app/**/route.ts',
-      // Other files that need default exports
       'src/middleware.ts',
       'src/**/middleware.ts',
     ],

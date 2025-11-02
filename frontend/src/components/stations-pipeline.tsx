@@ -424,4 +424,4 @@ const StationsPipeline = () => {
   );
 };
 
-export default StationsPipeline;
+export { StationsPipeline };
