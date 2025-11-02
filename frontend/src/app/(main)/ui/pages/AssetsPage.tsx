@@ -7,9 +7,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../components/ui/tabs";
+} from "@/components/ui/tabs";
 import { Upload, FolderOpen } from "lucide-react";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 export function AssetsPage() {
   const [hasAssets, setHasAssets] = useState(true);

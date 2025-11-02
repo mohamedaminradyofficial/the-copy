@@ -3,15 +3,15 @@ import { ExportHub } from "../components/ExportHub";
 import { TasksBoard } from "../components/TasksBoard";
 import { VersionsPanel } from "../components/VersionsPanel";
 import { RhythmMap } from "../components/RhythmMap";
-import { Card } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../components/ui/tabs";
+} from "@/components/ui/tabs";
 import {
   Lock,
   CheckCircle,
@@ -20,8 +20,8 @@ import {
   GitBranch,
   AlertCircle,
 } from "lucide-react";
-import { motion } from "motion/react";
-import { toast } from "sonner@2.0.3";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface DevelopmentPageProps {
   isUnlocked?: boolean;

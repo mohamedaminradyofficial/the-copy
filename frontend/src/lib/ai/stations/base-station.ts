@@ -309,11 +309,11 @@ export abstract class BaseStation {
       agentsUsed: this.getAgentsUsed(),
       tokensUsed: this.estimateTokensUsed(input.text),
       options: {
-        constitutionalCheck: options.enableConstitutionalCheck,
-        uncertaintyQuantification: options.enableUncertaintyQuantification,
-        rag: options.enableRAG,
-        temperature: options.temperature,
-        maxTokens: options.maxTokens,
+        ...(options.enableConstitutionalCheck !== undefined && { constitutionalCheck: options.enableConstitutionalCheck }),
+        ...(options.enableUncertaintyQuantification !== undefined && { uncertaintyQuantification: options.enableUncertaintyQuantification }),
+        ...(options.enableRAG !== undefined && { rag: options.enableRAG }),
+        ...(options.temperature !== undefined && { temperature: options.temperature }),
+        ...(options.maxTokens !== undefined && { maxTokens: options.maxTokens }),
       },
       ragInfo:
         options.enableRAG && input.chunks

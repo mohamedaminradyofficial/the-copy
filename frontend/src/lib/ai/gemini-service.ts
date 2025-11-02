@@ -131,12 +131,17 @@ export class GeminiService {
     } = {}
   ): Promise<string> {
     try {
-      const response = await this.generate<string>({
+      const requestParams: any = {
         prompt,
         temperature: options.temperature ?? 0.4,
         maxTokens: options.maxTokens ?? 4096,
-        systemInstruction: options.systemInstruction,
-      });
+      };
+
+      if (options.systemInstruction !== undefined) {
+        requestParams.systemInstruction = options.systemInstruction;
+      }
+
+      const response = await this.generate<string>(requestParams);
 
       // إذا كان المحتوى كائناً به خاصية raw، نستخرجها
       if (
@@ -144,7 +149,7 @@ export class GeminiService {
         response.content !== null &&
         "raw" in response.content
       ) {
-        return response.content.raw as string;
+        return (response.content as any).raw as string;
       }
 
       // خلاف ذلك، نحاول تحويله إلى نص

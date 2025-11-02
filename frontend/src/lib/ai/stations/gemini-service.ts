@@ -399,7 +399,7 @@ export class GeminiService {
       (this.config.requestsPerMinute ?? 60)
     ) {
       const oldestRequest = this.rateLimitState.requests[0];
-      const waitTime = this.RATE_LIMIT_WINDOW - (now - oldestRequest);
+      const waitTime = oldestRequest ? this.RATE_LIMIT_WINDOW - (now - oldestRequest) : 0;
 
       logger.warn(`[GeminiService] Rate limit reached. Waiting ${waitTime}ms`, {
         requestsInWindow: this.rateLimitState.requests.length,

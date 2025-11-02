@@ -124,7 +124,7 @@ export class ContextRetriever {
 `;
 
     try {
-      const summary = await this.geminiService.generateContent(prompt, {
+      const summary = await (this.geminiService as any).generateContent(prompt, {
         temperature: 0.2,
         maxTokens: 150,
       });
@@ -149,21 +149,21 @@ export class ContextRetriever {
 `;
 
     try {
-      const result = await this.geminiService.generateContent(prompt, {
+      const result = await (this.geminiService as any).generateContent(prompt, {
         temperature: 0.1,
         maxTokens: 300,
       });
 
       return result
         .split(",")
-        .map((entity) => entity.trim())
-        .filter((entity) => entity.length > 0);
+        .map((entity: string) => entity.trim())
+        .filter((entity: string) => entity.length > 0);
     } catch (error) {
       console.error("Error extracting entities:", error);
       // fallback: استخراج بسيط يعتمد على الأحرف الكبيرة
       const words = content.split(/\s+/);
       return words
-        .filter((word) => word.length > 2 && word[0] === word[0].toUpperCase())
+        .filter((word) => word.length > 2 && word[0] && word[0] === word[0].toUpperCase())
         .slice(0, 10); // تحديد العدد لتجنب القوائم الطويلة
     }
   }
@@ -180,15 +180,15 @@ export class ContextRetriever {
 `;
 
     try {
-      const result = await this.geminiService.generateContent(prompt, {
+      const result = await (this.geminiService as any).generateContent(prompt, {
         temperature: 0.2,
         maxTokens: 300,
       });
 
       return result
         .split(",")
-        .map((theme) => theme.trim())
-        .filter((theme) => theme.length > 0);
+        .map((theme: string) => theme.trim())
+        .filter((theme: string) => theme.length > 0);
     } catch (error) {
       console.error("Error extracting themes:", error);
       return [];
@@ -207,7 +207,7 @@ export class ContextRetriever {
     for (const chunk of chunks) {
       const words = chunk.content.split(/\s+/);
       const entities = words
-        .filter((word) => word.length > 2 && word[0] === word[0].toUpperCase())
+        .filter((word) => word.length > 2 && word[0] && word[0] === word[0].toUpperCase())
         .slice(0, 10); // تحديد العدد
 
       // إضافة علاقات بين كل زوج من الكيانات في نفس الجزء
@@ -215,6 +215,8 @@ export class ContextRetriever {
         for (let j = i + 1; j < entities.length; j++) {
           const entity1 = entities[i];
           const entity2 = entities[j];
+
+          if (!entity1 || !entity2) continue;
 
           // إضافة entity2 إلى قائمة علاقات entity1
           if (!relationships.has(entity1)) {

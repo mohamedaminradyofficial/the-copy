@@ -1,6 +1,7 @@
 // lib/ai/core/base-station.ts
 
 import { getGeminiService } from "../gemini-service";
+import type { GeminiService } from "../stations/gemini-service";
 import {
   checkConstitutionalCompliance,
   ConstitutionalCheckResult,
@@ -87,7 +88,7 @@ export abstract class BaseSystem {
   constructor(systemName: string, systemType: string) {
     this.systemName = systemName;
     this.systemType = systemType;
-    this.geminiService = getGeminiService();
+    this.geminiService = getGeminiService() as any;
   }
 
   /**

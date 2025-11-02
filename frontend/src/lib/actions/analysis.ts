@@ -46,7 +46,7 @@ export async function runFullPipeline(
   });
 
   try {
-    const result = await pipeline.runFullAnalysis(validatedInput);
+    const result = await pipeline.runFullAnalysis(validatedInput) as any;
 
     // تحويل Maps إلى objects عادية للتسلسل
     const serializedResult = {
