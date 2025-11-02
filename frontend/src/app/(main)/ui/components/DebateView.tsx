@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import {
   MessageSquare,
   User,
@@ -7,10 +7,10 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ScrollArea } from "./ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DebateTurn {
   id: string;
@@ -213,7 +213,7 @@ export function DebateView({
             عرض المناظرة - حسب الوكيل
           </h3>
         </div>
-        <Tabs defaultValue={agents[0]} dir="rtl">
+        <Tabs {...(agents[0] && { defaultValue: agents[0] })} dir="rtl">
           <TabsList className="w-full justify-start border-b border-[var(--color-surface)] bg-transparent rounded-none">
             {agents.map((agent) => (
               <TabsTrigger

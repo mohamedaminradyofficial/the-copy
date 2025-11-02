@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Network, Filter, Play, AlertCircle } from "lucide-react";
-import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "@/components/ui/select";
 
 interface GraphNode {
   id: string;
@@ -268,7 +268,6 @@ export function CausalPlotGraph({
                   fill="var(--color-text)"
                   fontSize="12"
                   className="pointer-events-none select-none"
-                  dir="rtl"
                 >
                   {node.label}
                 </text>

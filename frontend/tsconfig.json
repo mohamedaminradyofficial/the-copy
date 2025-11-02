@@ -27,7 +27,8 @@
       "@services/*": ["./src/lib/drama-analyst/services/*"],
       "@orchestration/*": ["./src/lib/drama-analyst/orchestration/*"],
       "@ui/*": ["./src/lib/drama-analyst/ui/*"],
-      "@agents/*": ["./src/lib/drama-analyst/agents/*"]
+      "@agents/*": ["./src/lib/drama-analyst/agents/*"],
+      "@shared/*": ["./src/app/(main)/directors-studio/shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

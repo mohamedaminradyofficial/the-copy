@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, Upload, Download, Sparkles } from "lucide-react";
-import { ScriptUploadZone } from "../components/ScriptUploadZone";
+import ScriptUploadZone from "../components/ScriptUploadZone";
 import type { Project } from "../shared/schema";
 
 export default function ScriptPage() {
@@ -163,9 +163,7 @@ export default function ScriptPage() {
               <CardTitle className="text-lg">رفع ملف</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScriptUploadZone
-                onUpload={(content) => setScriptContent(content)}
-              />
+              <ScriptUploadZone />
             </CardContent>
           </Card>
 

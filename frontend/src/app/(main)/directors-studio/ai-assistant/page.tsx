@@ -1,6 +1,6 @@
 "use client";
 
-import { AIChatPanel } from "../components/AIChatPanel";
+import AIChatPanel from "../components/AIChatPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bot, Sparkles, Film, Users } from "lucide-react";
 

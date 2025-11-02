@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Activity } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from "@/components/ui/tooltip";
 
 interface RhythmData {
   sceneId: string;
