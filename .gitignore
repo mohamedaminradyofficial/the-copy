@@ -86,3 +86,19 @@ uploads/
 
 # User-specific
 /home/user/the-copy-/.kilocode/mcp.json
+
+# Security - Never commit these files
+**/secrets.yml
+**/secrets.yaml
+**/.secrets
+**/credentials.json
+**/token.txt
+**/*token*
+**/*secret*
+**/*password*
+**/*key*.pem
+**/*key*.key
+
+# User conversation logs that might contain sensitive data
+## User.md
+**/User.md
