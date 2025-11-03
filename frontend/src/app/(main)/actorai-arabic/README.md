@@ -122,7 +122,7 @@ All components follow the project's design tokens and theming system.
 
 The application is built with RTL (Right-to-Left) support in mind, though the current implementation is in English. RTL can be enabled by:
 
-2. Using Tailwind's RTL utilities (e.g., `space-x-reverse`)
+- Using Tailwind's RTL utilities (e.g., `space-x-reverse`)
 
 ## Development Guidelines
 

@@ -71,20 +71,20 @@ cd frontend
 pnpm install
 ```
 
-2. Set up environment variables:
+### Set up environment variables
 
 ```bash
 # Create .env.local in frontend directory
 GEMINI_API_KEY=your_api_key_here
 ```
 
-3. Run development server:
+### Run development server
 
 ```bash
 pnpm dev
 ```
 
-4. Access the page at: `http://localhost:3000/arabic-creative-writing-studio`
+#### Access the page at: `http://localhost:3000/arabic-creative-writing-studio`
 
 ### Building
 

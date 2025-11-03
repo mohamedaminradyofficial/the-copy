@@ -602,14 +602,33 @@ class ConflictInferenceEngine {
     ];
 
     for (const pattern of conflictPatterns) {
-      const patternConflicts = this.extractConflictsFromPattern(
-        pattern,
-        text,
-        characters,
-        charNameToId
-      );
-      conflicts.push(...patternConflicts);
-    }
+      let match;
+      while (true) {
+        match = pattern.exec(text);
+        if (match === null) {
+          break;
+        }
+        let conflictName, involvedChars, conflictDesc;
+
+        if (match.length === 4) {
+          // النمط الأول: صراع [اسم] بين [شخصية1] و [شخصية2]
+          conflictName = match[1]?.trim() ?? "صراع غير مسمى";
+          involvedChars = [match[2]?.trim() ?? "", match[3]?.trim() ?? ""];
+          conflictDesc = `صراع ${conflictName} بين ${involvedChars.join(" و ")}`;
+        } else if (match.length === 3) {
+          // النمط الثاني: [شخصية] يواجه [مشكلة]
+          conflictName = `صراع ${match[1]?.trim()}`;
+          involvedChars = [match[1]?.trim() ?? ""];
+          conflictDesc = match[2]?.trim() ?? "";
+        } else {
+          // النمط الثالث: الصراع الرئيسي هو [وصف]
+          conflictName = "الصراع الرئيسي";
+          conflictDesc = match[1]?.trim() ?? "";
+          involvedChars = this.extractCharactersFromDescription(
+            conflictDesc,
+            characters
+          );
+        }
 
     return conflicts;
   }

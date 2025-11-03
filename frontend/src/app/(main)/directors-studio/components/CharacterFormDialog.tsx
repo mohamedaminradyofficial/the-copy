@@ -50,8 +50,8 @@ export default function CharacterFormDialog({
     setFormData(mapCharacterToFormData(character));
   }, [character, open]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (_e: React.FormEvent) => {
+    _e.preventDefault();
 
     if (!formData.name) {
       toast({
