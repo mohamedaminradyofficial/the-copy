@@ -1,5 +1,11 @@
 # Security Scan Report
 
+> **Status:** Locked reference copy. Changes require written approval from the Security Owner.
+> **Locked At:** 2025-11-03 11:11:03 UTC (scan timestamp).
+> **Security Board:** `Security Remediation Board` (GitHub Projects) with columns Critical Fixes / High / Medium / To Verify / Done.
+> **Ticketization:** All 103 findings are tracked individually below and must remain synchronized with the board.
+> **Merge Policy:** Security CI gate is mandatory; pull requests failing the workflow cannot be merged (see `SECURITY.md`).
+
 *Generated on 2025-11-03 11:11:03 UTC*
 
 ## Overview
