@@ -1,6 +1,7 @@
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import express from 'express';
+import helmet from 'helmet';
 import { z } from 'zod';
 import { logger } from '@/utils/logger';
 
@@ -57,6 +58,7 @@ server.registerResource(
 
 // Set up Express and HTTP transport
 const app = express();
+app.use(helmet());
 app.use(express.json());
 
 app.post('/mcp', async (req, res) => {
