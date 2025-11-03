@@ -22,7 +22,7 @@ Successfully applied all Codacy formatting fixes from both patches:
 - ✅ **0 functional** changes
 - ✅ **1 commit** made (570e3b0)
 
-**Total: 13 files modified, 37 lines changed, 5 commits**
+### Total: 13 files modified, 37 lines changed, 5 commits
 
 ## Commits Applied
 

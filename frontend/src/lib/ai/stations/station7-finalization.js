@@ -833,19 +833,19 @@ ${finalReport.rewritingSuggestions
       const trimmed = line.trim();
       if (trimmed.includes("التأثير العاطفي")) {
         const match = trimmed.match(/(\d+)/);
-        if (match) result.emotionalImpact = parseInt(match[1]);
+        if (match) result.emotionalImpact = parseInt(match[1], 10);
       } else if (trimmed.includes("التفاعل الفكري")) {
         const match = trimmed.match(/(\d+)/);
-        if (match) result.intellectualEngagement = parseInt(match[1]);
+        if (match) result.intellectualEngagement = parseInt(match[1], 10);
       } else if (trimmed.includes("القابلية للارتباط")) {
         const match = trimmed.match(/(\d+)/);
-        if (match) result.relatability = parseInt(match[1]);
+        if (match) result.relatability = parseInt(match[1], 10);
       } else if (trimmed.includes("قابلية التذكر")) {
         const match = trimmed.match(/(\d+)/);
-        if (match) result.memorability = parseInt(match[1]);
+        if (match) result.memorability = parseInt(match[1], 10);
       } else if (trimmed.includes("الإمكانات الفيروسية")) {
         const match = trimmed.match(/(\d+)/);
-        if (match) result.viralPotential = parseInt(match[1]);
+        if (match) result.viralPotential = parseInt(match[1], 10);
       } else if (trimmed.includes("الاستجابة الأولية")) {
         currentSection = "primary";
       } else if (trimmed.includes("الاستجابات الثانوية")) {
@@ -889,7 +889,7 @@ ${finalReport.rewritingSuggestions
           suggestion.reasoning = line.split("التبرير:")[1].trim();
         } else if (line.includes("التأثير:")) {
           const match = line.match(/(\d+)/);
-          if (match) suggestion.impact = parseInt(match[1]);
+          if (match) suggestion.impact = parseInt(match[1], 10);
         } else if (line.includes("الأولوية:")) {
           const priority = line.split("الأولوية:")[1].trim().toLowerCase();
           if (priority.includes("must")) suggestion.priority = "must";
