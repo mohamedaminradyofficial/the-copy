@@ -2,6 +2,39 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import FileUpload from "@/components/file-upload";
 import {
+  handleTabKey,
+  handleEnterKey,
+  createShortcutHandlers,
+  executeShortcut,
+  type ScreenplayFormat as KeyboardScreenplayFormat,
+  type FormatAction,
+} from "./keyboard-handlers";
+import {
+  processBlankLine,
+  processBasmalaLine,
+  processTransitionLine,
+  processCharacterLine,
+  processParentheticalLine,
+  processActionLine,
+  processDialogueLine,
+  processSceneHeaderLine,
+  isActionDescription,
+  applyContextUpdates,
+  matchesBulletCharacterPattern,
+  shouldConvertDialogueToAction,
+  processBulletCharacterPattern,
+  convertDialogueToAction,
+  type LineProcessingContext,
+  type LineProcessingResult,
+} from "./paste-handlers";
+import {
+  startsWithActionPattern,
+  containsActionIndicator,
+  hasActionWithPunctuation,
+  isLongLineWithAction,
+} from "./action-classifiers";
+import * as CharacterLineDetector from "./utils/character-line-detector";
+import {
   Sparkles,
   X,
   Loader2,
@@ -182,6 +215,7 @@ class ScreenplayClassifier {
     line: string,
     context?: { lastFormat: string; isInDialogueBlock: boolean }
   ): boolean {
+    // Early exits for non-character lines
     if (
       ScreenplayClassifier.isSceneHeaderStart(line) ||
       ScreenplayClassifier.isTransition(line) ||
@@ -190,68 +224,35 @@ class ScreenplayClassifier {
       return false;
     }
 
-    const wordCount = ScreenplayClassifier.wordCount(line);
-    // Allow slightly longer character lines for Arabic names
-    if (wordCount > 7) return false;
+    // Word count check
+    if (ScreenplayClassifier.wordCount(line) > 7) return false;
 
+    // Action verb check
     const normalized = ScreenplayClassifier.normalizeLine(line);
-    // If it starts with an action verb, it's not a character line
     if (ScreenplayClassifier.ACTION_VERBS.test(normalized)) return false;
 
-    // Enhanced character line detection for Arabic
-    // Check if line ends with a colon (common in Arabic screenplays)
     const hasColon = line.includes(":");
 
-    // Special handling for Arabic character names that might not follow Western patterns
-    const arabicCharacterPattern =
-      /^[\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+[:\s]*$/;
-
-    // If it ends with a colon, it's very likely a character line
-    if (hasColon && line.trim().endsWith(":")) {
-      return true;
+    // Apply context-aware checks first
+    const contextResult = CharacterLineDetector.applyContextChecks(
+      line,
+      ScreenplayClassifier.CHARACTER_RE,
+      hasColon,
+      context
+    );
+    if (contextResult !== null) {
+      return contextResult;
     }
 
-    // If it matches Arabic character pattern, it's likely a character line
-    if (arabicCharacterPattern.test(line)) {
-      return true;
-    }
-
-    // If it doesn't have a colon and doesn't match character patterns, it's likely action
-    if (!hasColon) return false;
-
-    // Context-aware checks
-    if (context) {
-      // If we're already in a dialogue block, this might be a new character
-      if (context.isInDialogueBlock) {
-        // If the last line was also a character, this is likely a new character
-        if (context.lastFormat === "character") {
-          return (
-            ScreenplayClassifier.CHARACTER_RE.test(line) ||
-            arabicCharacterPattern.test(line)
-          );
-        }
-        // If the last line was dialogue, this is probably not a character
-        if (context.lastFormat === "dialogue") {
-          return false;
-        }
-      }
-
-      // If the last format was action, and this line has a colon, it's likely a character
-      if (context.lastFormat === "action" && hasColon) {
-        return (
-          ScreenplayClassifier.CHARACTER_RE.test(line) ||
-          arabicCharacterPattern.test(line)
-        );
-      }
-    }
-
-    return (
-      ScreenplayClassifier.CHARACTER_RE.test(line) ||
-      arabicCharacterPattern.test(line)
+    // Fall back to basic checks
+    return CharacterLineDetector.isCharacterLineBasic(
+      line,
+      ScreenplayClassifier.CHARACTER_RE
     );
   }
 
   static isLikelyAction(line: string): boolean {
+    // Early return for non-action types
     if (
       ScreenplayClassifier.isBlank(line) ||
       ScreenplayClassifier.isBasmala(line) ||
@@ -263,470 +264,26 @@ class ScreenplayClassifier {
       return false;
     }
 
-    // Additional checks for action lines
     const normalized = ScreenplayClassifier.normalizeLine(line);
 
-    // Check if line starts with an action description pattern
-    // These are strong indicators of action lines
-    const actionStartPatterns = [
-      /^\s*[-–—]?\s*(?:نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|تظهر)/,
-      /^\s*[-–—]?\s*[ي|ت][\u0600-\u06FF]+\s+(?:[^\s\u0600-\u06FF]*\s*)*[^\s\u0600-\u06FF]/, // Verbs starting with ي or ت followed by other words
-    ];
-
-    for (const pattern of actionStartPatterns) {
-      if (pattern.test(line)) {
-        return true;
-      }
+    // Check action patterns
+    if (startsWithActionPattern(line)) {
+      return true;
     }
 
-    // Enhanced action detection for Arabic
-    // Check if line starts with an action verb
+    // Check action verbs
     if (ScreenplayClassifier.ACTION_VERBS.test(normalized)) {
       return true;
     }
 
-    // If it has sentence punctuation and no colon, it might be action
-    // But we need to be more careful to avoid misclassifying dialogue
-    if (
-      ScreenplayClassifier.hasSentencePunctuation(line) &&
-      !line.includes(":")
-    ) {
-      // Check if it contains action indicators
-      const actionIndicators = [
-        "يدخل",
-        "يخرج",
-        "ينظر",
-        "يرفع",
-        "تبتسم",
-        "ترقد",
-        "تقف",
-        "يبسم",
-        "يضع",
-        "تنظر",
-        "تربت",
-        "تقوم",
-        "يشق",
-        "تشق",
-        "تضرب",
-        "يسحب",
-        "يلتفت",
-        "يقف",
-        "يجلس",
-        "تجلس",
-        "يجري",
-        "تجري",
-        "يمشي",
-        "تمشي",
-        "يركض",
-        "تركض",
-        "يصرخ",
-        "اصرخ",
-        "يبكي",
-        "تبكي",
-        "يضحك",
-        "تضحك",
-        "يغني",
-        "تغني",
-        "يرقص",
-        "ترقص",
-        "يأكل",
-        "تأكل",
-        "يشرب",
-        "تشرب",
-        "ينام",
-        "تنام",
-        "يستيقظ",
-        "تستيقظ",
-        "يكتب",
-        "تكتب",
-        "يقرأ",
-        "تقرأ",
-        "يسمع",
-        "تسمع",
-        "يشم",
-        "تشم",
-        "يلمس",
-        "تلمس",
-        "يأخذ",
-        "تأخذ",
-        "يعطي",
-        "تعطي",
-        "يفتح",
-        "تفتح",
-        "يغلق",
-        "تغلق",
-        "يبدأ",
-        "تبدأ",
-        "ينتهي",
-        "تنتهي",
-        "يذهب",
-        "تذهب",
-        "يعود",
-        "تعود",
-        "يأتي",
-        "تأتي",
-        "يموت",
-        "تموت",
-        "يحيا",
-        "تحيا",
-        "يقاتل",
-        "تقاتل",
-        "ينصر",
-        "تنتصر",
-        "يخسر",
-        "تخسر",
-        "يرسم",
-        "ترسم",
-        "يصمم",
-        "تخطط",
-        "يقرر",
-        "تقرر",
-        "يفكر",
-        "تفكر",
-        "يتذكر",
-        "تذكر",
-        "يحاول",
-        "تحاول",
-        "يستطيع",
-        "تستطيع",
-        "يريد",
-        "تريد",
-        "يحتاج",
-        "تحتاج",
-        "يبحث",
-        "تبحث",
-        "يجد",
-        "تجد",
-        "يفقد",
-        "تفقد",
-        "يحمي",
-        "تحمي",
-        "يراقب",
-        "تراقب",
-        "يخفي",
-        "تخفي",
-        "يكشف",
-        "تكشف",
-        "يكتشف",
-        "تكتشف",
-        "يعرف",
-        "تعرف",
-        "يتعلم",
-        "تعلن",
-        "يعلم",
-        "تعلن",
-        "يوجه",
-        "توجه",
-        "يسافر",
-        "تسافر",
-        "يرحل",
-        "ترحل",
-        "يبقى",
-        "تبقى",
-        "ينتقل",
-        "تنتقل",
-        "يتغير",
-        "تتغير",
-        "ينمو",
-        "تنمو",
-        "يتطور",
-        "تتطور",
-        "يواجه",
-        "تواجه",
-        "يحل",
-        "تحل",
-        "يفشل",
-        "تفشل",
-        "ينجح",
-        "تنجح",
-        "يحقق",
-        "تحقن",
-        "يوقف",
-        "توقف",
-        "ينقطع",
-        "تنقطع",
-        "يرتبط",
-        "ترتبط",
-        "ينفصل",
-        "تنفصل",
-        "يتزوج",
-        "تتزوج",
-        "يطلق",
-        "يولد",
-        "تولد",
-        "يكبر",
-        "تكبر",
-        "يشيخ",
-        "تشيخ",
-        "يمرض",
-        "تمرض",
-        "يشفي",
-        "تشفي",
-        "يصاب",
-        "تصيب",
-        "يتعافى",
-        "تعافي",
-        "يقتل",
-        "تقتل",
-        "يُقتل",
-        "تُقتل",
-        "يختفي",
-        "تختفي",
-        "يظهر",
-        "تظهر",
-        "يختبئ",
-        "تخبوء",
-        "يطلب",
-        "تطلب",
-        "يامر",
-        "تأمر",
-        "يمنع",
-        "تمنع",
-        "يسمح",
-        "تسمح",
-        "يوافق",
-        "توافق",
-        "يرفض",
-        "ترفض",
-        "يعتذر",
-        "تعتذر",
-        "يغفر",
-        "يحب",
-        "تحب",
-        "يبغض",
-        "يكره",
-        "يحسد",
-        "تحسد",
-        "يغبط",
-        "تعجب",
-      ];
-
-      for (const indicator of actionIndicators) {
-        if (normalized.includes(indicator)) {
-          return true;
-        }
-      }
-
-      // If it doesn't contain action indicators, it's likely dialogue
-      return false;
+    // Check action indicators with punctuation
+    if (hasActionWithPunctuation(line, normalized, ScreenplayClassifier.hasSentencePunctuation)) {
+      return true;
     }
 
-    // If it's a longer sentence (more than 5 words) without character formatting and contains action verbs, it's likely action
-    if (ScreenplayClassifier.wordCount(line) > 5 && !line.includes(":")) {
-      const actionIndicators = [
-        "يدخل",
-        "يخرج",
-        "ينظر",
-        "يرفع",
-        "تبتسم",
-        "ترقد",
-        "تقف",
-        "يبسم",
-        "يضع",
-        "تنظر",
-        "تربت",
-        "تقوم",
-        "يشق",
-        "تشق",
-        "تضرب",
-        "يسحب",
-        "يلتفت",
-        "يقف",
-        "يجلس",
-        "تجلس",
-        "يجري",
-        "تجري",
-        "يمشي",
-        "تمشي",
-        "يركض",
-        "تركض",
-        "يصرخ",
-        "اصرخ",
-        "يبكي",
-        "تبكي",
-        "يضحك",
-        "تضحك",
-        "يغني",
-        "تغني",
-        "يرقص",
-        "ترقص",
-        "يأكل",
-        "تأكل",
-        "يشرب",
-        "تشرب",
-        "ينام",
-        "تنام",
-        "يستيقظ",
-        "تستيقظ",
-        "يكتب",
-        "تكتب",
-        "يقرأ",
-        "تقرأ",
-        "يسمع",
-        "تسمع",
-        "يشم",
-        "تشم",
-        "يلمس",
-        "تلمس",
-        "يأخذ",
-        "تأخذ",
-        "يعطي",
-        "تعطي",
-        "يفتح",
-        "تفتح",
-        "يغلق",
-        "تغلق",
-        "يبدأ",
-        "تبدأ",
-        "ينتهي",
-        "تنتهي",
-        "يذهب",
-        "تذهب",
-        "يعود",
-        "تعود",
-        "يأتي",
-        "تأتي",
-        "يموت",
-        "تموت",
-        "يحيا",
-        "تحيا",
-        "يقاتل",
-        "تقاتل",
-        "ينصر",
-        "تنتصر",
-        "يخسر",
-        "تخسر",
-        "يرسم",
-        "ترسم",
-        "يصمم",
-        "تخطط",
-        "يقرر",
-        "تقرر",
-        "يفكر",
-        "تفكر",
-        "يتذكر",
-        "تذكر",
-        "يحاول",
-        "تحاول",
-        "يستطيع",
-        "تستطيع",
-        "يريد",
-        "تريد",
-        "يحتاج",
-        "تحتاج",
-        "يبحث",
-        "تبحث",
-        "يجد",
-        "تجد",
-        "يفقد",
-        "تفقد",
-        "يحمي",
-        "تحمي",
-        "يراقب",
-        "تراقب",
-        "يخفي",
-        "تخفي",
-        "يكشف",
-        "تكشف",
-        "يكتشف",
-        "تكتشف",
-        "يعرف",
-        "تعرف",
-        "يتعلم",
-        "تعلن",
-        "يعلم",
-        "تعلن",
-        "يوجه",
-        "توجه",
-        "يسافر",
-        "تسافر",
-        "يرحل",
-        "ترحل",
-        "يبقى",
-        "تبقى",
-        "ينتقل",
-        "تنتقل",
-        "يتغير",
-        "تتغير",
-        "ينمو",
-        "تنمو",
-        "يتطور",
-        "تتطور",
-        "يواجه",
-        "تواجه",
-        "يحل",
-        "تحل",
-        "يفشل",
-        "تفشل",
-        "ينجح",
-        "تنجح",
-        "يحقق",
-        "تحقن",
-        "يوقف",
-        "توقف",
-        "ينقطع",
-        "تنقطع",
-        "يرتبط",
-        "ترتبط",
-        "ينفصل",
-        "تنفصل",
-        "يتزوج",
-        "تتزوج",
-        "يطلق",
-        "يولد",
-        "تولد",
-        "يكبر",
-        "تكبر",
-        "يشيخ",
-        "تشيخ",
-        "يمرض",
-        "تمرض",
-        "يشفي",
-        "تشفي",
-        "يصاب",
-        "تصيب",
-        "يتعافى",
-        "تعافي",
-        "يقتل",
-        "تقتل",
-        "يُقتل",
-        "تُقتل",
-        "يختفي",
-        "تختفي",
-        "يظهر",
-        "تظهر",
-        "يختبئ",
-        "تخبوء",
-        "يطلب",
-        "تطلب",
-        "يامر",
-        "تأمر",
-        "يمنع",
-        "تمنع",
-        "يسمح",
-        "تسمح",
-        "يوافق",
-        "توافق",
-        "يرفض",
-        "ترفض",
-        "يعتذر",
-        "تعتذر",
-        "يغفر",
-        "يحب",
-        "تحب",
-        "يبغض",
-        "يكره",
-        "يحسد",
-        "تحسد",
-        "يغبط",
-        "تعجب",
-      ];
-
-      for (const indicator of actionIndicators) {
-        if (normalized.includes(indicator)) {
-          return true;
-        }
-      }
+    // Check long lines with action indicators
+    if (isLongLineWithAction(line, normalized, ScreenplayClassifier.wordCount)) {
+      return true;
     }
 
     return false;
@@ -977,86 +534,34 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   // Handle key down
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Tab") {
-      e.preventDefault();
-      const nextFormat =
-        getNextFormatOnTab(currentFormat, e.shiftKey) || "action";
-      applyFormatToCurrentLine(nextFormat);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const nextFormat = getNextFormatOnEnter(currentFormat) || "action";
-      applyFormatToCurrentLine(nextFormat);
-    } else if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case "b":
-        case "B":
-          e.preventDefault();
-          formatText("bold");
-          break;
-        case "i":
-        case "I":
-          e.preventDefault();
-          formatText("italic");
-          break;
-        case "u":
-        case "U":
-          e.preventDefault();
-          formatText("underline");
-          break;
-        case "z":
-        case "Z":
-          e.preventDefault();
-          formatText("undo");
-          break;
-        case "y":
-        case "Y":
-          e.preventDefault();
-          formatText("redo");
-          break;
-        case "s":
-        case "S":
-          e.preventDefault();
-          console.log("Save functionality would go here");
-          break;
-        case "f":
-        case "F":
-          e.preventDefault();
-          setShowSearchDialog(true);
-          break;
-        case "h":
-        case "H":
-          e.preventDefault();
-          setShowReplaceDialog(true);
-          break;
-        case "a":
-        case "A":
-          e.preventDefault();
-          formatText("selectAll");
-          break;
-        case "p":
-        case "P":
-          e.preventDefault();
-          formatText("print");
-          break;
-        case "1":
-          e.preventDefault();
-          applyFormatToCurrentLine("scene-header-top-line");
-          break;
-        case "2":
-          e.preventDefault();
-          applyFormatToCurrentLine("character");
-          break;
-        case "3":
-          e.preventDefault();
-          applyFormatToCurrentLine("dialogue");
-          break;
-        case "4":
-          e.preventDefault();
-          applyFormatToCurrentLine("action");
-          break;
-        case "6":
-          e.preventDefault();
-          applyFormatToCurrentLine("transition");
-          break;
+      handleTabKey(
+        e,
+        currentFormat as KeyboardScreenplayFormat,
+        getNextFormatOnTab,
+        applyFormatToCurrentLine
+      );
+      return;
+    }
+
+    if (e.key === "Enter") {
+      handleEnterKey(
+        e,
+        currentFormat as KeyboardScreenplayFormat,
+        getNextFormatOnEnter,
+        applyFormatToCurrentLine
+      );
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      const shortcuts = createShortcutHandlers(
+        formatText as (action: FormatAction) => void,
+        applyFormatToCurrentLine,
+        setShowSearchDialog,
+        setShowReplaceDialog
+      );
+      if (executeShortcut(e.key, shortcuts)) {
+        e.preventDefault();
       }
     }
   };
@@ -1150,188 +655,122 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   };
 
   // Handle paste
+  /**
+   * Process a single line during paste operation
+   */
+  const processLine = (
+    line: string,
+    context: LineProcessingContext,
+    currentCharacter: string,
+    ctx: { inDialogue: boolean }
+  ): LineProcessingResult | null => {
+    // Blank line
+    if (ScreenplayClassifier.isBlank(line)) {
+      return processBlankLine();
+    }
+
+    // Basmala
+    if (ScreenplayClassifier.isBasmala(line)) {
+      return processBasmalaLine(line);
+    }
+
+    // Scene header (complex)
+    const sceneHeaderMatch = line.trim().match(/^(مشهد\s*\d+)\s*[-–—:،]?\s*(.*)$/i);
+    if (sceneHeaderMatch) {
+      const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
+      const processed = processSceneHeaderLine(line, ctx, sceneHeaderResult);
+      if (processed) return processed;
+    }
+
+    // Scene header (simple)
+    const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
+    const processed = processSceneHeaderLine(line, ctx, sceneHeaderResult);
+    if (processed) return processed;
+
+    // Transition
+    if (ScreenplayClassifier.isTransition(line)) {
+      return processTransitionLine(line);
+    }
+
+    // Character line
+    if (ScreenplayClassifier.isCharacterLine(line, context)) {
+      return processCharacterLine(line);
+    }
+
+    // Parenthetical
+    if (ScreenplayClassifier.isParenShaped(line)) {
+      return processParentheticalLine(line);
+    }
+
+    // Dialogue or action after character
+    if (currentCharacter && !line.includes(":")) {
+      if (ScreenplayClassifier.isLikelyAction(line) || isActionDescription(line)) {
+        return processActionLine(line);
+      }
+      return processDialogueLine(line);
+    }
+
+    // Action line
+    if (ScreenplayClassifier.isLikelyAction(line)) {
+      return processActionLine(line);
+    }
+
+    // Fallback to action
+    return processActionLine(line);
+  };
+
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const clipboardData = e.clipboardData;
     const pastedText = clipboardData.getData("text/plain");
 
-    if (editorRef.current) {
-      const lines = pastedText.split("\n");
-      let currentCharacter = "";
-      let htmlResult = "";
+    if (!editorRef.current) return;
 
-      // Context object for the SceneHeaderAgent
-      const ctx = { inDialogue: false };
+    const lines = pastedText.split("\n");
+    let currentCharacter = "";
+    let htmlResult = "";
+    const ctx = { inDialogue: false };
+    const context: LineProcessingContext = {
+      lastFormat: "action",
+      isInDialogueBlock: false,
+      pendingCharacterLine: false,
+    };
 
-      // Context tracking for better classification
-      const context = {
-        lastFormat: "action",
-        isInDialogueBlock: false,
-        pendingCharacterLine: false,
-      };
-
-      for (const line of lines) {
-        if (ScreenplayClassifier.isBlank(line)) {
-          currentCharacter = "";
-          context.isInDialogueBlock = false;
-          context.lastFormat = "action";
-          htmlResult +=
-            '<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;"></div>';
-          continue;
+    for (const line of lines) {
+      const result = processLine(line, context, currentCharacter, ctx);
+      if (result) {
+        htmlResult += result.html;
+        if (result.currentCharacter !== undefined) {
+          currentCharacter = result.currentCharacter;
         }
-
-        if (ScreenplayClassifier.isBasmala(line)) {
-          context.lastFormat = "basmala";
-          context.isInDialogueBlock = false;
-          htmlResult += `<div class="basmala" style="direction: rtl; text-align: left; margin: 0;">${line}</div>`;
-          continue;
+        if (result.updateContext) {
+          Object.assign(context, applyContextUpdates(context, result.updateContext));
         }
-
-        // Enhanced scene header processing
-        // Check for complex scene headers first
-        const sceneHeaderMatch = line
-          .trim()
-          .match(/^(مشهد\s*\d+)\s*[-–—:،]?\s*(.*)$/i);
-        if (sceneHeaderMatch) {
-          const sceneHeaderResult = SceneHeaderAgent(
-            line,
-            ctx,
-            getFormatStyles
-          );
-          if (sceneHeaderResult && sceneHeaderResult.processed) {
-            context.lastFormat = "scene-header";
-            context.isInDialogueBlock = false;
-            context.pendingCharacterLine = false;
-            htmlResult += sceneHeaderResult.html;
-
-            // Add scene header 3 if needed (location)
-            // Check if there's a separate line that might be scene header 3
-            continue;
-          }
-        }
-
-        // Use SceneHeaderAgent for proper scene header formatting
-        const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
-        if (sceneHeaderResult && sceneHeaderResult.processed) {
-          context.lastFormat = "scene-header";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          htmlResult += sceneHeaderResult.html;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isTransition(line)) {
-          context.lastFormat = "transition";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="transition" style="direction: rtl; text-align: center; font-weight: bold; text-transform: uppercase; margin: 1rem 0;">${line}</div>`;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isCharacterLine(line, context)) {
-          currentCharacter = line.trim().replace(":", ""); // Remove colon for cleaner display
-          context.lastFormat = "character";
-          context.isInDialogueBlock = true;
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="character" style="direction: rtl; text-align: center; font-weight: bold; text-transform: uppercase; width: 2.5in; margin: 12px auto 0 auto;">${line}</div>`;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isParenShaped(line)) {
-          context.lastFormat = "parenthetical";
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="parenthetical" style="direction: rtl; text-align: center; font-style: italic; width: 2.0in; margin: 6px auto;">${line}</div>`;
-          continue;
-        }
-
-        if (currentCharacter && !line.includes(":")) {
-          // If we have a current character and this line doesn't look like a new character,
-          // check if it's actually dialogue or just an action description
-          if (ScreenplayClassifier.isLikelyAction(line)) {
-            // Treat as action line
-            context.lastFormat = "action";
-            context.isInDialogueBlock = false;
-            context.pendingCharacterLine = false;
-            // Remove leading dashes from action lines
-            const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-            htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-            continue;
-          } else {
-            // Additional check for action descriptions that might be misclassified as dialogue
-            // Check if this is an action description starting with a dash or descriptive verb
-            const actionDescriptionPatterns = [
-              /^\s*[-–—]\s*(?:نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|تظهر)/,
-              /^\s*[-–—]\s*[ي|ت][\u0600-\u06FF]+/, // Verbs starting with ي or ت
-              /^\s*(?:نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|تظهر)/,
-            ];
-
-            let isActionDescription = false;
-            for (const pattern of actionDescriptionPatterns) {
-              if (pattern.test(line)) {
-                isActionDescription = true;
-                break;
-              }
-            }
-
-            if (isActionDescription) {
-              // Treat as action line
-              context.lastFormat = "action";
-              context.isInDialogueBlock = false;
-              context.pendingCharacterLine = false;
-              // Remove leading dashes from action lines
-              const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-              htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-              continue;
-            } else {
-              // Treat as dialogue
-              context.lastFormat = "dialogue";
-              context.pendingCharacterLine = false;
-              htmlResult += `<div class="dialogue" style="direction: rtl; text-align: center; width: 2.5in; line-height: 1.2; margin: 0 auto 12px auto;">${line}</div>`;
-              continue;
-            }
-          }
-        }
-
-        if (ScreenplayClassifier.isLikelyAction(line)) {
-          context.lastFormat = "action";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          // Remove leading dashes from action lines
-          const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-          htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-          continue;
-        }
-
-        // Fallback - treat as action
-        context.lastFormat = "action";
-        context.isInDialogueBlock = false;
-        context.pendingCharacterLine = false;
-        // Remove leading dashes from action lines
-        const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-        htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-      }
-
-      // Post-process to correct misclassifications
-      const correctedHtmlResult = postProcessFormatting(htmlResult);
-
-      // Insert the HTML at cursor position
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = correctedHtmlResult;
-
-        const fragment = document.createDocumentFragment();
-        while (tempDiv.firstChild) {
-          fragment.appendChild(tempDiv.firstChild);
-        }
-
-        range.insertNode(fragment);
-        updateContent();
       }
     }
+
+    // Post-process and insert
+    const correctedHtmlResult = postProcessFormatting(htmlResult);
+    insertHtmlAtCursor(correctedHtmlResult);
+    updateContent();
+  };
+
+  const insertHtmlAtCursor = (html: string): void => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+
+    const fragment = document.createDocumentFragment();
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild);
+    }
+
+    range.insertNode(fragment);
   };
 
   // Fetch with retry

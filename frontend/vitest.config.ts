@@ -1,9 +1,37 @@
-import { defineConfig } from "vitest/config";
+import path from "path";
 import react from "@vitejs/plugin-react";
-import { resolve } from "path";
+import { createRequire } from "module";
+import type { PluginOption } from "vite";
+import { defineConfig } from "vitest/config";
+
+const require = createRequire(import.meta.url);
+
+type TsconfigPathsFactory = () => PluginOption;
+
+const resolveTsconfigPathsPlugin = (): PluginOption => {
+  let factory: TsconfigPathsFactory | undefined;
+
+  try {
+    const loaded = require("vite-tsconfig-paths");
+    factory = (loaded?.default ?? loaded) as TsconfigPathsFactory;
+  } catch (error) {
+    console.warn(
+      "[vitest] vite-tsconfig-paths is unavailable; falling back to a no-op plugin.",
+      error,
+    );
+  }
+
+  if (!factory) {
+    return {
+      name: "tsconfig-paths-stub",
+    };
+  }
+
+  return factory();
+};
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), resolveTsconfigPathsPlugin()],
   test: {
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts", "./jest.setup.ts"],
@@ -58,11 +86,25 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src"),
-      "~": resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "src"),
+      "~": path.resolve(__dirname, "src"),
+      "@core": path.resolve(__dirname, "src/lib/drama-analyst"),
+      "@agents": path.resolve(__dirname, "src/lib/drama-analyst/agents"),
+      "@services": path.resolve(__dirname, "src/lib/drama-analyst/services"),
+      "@orchestration": path.resolve(
+        __dirname,
+        "src/lib/drama-analyst/orchestration",
+      ),
+      "@shared": path.resolve(
+        __dirname,
+        "src/app/(main)/directors-studio/shared",
+      ),
+      "@components": path.resolve(__dirname, "src/components"),
     },
   },
   esbuild: {
-    target: "node14",
+    target: "node18",
+    jsx: "automatic",
+    jsxImportSource: "react",
   },
 });

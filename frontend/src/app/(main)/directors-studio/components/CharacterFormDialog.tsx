@@ -18,42 +18,36 @@ interface CharacterFormDialogProps {
   character?: Character;
 }
 
-export default function CharacterFormDialog({ 
-  open, 
-  onOpenChange, 
-  projectId, 
+interface CharacterFormState {
+  name: string;
+  appearances: number;
+  consistencyStatus: string;
+  lastSeen: string;
+  notes: string;
+}
+
+const mapCharacterToFormData = (value?: Character): CharacterFormState => ({
+  name: value?.name ?? "",
+  appearances: value?.appearances ?? 0,
+  consistencyStatus: value?.consistencyStatus ?? "good",
+  lastSeen: value?.lastSeen ?? "",
+  notes: value?.notes ?? ""
+});
+
+export default function CharacterFormDialog({
+  open,
+  onOpenChange,
+  projectId,
   character
 }: CharacterFormDialogProps) {
   const { toast } = useToast();
   const createCharacter = useCreateCharacter();
   const updateCharacter = useUpdateCharacter();
-  
-  const [formData, setFormData] = useState({
-    name: character?.name || "",
-    appearances: character?.appearances || 0,
-    consistencyStatus: character?.consistencyStatus || "good",
-    lastSeen: character?.lastSeen || "",
-    notes: character?.notes || ""
-  });
+
+  const [formData, setFormData] = useState(() => mapCharacterToFormData(character));
 
   useEffect(() => {
-    if (character) {
-      setFormData({
-        name: character.name,
-        appearances: character.appearances,
-        consistencyStatus: character.consistencyStatus,
-        lastSeen: character.lastSeen || "",
-        notes: character.notes || ""
-      });
-    } else {
-      setFormData({
-        name: "",
-        appearances: 0,
-        consistencyStatus: "good",
-        lastSeen: "",
-        notes: ""
-      });
-    }
+    setFormData(mapCharacterToFormData(character));
   }, [character, open]);
 
   const handleSubmit = async (_e: React.FormEvent) => {
@@ -68,44 +62,39 @@ export default function CharacterFormDialog({
       return;
     }
 
+    const isEditing = Boolean(character);
+    const payload = {
+      name: formData.name,
+      appearances: formData.appearances,
+      consistencyStatus: formData.consistencyStatus,
+      lastSeen: formData.lastSeen || null,
+      notes: formData.notes || null
+    };
+    const mutation = isEditing
+      ? () =>
+          updateCharacter.mutateAsync({
+            id: character!.id,
+            data: payload
+          })
+      : () =>
+          createCharacter.mutateAsync({
+            projectId,
+            ...payload
+          });
+
     try {
-      if (character) {
-        await updateCharacter.mutateAsync({
-          id: character.id,
-          data: {
-            name: formData.name,
-            appearances: formData.appearances,
-            consistencyStatus: formData.consistencyStatus,
-            lastSeen: formData.lastSeen || null,
-            notes: formData.notes || null
-          }
-        });
-        
-        toast({
-          title: "تم التحديث",
-          description: "تم تحديث الشخصية بنجاح",
-        });
-      } else {
-        await createCharacter.mutateAsync({
-          projectId,
-          name: formData.name,
-          appearances: formData.appearances,
-          consistencyStatus: formData.consistencyStatus,
-          lastSeen: formData.lastSeen || null,
-          notes: formData.notes || null
-        });
-        
-        toast({
-          title: "تم الإنشاء",
-          description: "تم إنشاء الشخصية بنجاح",
-        });
-      }
+      await mutation();
+
+      toast({
+        title: isEditing ? "تم التحديث" : "تم الإنشاء",
+        description: isEditing ? "تم تحديث الشخصية بنجاح" : "تم إنشاء الشخصية بنجاح",
+      });
 
       onOpenChange(false);
     } catch (error) {
       toast({
         title: "حدث خطأ",
-        description: character ? "فشل تحديث الشخصية" : "فشل إنشاء الشخصية",
+        description: isEditing ? "فشل تحديث الشخصية" : "فشل إنشاء الشخصية",
         variant: "destructive",
       });
     }

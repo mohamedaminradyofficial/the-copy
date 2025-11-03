@@ -630,38 +630,90 @@ class ConflictInferenceEngine {
           );
         }
 
-        const involvedIds = involvedChars
-          .map((name) => charNameToId.get(name ?? ""))
-          .filter((id): id is string => id !== undefined);
+    return conflicts;
+  }
 
-        if (involvedIds.length > 0) {
-          const conflict: Conflict = {
-            id: `conflict_${Date.now()}_${Math.random()}`,
-            name: conflictName,
-            description: conflictDesc,
-            involvedCharacters: involvedIds,
-            subject: this.inferConflictSubject(conflictDesc),
-            scope: this.inferConflictScope(conflictDesc),
-            phase: ConflictPhase.EMERGING,
-            strength: this.inferConflictStrength(conflictDesc),
-            relatedRelationships: this.findRelatedRelationships(
-              involvedIds,
-              characters
-            ),
-            pivotPoints: [],
-            timestamps: [new Date()],
-            metadata: {
-              source: "AI_Text_Analysis",
-              inferenceTimestamp: new Date().toISOString(),
-            },
-          };
-
-          conflicts.push(conflict);
-        }
+  private extractConflictsFromPattern(
+    pattern: RegExp,
+    text: string,
+    characters: Character[],
+    charNameToId: Map<string, string>
+  ): Conflict[] {
+    const conflicts: Conflict[] = [];
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const conflictData = this.parseMatchToConflictData(match, characters);
+      const conflict = this.buildConflictFromData(
+        conflictData,
+        charNameToId,
+        characters
+      );
+      if (conflict) {
+        conflicts.push(conflict);
       }
     }
-
     return conflicts;
+  }
+
+  private parseMatchToConflictData(
+    match: RegExpExecArray,
+    characters: Character[]
+  ): { name: string; description: string; involvedChars: string[] } {
+    if (match.length === 4) {
+      // النمط الأول: صراع [اسم] بين [شخصية1] و [شخصية2]
+      return {
+        name: match[1]?.trim() ?? "صراع غير مسمى",
+        involvedChars: [match[2]?.trim() ?? "", match[3]?.trim() ?? ""],
+        description: `صراع ${match[1]?.trim()} بين ${match[2]?.trim()} و ${match[3]?.trim()}`,
+      };
+    }
+    if (match.length === 3) {
+      // النمط الثاني: [شخصية] يواجه [مشكلة]
+      return {
+        name: `صراع ${match[1]?.trim()}`,
+        involvedChars: [match[1]?.trim() ?? ""],
+        description: match[2]?.trim() ?? "",
+      };
+    }
+    // النمط الثالث: الصراع الرئيسي هو [وصف]
+    const description = match[1]?.trim() ?? "";
+    return {
+      name: "الصراع الرئيسي",
+      description,
+      involvedChars: this.extractCharactersFromDescription(description, characters),
+    };
+  }
+
+  private buildConflictFromData(
+    conflictData: { name: string; description: string; involvedChars: string[] },
+    charNameToId: Map<string, string>,
+    characters: Character[]
+  ): Conflict | null {
+    const involvedIds = conflictData.involvedChars
+      .map((name) => charNameToId.get(name ?? ""))
+      .filter((id): id is string => id !== undefined);
+
+    if (involvedIds.length === 0) {
+      return null;
+    }
+
+    return {
+      id: `conflict_${Date.now()}_${Math.random()}`,
+      name: conflictData.name,
+      description: conflictData.description,
+      involvedCharacters: involvedIds,
+      subject: this.inferConflictSubject(conflictData.description),
+      scope: this.inferConflictScope(conflictData.description),
+      phase: ConflictPhase.EMERGING,
+      strength: this.inferConflictStrength(conflictData.description),
+      relatedRelationships: this.findRelatedRelationships(involvedIds, characters),
+      pivotPoints: [],
+      timestamps: [new Date()],
+      metadata: {
+        source: "AI_Text_Analysis",
+        inferenceTimestamp: new Date().toISOString(),
+      },
+    };
   }
 
   private createDefaultConflicts(characters: Character[]): Conflict[] {
