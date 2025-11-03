@@ -33,7 +33,7 @@ body {
   width: 400px;
   height: 400px;
   transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg);
-  border: 2px solid color-mix(in srgb, white 25%, transparent);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   border-radius: 12px;
   overflow: hidden;
   margin: -300px 0;
@@ -49,3 +49,17 @@ body {
 }
 
 /* Specific z-index for last card to ensure it appears on top when hovered */
+.card:nth-child(4).hover-active {
+  z-index: 100;
+  transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg) translateZ(120px)
+    scale(1.03);
+}
+
+/* Ensure images fill their cards */
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none; /* Keep hover target on the card div */
+}

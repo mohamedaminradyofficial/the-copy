@@ -9,17 +9,17 @@ foreach ($p in $Ports) {
     $conns = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
     if ($conns) {
       $pids = $conns | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique
-      foreach ($procId in $pids) {
+      foreach ($processId in $pids) {
         try {
-          Write-Output "Stopping PID $procId (port $p)"
-          Stop-Process -Id $procId -Force -ErrorAction Stop
+          Write-Output "Stopping PID $processId (port $p)"
+          Stop-Process -Id $processId -Force -ErrorAction Stop
         } catch {
-          Write-Error "Failed to stop process $procId: $_"
+          Write-Error "Failed to stop process $processId"
         }
       }
     }
   } catch {
-    Write-Error "Error checking port $p: $_"
+    Write-Error "Error checking port $p"
   }
 }
 

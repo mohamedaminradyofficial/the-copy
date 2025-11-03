@@ -143,7 +143,7 @@
     --accent: #8a9bff;
     --accent-foreground: #0f1115;
     --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
+    --destructive-foreground: #fff;
     --border: color-mix(in srgb, #e6eaf2 10%, transparent);
     --input: color-mix(in srgb, #e6eaf2 10%, transparent);
     --input-background: #1e2230;

@@ -1,6 +1,6 @@
 # Firebase Studio - منصة التحليل الدرامي المدعومة بالذكاء الاصطناعي
 
-[comment]: # 'div align="center"'
+<div align="center">
 
 ![Firebase Studio](https://img.shields.io/badge/Firebase-Studio-orange?style=for-the-badge&logo=firebase)
 ![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?style=for-the-badge&logo=next.js)
@@ -11,7 +11,7 @@
 
 [🚀 البدء السريع](#-البدء-السريع) • [📖 التوثيق](#-التوثيق) • [🧪 الاختبارات](#-الاختبارات) • [🚀 النشر](#-النشر)
 
-[comment]: # "/div"
+</div>
 
 ## 🎯 نظرة عامة
 
@@ -38,16 +38,15 @@ Firebase Studio هو تطبيق Next.js starter شامل مصمم للتطوير
 
 ### الذكاء الاصطناعي والتعلم الآلي
 
-``typescript
+```typescript
 // مثال على تكامل Genkit
 import { genkit } from "genkit";
 import { googleAI } from "@genkit-ai/google-genai";
 
 const ai = genkit({
-plugins: [googleAI()],
-model: "gemini-pro",
+  plugins: [googleAI()],
+  model: "gemini-pro",
 });
-
 ```
 
 ### مكونات واجهة المستخدم
@@ -67,7 +66,7 @@ model: "gemini-pro",
 
 ### التثبيت
 
-``bash
+```bash
 # استنساخ المستودع
 git clone <repository-url>
 cd studio
@@ -82,44 +81,32 @@ cp .env.example .env.local
 
 ### إعداد متغيرات البيئة
 
-``bash
-
+```bash
 # ================================
-
 # 🧠 مفاتيح API المطلوبة
-
 # ================================
-
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 GOOGLE_GENAI_API_KEY=your_google_ai_key
 SENTRY_DSN=your_sentry_dsn
 FIREBASE_PROJECT_ID=your_firebase_project
 
 # ================================
-
 # 🌐 إعدادات بيئة التطوير
-
 # ================================
-
 # لبيئات التطوير الخارجية (AWS Cloud9, CodeSandbox, إلخ)
-
 ALLOWED_DEV_ORIGIN=https://your-dev-workstation-url
 
 # ================================
-
 # 🔒 أعلام الميزات
-
 # ================================
-
 ENABLE_ANALYTICS=true
 ENABLE_AI_SUGGESTIONS=true
 ENABLE_3D_PREVIEW=true
-
 ```
 
 ### تشغيل التطوير
 
-``bash
+```bash
 # إعداد متغيرات البيئة
 export NEXT_PUBLIC_GEMINI_API_KEY="your-api-key"
 export ALLOWED_DEV_ORIGIN="https://your-workstation-url"  # اختياري للتطوير الخارجي

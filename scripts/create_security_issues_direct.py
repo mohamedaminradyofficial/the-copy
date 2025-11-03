@@ -56,11 +56,6 @@ class GitHubAPI:
         )
 
         try:
-            # Validate URL scheme
-            parsed_url = urlparse(url)
-            if parsed_url.scheme not in ('http', 'https'):
-                raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
-            
             with request.urlopen(req) as response:
                 return json.loads(response.read().decode("utf-8"))
         except error.HTTPError as e:
@@ -68,7 +63,7 @@ class GitHubAPI:
             print(f"   Response: {e.read().decode('utf-8')}")
             return None
         except Exception as e:
-            print(f"[ERROR] {e}")
+            print(f"[ERROR] Unexpected error: {e}")
             return None
 
 
@@ -271,10 +266,10 @@ def get_repo_from_git() -> Optional[str]:
         if "github.com" in url:
             parts = url.replace(".git", "").split("github.com")[1].strip(":/")
             return parts
-    except subprocess.SubprocessError as e:
-        print(f"[ERROR] Failed to get git remote URL: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Git command failed: {e}")
     except Exception as e:
-        print(f"[ERROR] Unexpected error getting git remote URL: {e}")
+        print(f"[ERROR] Failed to get repo from git: {e}")
     return None
 
 
@@ -368,15 +363,8 @@ def create_issues(api: GitHubAPI, findings: List[Dict[str, str]], dry_run: bool)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create GitHub issues from security report"
-    )
-    parser.add_argument("--token", help="GitHub Personal Access Token")
-    parser.add_argument("--repo", help="Repository (owner/repo)")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Don't actually create issues"
-    )
-    args = parser.parse_args()
+    """Main execution function."""
+    args = setup_arguments()
 
     print("=" * 80)
     print("Security Issue Creator (Direct API)")

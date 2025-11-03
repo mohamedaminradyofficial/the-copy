@@ -55,11 +55,6 @@ class GitHubAPI:
         )
 
         try:
-            # Validate URL scheme
-            parsed_url = urlparse(url)
-            if parsed_url.scheme not in ('http', 'https'):
-                raise ValueError(f"Unsupported URL scheme: {parsed_url.scheme}")
-            
             with request.urlopen(req) as response:
                 return json.loads(response.read().decode("utf-8"))
         except error.HTTPError as e:
@@ -68,11 +63,11 @@ class GitHubAPI:
             try:
                 error_json = json.loads(error_body)
                 print(f"[ERROR] {error_json.get('message', 'Unknown error')}")
-            except:
+            except json.JSONDecodeError:
                 print(f"[ERROR] {error_body}")
             return None
         except Exception as e:
-            print(f"[ERROR] {e}")
+            print(f"[ERROR] Unexpected error: {e}")
             return None
 
 
@@ -267,10 +262,10 @@ def get_repo_from_git() -> Optional[str]:
         if "github.com" in url:
             parts = url.replace(".git", "").split("github.com")[1].strip(":/")
             return parts
-    except subprocess.SubprocessError as e:
-        print(f"[ERROR] Failed to get git remote URL: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Git command failed: {e}")
     except Exception as e:
-        print(f"[ERROR] Unexpected error getting git remote URL: {e}")
+        print(f"[ERROR] Failed to get repo from git: {e}")
     return None
 
 
@@ -364,21 +359,8 @@ def create_issues(api: GitHubAPI, findings: List[Dict[str, str]]) -> tuple[int, 
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Create limited security issues for testing"
-    )
-    parser.add_argument("--token", help="GitHub Personal Access Token")
-    parser.add_argument("--repo", help="Repository (owner/repo)")
-    parser.add_argument(
-        "--limit", type=int, default=5, help="Number of issues to create (default: 5)"
-    )
-    parser.add_argument(
-        "--severity", help="Filter by severity (critical/high/medium/low)"
-    )
-    parser.add_argument(
-        "--yes", "-y", action="store_true", help="Skip confirmation prompt"
-    )
-    args = parser.parse_args()
+    """Main execution function."""
+    args = setup_arguments()
 
     print("=" * 80)
     print("Security Issue Creator - TEST MODE")

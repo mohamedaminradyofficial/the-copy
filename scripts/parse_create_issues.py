@@ -24,17 +24,14 @@ def run_command(cmd: str, dry_run: bool = False) -> Tuple[int, str]:
         print(f"[DRY-RUN] Would execute: {cmd}")
         return 0, ""
 
-    print(f"🔧 Executing: {cmd}")
+    print(f" Executing: {cmd}")
     try:
-        # Parse command into list to avoid shell=True
-        import shlex
-        cmd_list = shlex.split(cmd)
         result = subprocess.run(
-            cmd_list, capture_output=True, text=True, encoding="utf-8"
+            cmd, shell=True, capture_output=True, text=True, encoding="utf-8"
         )
         return result.returncode, result.stdout + result.stderr
-    except Exception as e:
-        print(f"❌ Error executing command: {e}")
+    except subprocess.SubprocessError as e:
+        print(f" Error executing command: {e}")
         return 1, str(e)
 
 
