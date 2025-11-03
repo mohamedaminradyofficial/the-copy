@@ -8,6 +8,7 @@
     "postinstall": "corepack pnpm -w dedupe || PATH=\"$PNPM_HOME:$HOME/.local/share/pnpm:$PATH\" pnpm -w dedupe || true"
   },
   "dependencies": {
+    "@mistralai/mistralai": "^1.10.0",
     "tailwindcss": "^4.1.16",
     "tailwindcss-animate": "^1.0.7"
   },
