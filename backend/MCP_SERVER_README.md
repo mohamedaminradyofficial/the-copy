@@ -5,11 +5,13 @@ This is a Model Context Protocol (MCP) server implementation that exposes calcul
 ## Features
 
 ### Tools
+
 - **Addition Tool** (`add`): Adds two numbers together
   - Input: `{ a: number, b: number }`
   - Output: `{ result: number }`
 
 ### Resources
+
 - **Greeting Resource** (`greeting://{name}`): Dynamic greeting generator
   - Example: `greeting://John` returns "Hello, John!"
 

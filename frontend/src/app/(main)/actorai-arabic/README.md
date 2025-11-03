@@ -7,23 +7,27 @@ ActorAI Pro is an AI-powered acting training platform that helps actors master t
 ## Features
 
 ### 🧠 Script Analysis
+
 - Deep analysis of objectives, obstacles, and emotional arcs
 - Support for multiple acting methodologies (Stanislavsky, Meisner, Chekhov, etc.)
 - Beat-by-beat breakdown of scenes
 - Personalized coaching tips
 
 ### 💬 AI Scene Partner
+
 - Rehearse scenes with intelligent AI partners
 - Natural dialogue flow
 - Real-time responses
 
 ### 📊 Performance Analytics
+
 - Detailed feedback on emotional authenticity
 - Vocal delivery assessment
 - Physical presence analysis
 - Progress tracking over time
 
 ### 📈 Dashboard
+
 - Manage uploaded scripts
 - Track performance recordings
 - View performance scores
