@@ -209,3 +209,56 @@ export function shouldConvertDialogueToAction(text: string, wordCount: (text: st
 
   return false;
 }
+
+/**
+ * Process bullet character pattern and convert to character/dialogue
+ */
+export function processBulletCharacterPattern(
+  currentElement: HTMLElement,
+  nextElement: HTMLElement | null,
+  tempDiv: HTMLElement,
+  getFormatStyles: (format: string) => Record<string, unknown>
+): boolean {
+  const textContent = currentElement.textContent || "";
+  const match = matchesBulletCharacterPattern(textContent);
+
+  if (!match.match || !match.characterName || !match.dialogueText) {
+    return false;
+  }
+
+  // Convert this action line to character + dialogue
+  currentElement.className = "character";
+  currentElement.textContent = match.characterName + ":";
+  Object.assign(currentElement.style, getFormatStyles("character"));
+
+  // Create a new dialogue element after this one
+  const dialogueElement = document.createElement("div");
+  dialogueElement.className = "dialogue";
+  dialogueElement.textContent = match.dialogueText;
+  Object.assign(dialogueElement.style, getFormatStyles("dialogue"));
+
+  // Insert the dialogue element after the character element
+  if (nextElement) {
+    tempDiv.insertBefore(dialogueElement, nextElement);
+  } else {
+    tempDiv.appendChild(dialogueElement);
+  }
+
+  return true;
+}
+
+/**
+ * Convert dialogue element to action element
+ */
+export function convertDialogueToAction(
+  element: HTMLElement,
+  getFormatStyles: (format: string) => Record<string, unknown>
+): void {
+  const textContent = element.textContent || "";
+
+  element.className = "action";
+  // Remove leading dashes if present
+  const cleanedText = textContent.replace(/^\s*[-–—]\s*/, "");
+  element.textContent = cleanedText;
+  Object.assign(element.style, getFormatStyles("action"));
+}

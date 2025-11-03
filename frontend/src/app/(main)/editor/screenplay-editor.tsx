@@ -22,6 +22,8 @@ import {
   applyContextUpdates,
   matchesBulletCharacterPattern,
   shouldConvertDialogueToAction,
+  processBulletCharacterPattern,
+  convertDialogueToAction,
   type LineProcessingContext,
   type LineProcessingResult,
 } from "./paste-handlers";
