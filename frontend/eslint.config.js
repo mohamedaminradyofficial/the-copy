@@ -3,7 +3,6 @@ const js = require('@eslint/js');
 const typescriptParser = require('@typescript-eslint/parser');
 const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
 const importPlugin = require('eslint-plugin-import');
-const path = require('path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -71,17 +70,29 @@ module.exports = [
     rules: {
       'import/no-default-export': 'error',
     },
-    ignores: [
-      'src/app/**/page.tsx',
-      'src/app/**/layout.tsx',
-      'src/app/**/error.tsx',
-      'src/app/**/loading.tsx',
-      'src/app/**/not-found.tsx',
-      'src/app/**/template.tsx',
-      'src/app/**/default.tsx',
-      'src/app/**/route.ts',
-      'src/middleware.ts',
-      'src/**/middleware.ts',
-    ],
+  },
+
+  // Allow Next.js app router defaults
+  {
+    files: ['**/app/**/page.{ts,tsx}', '**/app/**/layout.{ts,tsx}'],
+    rules: {
+      'import/no-default-export': 'off',
+    },
+  },
+
+  // Complexity guardrails for Directors Studio page
+  {
+    files: ['src/app/(main)/directors-studio/page.tsx'],
+    rules: {
+      complexity: ['error', 8],
+      'max-lines-per-function': [
+        'error',
+        { max: 50, skipBlankLines: true, skipComments: true },
+      ],
+      'max-lines': [
+        'error',
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+    },
   },
 ];

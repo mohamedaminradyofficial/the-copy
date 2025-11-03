@@ -2,7 +2,7 @@
 
 نفّذ البنود بالترتيب. ضع علامة ✓ عند الانتهاء من كل عنصر. لا تُسقِط أي بند.
 
- MEDIUM — Code complexity — Method global has a cyclomatic complexity of 16 (limit is 8) — frontend/src/app/(main)/directors-studio/page.tsx
+✓ MEDIUM — Code complexity — Method global has a cyclomatic complexity of 16 (limit is 8) — frontend/src/app/(main)/directors-studio/page.tsx
 
  MEDIUM — Code complexity — File frontend/src/app/(main)/editor/screenplay-editor.tsx has 2017 non-comment lines of code — frontend/src/app/(main)/editor/screenplay-editor.tsx
 
