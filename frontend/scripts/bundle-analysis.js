@@ -2,16 +2,20 @@
 
 const fs = require("fs");
 const path = require("path");
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require("./safe-path");
 
 function analyzeBundle() {
-  const buildDir = path.join(process.cwd(), ".next");
+  // SECURITY FIX: Use safe path resolution to prevent traversal attacks
+  const buildDir = safeResolve(process.cwd(), ".next");
 
   if (!fs.existsSync(buildDir)) {
     console.error("Build directory not found. Run `npm run build` first.");
     process.exit(1);
   }
 
-  const staticDir = path.join(buildDir, "static");
+  // SECURITY FIX: Use safe path resolution
+  const staticDir = safeResolve(buildDir, "static");
 
   if (!fs.existsSync(staticDir)) {
     console.error("Static directory not found.");
@@ -27,7 +31,13 @@ function analyzeBundle() {
       if (stats.isDirectory()) {
         const files = fs.readdirSync(currentPath);
         files.forEach((file) => {
-          calculateSize(path.join(currentPath, file));
+          // SECURITY FIX: Use safe path resolution for subdirectories
+          try {
+            const childPath = safeResolve(staticDir, path.relative(staticDir, path.join(currentPath, file)));
+            calculateSize(childPath);
+          } catch (error) {
+            console.warn(`Skipping invalid path: ${file}`);
+          }
         });
       } else {
         totalSize += stats.size;

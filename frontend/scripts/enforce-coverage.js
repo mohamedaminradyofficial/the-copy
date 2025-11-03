@@ -2,6 +2,8 @@
 
 const fs = require("fs");
 const path = require("path");
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require("./safe-path");
 
 function decodeRecord(text) {
   const lines = text.split("\n").filter((line) => line.trim());
@@ -30,7 +32,9 @@ function unflatten(flat) {
       if (!current[parts[i]]) current[parts[i]] = {};
       current = current[parts[i]];
     }
-    current[parts[parts.length - 1]] = value;
+    const lastKey = parts[parts.length - 1];
+    const numValue = parseFloat(value);
+    current[lastKey] = isNaN(numValue) ? value : numValue;
   }
   return result;
 }
@@ -42,7 +46,8 @@ const ABSOLUTE_MINIMUMS = {
   components: { lines: 85, functions: 90, branches: 85, statements: 85 },
 };
 
-const summaryPath = path.join(
+// SECURITY FIX: Use safe path resolution to prevent traversal attacks
+const summaryPath = safeResolve(
   process.cwd(),
   "reports/unit/coverage-summary.txt"
 );

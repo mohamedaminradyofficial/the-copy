@@ -2,9 +2,65 @@
 
 const fs = require("fs");
 const path = require("path");
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require("./safe-path");
+
+// UTILITY FUNCTIONS: Add missing encode/decode/unflatten functions
+function encodeRecord(obj, prefix = "") {
+  const lines = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      lines.push(...encodeRecord(value, fullKey));
+    } else {
+      const encodedValue = String(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/\r/g, "\\r")
+        .replace(/\n/g, "\\n")
+        .replace(/=/g, "\\=");
+      lines.push(`${fullKey}=${encodedValue}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+function decodeRecord(text) {
+  const lines = text.split("\n").filter((line) => line.trim());
+  const result = {};
+  for (const line of lines) {
+    const idx = line.indexOf("=");
+    if (idx === -1) continue;
+    const key = line.slice(0, idx);
+    const value = line
+      .slice(idx + 1)
+      .replace(/\\=/g, "=")
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\r")
+      .replace(/\\\\/g, "\\");
+    result[key] = value;
+  }
+  return result;
+}
+
+function unflatten(flat) {
+  const result = {};
+  for (const [key, value] of Object.entries(flat)) {
+    const parts = key.split(".");
+    let current = result;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]]) current[parts[i]] = {};
+      current = current[parts[i]];
+    }
+    const lastKey = parts[parts.length - 1];
+    const numValue = parseFloat(value);
+    current[lastKey] = isNaN(numValue) ? value : numValue;
+  }
+  return result;
+}
 
 function generatePerformanceReport() {
-  const reportsDir = path.join(process.cwd(), "reports");
+  // SECURITY FIX: Use safe path resolution to prevent traversal attacks
+  const reportsDir = safeResolve(process.cwd(), "reports");
 
   if (!fs.existsSync(reportsDir)) {
     fs.mkdirSync(reportsDir, { recursive: true });
@@ -33,7 +89,8 @@ function generatePerformanceReport() {
   };
 
   // Check if coverage report exists
-  const coverageFile = path.join(reportsDir, "unit", "coverage-summary.txt");
+  // SECURITY FIX: Use safe path resolution
+  const coverageFile = safeResolve(reportsDir, path.join("unit", "coverage-summary.txt"));
   if (fs.existsSync(coverageFile)) {
     try {
       const coverageText = fs.readFileSync(coverageFile, "utf8");
@@ -55,12 +112,17 @@ function generatePerformanceReport() {
 
       report.testCoverage.status = minCoverage >= 80 ? "passed" : "failed";
     } catch (error) {
+      // SECURITY FIX: Proper error logging instead of generic catch
+      console.error(`Error reading coverage file: ${error.message}`);
+      console.error(`Stack trace: ${error.stack}`);
       report.testCoverage.status = "error";
+      report.testCoverage.errorMessage = error.message;
     }
   }
 
   // Check if E2E report exists
-  const e2eFile = path.join(reportsDir, "e2e", "results.txt");
+  // SECURITY FIX: Use safe path resolution
+  const e2eFile = safeResolve(reportsDir, path.join("e2e", "results.txt"));
   if (fs.existsSync(e2eFile)) {
     try {
       const e2eText = fs.readFileSync(e2eFile, "utf8");
@@ -71,12 +133,17 @@ function generatePerformanceReport() {
       report.e2eTests.status =
         e2eResults.stats?.failed === 0 ? "passed" : "failed";
     } catch (error) {
+      // SECURITY FIX: Proper error logging instead of generic catch
+      console.error(`Error reading E2E report: ${error.message}`);
+      console.error(`Stack trace: ${error.stack}`);
       report.e2eTests.status = "error";
+      report.e2eTests.errorMessage = error.message;
     }
   }
 
   // Check Web Vitals from Sentry or other sources if available
-  const webVitalsFile = path.join(reportsDir, "web-vitals.txt");
+  // SECURITY FIX: Use safe path resolution
+  const webVitalsFile = safeResolve(reportsDir, "web-vitals.txt");
   if (fs.existsSync(webVitalsFile)) {
     try {
       const vitalsText = fs.readFileSync(webVitalsFile, "utf8");
@@ -103,11 +170,15 @@ function generatePerformanceReport() {
         report.webVitals.ttfb.status = vitals.ttfb <= 600 ? "passed" : "failed";
       }
     } catch (error) {
+      // SECURITY FIX: Proper error logging with details
+      console.error(`Error parsing Web Vitals data: ${error.message}`);
+      console.error(`Stack trace: ${error.stack}`);
       console.warn("Warning: Could not parse Web Vitals data");
     }
   }
 
-  const reportFile = path.join(reportsDir, "performance-report.txt");
+  // SECURITY FIX: Use safe path resolution
+  const reportFile = safeResolve(reportsDir, "performance-report.txt");
   const reportText = encodeRecord(report);
   fs.writeFileSync(reportFile, reportText);
 

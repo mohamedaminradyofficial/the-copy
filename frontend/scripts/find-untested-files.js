@@ -2,8 +2,11 @@
 
 const fs = require("fs");
 const path = require("path");
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require("./safe-path");
 
-const srcDir = path.join(process.cwd(), "src");
+// SECURITY FIX: Use safe path resolution
+const srcDir = safeResolve(process.cwd(), "src");
 const untestedFiles = [];
 
 const ALLOWED_EXCEPTIONS = [
@@ -16,57 +19,94 @@ const ALLOWED_EXCEPTIONS = [
   /\.spec\./,
 ];
 
+// COMPLEXITY FIX: Split into smaller, focused functions
 function isSimpleIndexFile(filePath) {
   const content = fs.readFileSync(filePath, "utf-8");
   const lines = content.split("\n").filter((line) => line.trim());
 
-  return lines.every(
-    (line) =>
-      line.startsWith("export") ||
-      line.startsWith("//") ||
-      line.startsWith("/*") ||
-      line === ""
+  return lines.every(isSimpleLine);
+}
+
+function isSimpleLine(line) {
+  return (
+    line.startsWith("export") ||
+    line.startsWith("//") ||
+    line.startsWith("/*") ||
+    line === ""
   );
 }
 
 function isSimpleTypeFile(filePath) {
   const content = fs.readFileSync(filePath, "utf-8");
-  const hasLogic = /function |class |const .*=.*=>|if \(|switch \(/.test(
-    content
-  );
+  const hasLogic = /function |class |const .*=.*=>|if \(|switch \(/.test(content);
   return !hasLogic;
 }
 
+function matchesAllowedException(filePath) {
+  return ALLOWED_EXCEPTIONS.some((pattern) => pattern.test(filePath));
+}
+
+function isComplexIndexFile(filePath, fileName) {
+  return fileName === "index.ts" && !isSimpleIndexFile(filePath);
+}
+
+function isComplexTypeFile(filePath, fileName) {
+  return fileName.endsWith("types.ts") && !isSimpleTypeFile(filePath);
+}
+
+// COMPLEXITY FIX: Simplified shouldHaveTests with early returns
 function shouldHaveTests(filePath) {
   const fileName = path.basename(filePath);
 
-  if (ALLOWED_EXCEPTIONS.some((pattern) => pattern.test(filePath))) {
-    if (fileName === "index.ts" && !isSimpleIndexFile(filePath)) {
-      return true;
-    }
-    if (fileName.endsWith("types.ts") && !isSimpleTypeFile(filePath)) {
-      return true;
-    }
-    return false;
+  // If not in exceptions list, it needs tests
+  if (!matchesAllowedException(filePath)) {
+    return true;
   }
 
-  return true;
+  // Handle complex index files
+  if (isComplexIndexFile(filePath, fileName)) {
+    return true;
+  }
+
+  // Handle complex type files
+  if (isComplexTypeFile(filePath, fileName)) {
+    return true;
+  }
+
+  // Simple exception files don't need tests
+  return false;
 }
 
 function hasTestFile(sourceFile) {
   const dir = path.dirname(sourceFile);
   const baseName = path.basename(sourceFile, path.extname(sourceFile));
 
-  const possibleTestPatterns = [
-    path.join(dir, `${baseName}.test.ts`),
-    path.join(dir, `${baseName}.test.tsx`),
-    path.join(dir, `${baseName}.spec.ts`),
-    path.join(dir, `${baseName}.spec.tsx`),
-    path.join(dir, "__tests__", `${baseName}.test.ts`),
-    path.join(dir, "__tests__", `${baseName}.test.tsx`),
-    path.join(dir, "__tests__", `${baseName}.spec.ts`),
-    path.join(dir, "__tests__", `${baseName}.spec.tsx`),
+  // SECURITY FIX: Use safe path resolution for all test patterns
+  const testPatterns = [
+    `${baseName}.test.ts`,
+    `${baseName}.test.tsx`,
+    `${baseName}.spec.ts`,
+    `${baseName}.spec.tsx`,
   ];
+
+  const testDirs = [
+    dir,
+    path.join(dir, "__tests__"),
+  ];
+
+  const possibleTestPatterns = [];
+
+  for (const testDir of testDirs) {
+    for (const pattern of testPatterns) {
+      try {
+        const testPath = safeResolve(srcDir, path.relative(srcDir, path.join(testDir, pattern)));
+        possibleTestPatterns.push(testPath);
+      } catch (error) {
+        // Skip invalid paths
+        continue;
+      }
+    }
+  }
 
   return possibleTestPatterns.some((pattern) => fs.existsSync(pattern));
 }
@@ -75,7 +115,15 @@ function scanDirectory(dir) {
   const items = fs.readdirSync(dir);
 
   for (const item of items) {
-    const fullPath = path.join(dir, item);
+    // SECURITY FIX: Use safe path resolution for subdirectories and files
+    let fullPath;
+    try {
+      fullPath = safeResolve(srcDir, path.relative(srcDir, path.join(dir, item)));
+    } catch (error) {
+      console.warn(`Skipping invalid path: ${item}`);
+      continue;
+    }
+
     const stat = fs.statSync(fullPath);
 
     if (stat.isDirectory()) {
