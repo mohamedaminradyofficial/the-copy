@@ -27,19 +27,26 @@ export interface StationOptions {
   maxTokens?: number;
 }
 
+import type {
+  PreviousResults,
+  TextChunk,
+  ContextMap,
+  StationResult,
+} from "../interfaces/response-types";
+
 export interface StationInput {
   text: string;
-  projectName?: string;
-  options?: StationOptions;
+  projectName?: string | undefined;
+  options?: StationOptions | undefined;
   // يمكن إضافة المزيد من المدخلات حسب الحاجة
-  previousResults?: any;
-  chunks?: any[];
-  contextMap?: any;
+  previousResults?: PreviousResults | undefined;
+  chunks?: TextChunk[] | undefined;
+  contextMap?: ContextMap | undefined;
 }
 
 export interface StationOutput {
   // النتيجة الأساسية من المحطة
-  result: any;
+  result: StationResult;
 
   // البيانات الوصفية المحسنة
   metadata: StationMetadata & {
@@ -141,7 +148,7 @@ export abstract class BaseStation {
   protected abstract execute(
     input: StationInput,
     options: StationOptions
-  ): Promise<any>;
+  ): Promise<StationResult>;
 
   /**
    * دمج الخيارات المدخلة مع الخيارات الافتراضية
@@ -161,9 +168,9 @@ export abstract class BaseStation {
    * تطبيق فحص التوافق مع المبادئ الدستورية
    */
   private async applyConstitutionalCheck(
-    result: any,
+    result: StationResult,
     originalText: string
-  ): Promise<any> {
+  ): Promise<StationResult> {
     try {
       // استخراج النصوص التي تحتاج إلى فحص
       const textsToCheck = this.extractTextsForConstitutionalCheck(result);
@@ -227,9 +234,9 @@ export abstract class BaseStation {
    * تطبيق قياس عدم اليقين
    */
   private async applyUncertaintyQuantification(
-    result: any,
+    result: StationResult,
     input: StationInput
-  ): Promise<any> {
+  ): Promise<StationResult> {
     try {
       const uncertaintyEngine = getUncertaintyQuantificationEngine(
         this.geminiService
@@ -333,27 +340,50 @@ export abstract class BaseStation {
   /**
    * استخراج النصوص التي تحتاج إلى فحص دستوري (يمكن تجاوزه في المحطات الفرعية)
    */
-  protected extractTextsForConstitutionalCheck(result: any): string[] {
+  protected extractTextsForConstitutionalCheck(result: StationResult): string[] {
     const texts = [];
 
     // استخراج النصوص الرئيسية من نتيجة المحطة
-    if (result.logline) texts.push(result.logline);
-    if (result.storyStatement) texts.push(result.storyStatement);
-    if (result.elevatorPitch) texts.push(result.elevatorPitch);
-    if (result.executiveSummary) texts.push(result.executiveSummary);
+    if (
+      typeof result === "object" &&
+      result !== null
+    ) {
+      const resultObj = result as Record<string, unknown>;
+      if (typeof resultObj.logline === "string") texts.push(resultObj.logline);
+      if (typeof resultObj.storyStatement === "string") texts.push(resultObj.storyStatement);
+      if (typeof resultObj.elevatorPitch === "string") texts.push(resultObj.elevatorPitch);
+      if (typeof resultObj.executiveSummary === "string") texts.push(resultObj.executiveSummary);
+    }
 
     // استخراج النصوص من التحليلات الفرعية
-    if (result.characterAnalysis) {
-      for (const [character, analysis] of Object.entries(
-        result.characterAnalysis as any
-      )) {
-        if (typeof analysis === "string") texts.push(analysis);
+    if (
+      typeof result === "object" &&
+      result !== null &&
+      "characterAnalysis" in result
+    ) {
+      const characterAnalysis = result.characterAnalysis;
+      if (typeof characterAnalysis === "object" && characterAnalysis !== null) {
+        for (const [character, analysis] of Object.entries(characterAnalysis)) {
+          if (typeof analysis === "string") texts.push(analysis);
+        }
       }
     }
 
-    if (result.themes) {
-      for (const theme of result.themes.primary || []) {
-        if (theme.description) texts.push(theme.description);
+    if (
+      typeof result === "object" &&
+      result !== null &&
+      "themes" in result
+    ) {
+      const themes = result.themes;
+      if (typeof themes === "object" && themes !== null && "primary" in themes) {
+        const primaryThemes = (themes as { primary?: Array<{ description?: string }> }).primary;
+        if (Array.isArray(primaryThemes)) {
+          for (const theme of primaryThemes) {
+            if (theme && typeof theme === "object" && "description" in theme && typeof theme.description === "string") {
+              texts.push(theme.description);
+            }
+          }
+        }
       }
     }
 
@@ -363,7 +393,7 @@ export abstract class BaseStation {
   /**
    * استخراج النصوص التي تحتاج إلى قياس عدم اليقين (يمكن تجاوزه في المحطات الفرعية)
    */
-  protected extractTextsForUncertaintyQuantification(result: any): string[] {
+  protected extractTextsForUncertaintyQuantification(result: StationResult): string[] {
     // للتبسيط، نستخدم نفس النصوص المستخدمة في الفحص الدستوري
     return this.extractTextsForConstitutionalCheck(result);
   }
@@ -372,20 +402,25 @@ export abstract class BaseStation {
    * استبدال نص في نتيجة المحطة
    */
   protected replaceTextInResult(
-    result: any,
+    result: StationResult,
     oldText: string,
     newText: string
-  ): any {
+  ): StationResult {
     // نسخة عميقة من النتيجة لتجنب التعديل المباشر
-    const newResult = JSON.parse(JSON.stringify(result));
+    const newResult = JSON.parse(JSON.stringify(result)) as StationResult;
 
     // دالة تعاودية للبحث والاستبدال
-    function replaceInObject(obj: any): void {
+    function replaceInObject(obj: unknown): void {
+      if (typeof obj !== "object" || obj === null) {
+        return;
+      }
+      
       for (const key in obj) {
-        if (typeof obj[key] === "string" && obj[key] === oldText) {
-          obj[key] = newText;
-        } else if (typeof obj[key] === "object" && obj[key] !== null) {
-          replaceInObject(obj[key]);
+        const value = (obj as Record<string, unknown>)[key];
+        if (typeof value === "string" && value === oldText) {
+          (obj as Record<string, unknown>)[key] = newText;
+        } else if (typeof value === "object" && value !== null) {
+          replaceInObject(value);
         }
       }
     }

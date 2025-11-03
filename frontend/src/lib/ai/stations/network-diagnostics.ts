@@ -284,28 +284,39 @@ export class NetworkDiagnostics {
     const weakConnections: WeakConnectionIssue[] = [];
 
     // Check weak relationships
-    for (const relationship of this.network.relationships.values()) {
-      if (relationship.strength < 4) {
-        weakConnections.push({
-          connectionType: "relationship",
-          elementId: relationship.id,
-          weakness: "قوة العلاقة ضعيفة",
-          strengthScore: relationship.strength,
-          improvementSuggestions: [
-            "أضف مشاهد تفاعل أكثر بين الشخصيتين",
-            "طور الخلفية المشتركة للشخصيتين",
-            "أنشئ صراعاً يجمع بينهما",
-          ],
-        });
+    // Handle both Map<string, Relationship> and Map<string, Relationship[]>
+    for (const relationshipArray of this.network.relationships.values()) {
+      const relationships = Array.isArray(relationshipArray) ? relationshipArray : [relationshipArray];
+      for (const relationship of relationships) {
+        if ("strength" in relationship && typeof relationship.strength === "number" && relationship.strength < 4) {
+          weakConnections.push({
+            connectionType: "relationship",
+            elementId: "id" in relationship && typeof relationship.id === "string" ? relationship.id : String(relationship),
+            weakness: "قوة العلاقة ضعيفة",
+            strengthScore: relationship.strength,
+            improvementSuggestions: [
+              "أضف مشاهد تفاعل أكثر بين الشخصيتين",
+              "طور الخلفية المشتركة للشخصيتين",
+              "أنشئ صراعاً يجمع بينهما",
+            ],
+          });
+        }
       }
     }
 
     // Check weak conflict involvement
-    for (const conflict of this.network.conflicts.values()) {
-      if (conflict.strength < 4) {
+    // Handle both Map<string, Conflict> and array-based conflicts
+    const conflictsArray = this.network.conflicts 
+      ? (Array.isArray(this.network.conflicts) 
+          ? this.network.conflicts 
+          : Array.from((this.network.conflicts as Map<unknown, unknown>).values()))
+      : [];
+    
+    for (const conflict of conflictsArray) {
+      if (typeof conflict === "object" && conflict !== null && "strength" in conflict && typeof conflict.strength === "number" && conflict.strength < 4) {
         weakConnections.push({
           connectionType: "conflict_involvement",
-          elementId: conflict.id,
+          elementId: "id" in conflict && typeof conflict.id === "string" ? conflict.id : String(conflict),
           weakness: "مشاركة ضعيفة في الصراع",
           strengthScore: conflict.strength,
           improvementSuggestions: [
@@ -362,15 +373,27 @@ export class NetworkDiagnostics {
 
   // Helper methods
   private getCharacterRelationships(characterId: string): Relationship[] {
-    return Array.from(this.network.relationships.values()).filter(
-      (rel) => rel.source === characterId || rel.target === characterId
+    const allRelationships: Relationship[] = [];
+    for (const relationshipArray of this.network.relationships.values()) {
+      const relationships = Array.isArray(relationshipArray) ? relationshipArray : [relationshipArray];
+      allRelationships.push(...relationships);
+    }
+    return allRelationships.filter(
+      (rel) => ("source" in rel && rel.source === characterId) || ("target" in rel && rel.target === characterId)
     );
   }
 
   private getCharacterConflicts(characterId: string): Conflict[] {
-    return Array.from(this.network.conflicts.values()).filter((conflict) =>
+    if (!this.network.conflicts) return [];
+    const conflictsArray = Array.isArray(this.network.conflicts) 
+      ? this.network.conflicts 
+      : Array.from((this.network.conflicts as Map<unknown, unknown>).values());
+    
+    return conflictsArray.filter((conflict) =>
+      typeof conflict === "object" && conflict !== null && "involvedCharacters" in conflict &&
+      Array.isArray(conflict.involvedCharacters) &&
       conflict.involvedCharacters.includes(characterId)
-    );
+    ) as Conflict[];
   }
 
   private findConnectedComponents(): string[][] {
@@ -484,12 +507,16 @@ export class NetworkDiagnostics {
 
   private findDuplicateRelationships(): string[][] {
     const duplicates: string[][] = [];
-    const relationships = Array.from(this.network.relationships.values());
+    const allRelationships: Relationship[] = [];
+    for (const relationshipArray of this.network.relationships.values()) {
+      const relationships = Array.isArray(relationshipArray) ? relationshipArray : [relationshipArray];
+      allRelationships.push(...relationships);
+    }
 
-    for (let i = 0; i < relationships.length; i++) {
-      for (let j = i + 1; j < relationships.length; j++) {
-        const rel1 = relationships[i];
-        const rel2 = relationships[j];
+    for (let i = 0; i < allRelationships.length; i++) {
+      for (let j = i + 1; j < allRelationships.length; j++) {
+        const rel1 = allRelationships[i];
+        const rel2 = allRelationships[j];
 
         if (!rel1 || !rel2) continue; // Skip undefined relationships
 

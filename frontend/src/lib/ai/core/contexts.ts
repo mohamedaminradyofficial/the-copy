@@ -1,22 +1,12 @@
 // Context types for drama analysis system
 
-export interface CharacterContext {
-  name: string;
-  role?: string;
-  traits?: string[];
-  relationships?: Record<string, string>;
-}
+import type {
+  CharacterContext as CharacterContextType,
+  NarrativeContext as NarrativeContextType,
+  AnalysisContext as AnalysisContextType,
+} from "../interfaces/response-types";
 
-export interface NarrativeContext {
-  title?: string;
-  genre?: string;
-  theme?: string;
-  plot?: string;
-  structure?: string;
-}
-
-export interface AnalysisContext {
-  inputText: string;
-  metadata?: Record<string, any>;
-  previousAnalysis?: any;
-}
+// Re-export for backward compatibility
+export type CharacterContext = CharacterContextType;
+export type NarrativeContext = NarrativeContextType;
+export type AnalysisContext = AnalysisContextType;

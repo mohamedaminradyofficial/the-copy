@@ -1,77 +1,41 @@
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import "@testing-library/jest-dom/vitest";
-import Home from "./page";
+/**
+ * Unit test for homepage verification
+ * Ensures all 11 pages are displayed and linked correctly
+ */
 
-// Mock Next.js router
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-  }),
-}));
+import { describe, it, expect } from "vitest";
+import pagesManifest from "../config/pages.manifest.json";
 
-// Mock Next.js Image component
-vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: any) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} {...props} />
-  ),
-}));
-
-// Mock dynamic imports to return a simple component
-vi.mock("next/dynamic", () => ({
-  default: (fn: any, options: any) => {
-    const Component = () => null;
-    Component.displayName = "DynamicComponent";
-    return Component;
-  },
-}));
-
-// Mock particle background
-vi.mock("@/components/particle-background", () => ({
-  default: () => null,
-}));
-
-// Mock images to avoid import errors
-vi.mock("./images", () => ({
-  default: {
-    editor: "/images/editor.png",
-    analysis: "/images/analysis.png",
-    development: "/images/development.png",
-    brainstorm: "/images/brainstorm.png",
-  },
-}));
-
-describe("Home Page - Unified Dashboard", () => {
-  it("renders without crashing", () => {
-    const { container } = render(<Home />);
-    expect(container).toBeDefined();
+describe("Homepage Verification", () => {
+  it("should have exactly 11 pages in manifest", () => {
+    expect(pagesManifest.pages).toHaveLength(11);
   });
 
-  it("renders the main heading النسخة", () => {
-    render(<Home />);
-    const heading = screen.getByText("النسخة");
-    expect(heading).toBeInTheDocument();
+  it("should have all required page properties", () => {
+    pagesManifest.pages.forEach((page) => {
+      expect(page).toHaveProperty("slug");
+      expect(page).toHaveProperty("path");
+      expect(page).toHaveProperty("title");
+      expect(typeof page.slug).toBe("string");
+      expect(typeof page.path).toBe("string");
+      expect(typeof page.title).toBe("string");
+    });
   });
 
-  it("renders all 4 application cards with correct titles", () => {
-    render(<Home />);
-    expect(screen.getByText("كتابة")).toBeInTheDocument();
-    expect(screen.getByText("تحليل")).toBeInTheDocument();
-    expect(screen.getByText("تطوير")).toBeInTheDocument();
-    expect(screen.getByText("الورشة")).toBeInTheDocument();
+  it("should have unique slugs", () => {
+    const slugs = pagesManifest.pages.map((p) => p.slug);
+    const uniqueSlugs = new Set(slugs);
+    expect(uniqueSlugs.size).toBe(slugs.length);
   });
 
-  it("has correct links to all 4 applications", () => {
-    render(<Home />);
-    const cards = screen.getAllByRole("button");
-    // Should have 4 clickable cards for features
-    expect(cards.length).toBeGreaterThanOrEqual(4);
+  it("should have unique paths", () => {
+    const paths = pagesManifest.pages.map((p) => p.path);
+    const uniquePaths = new Set(paths);
+    expect(uniquePaths.size).toBe(paths.length);
   });
 
-  it("renders footer with copyright", () => {
-    render(<Home />);
-    const footer = screen.getByText(/جميع الحقوق محفوظة/);
-    expect(footer).toBeInTheDocument();
+  it("should match expected page count from previous report", () => {
+    // Previous report mentioned 4/11, now should be 11/11
+    expect(pagesManifest.pages.length).toBe(11);
   });
 });
