@@ -33,7 +33,7 @@ body {
   width: 400px;
   height: 400px;
   transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 25%);
   border-radius: 12px;
   overflow: hidden;
   margin: -300px 0;

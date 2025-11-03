@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
-interface ActorAiArabicStudioProps {}
-
-export const ActorAiArabicStudio: React.FC<ActorAiArabicStudioProps> = () => {
+export const ActorAiArabicStudio: React.FC<{}> = () => {
   const [currentView, setCurrentView] = useState<'home' | 'demo' | 'dashboard'>('home');
   const [notification, setNotification] = useState<{
     type: 'success' | 'error' | 'info';
@@ -419,4 +417,4 @@ export const ActorAiArabicStudio: React.FC<ActorAiArabicStudioProps> = () => {
   );
 };
 
-export default ActorAiArabicStudio;
+export { ActorAiArabicStudio };

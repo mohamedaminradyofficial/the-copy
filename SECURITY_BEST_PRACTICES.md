@@ -22,7 +22,7 @@ This document outlines critical security practices for developers working on thi
 - Service account credentials
 - Any file containing `token`, `password`, `secret`, or `key` in sensitive context
 
-### ✅ What to do instead:
+### ✅ What to do instead
 
 1. **Use `.env` files** (already in `.gitignore`)
 
@@ -67,7 +67,7 @@ Before every commit, verify:
 
 ## 🚨 What to Do If You Accidentally Commit a Secret
 
-### Immediate Actions (within 5 minutes):
+### Immediate Actions (within 5 minutes)
 
 1. **DO NOT push** if you haven't already
 

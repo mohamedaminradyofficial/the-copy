@@ -35,7 +35,7 @@ Successfully applied Codacy-generated patch (`codacy-fix.patch`) to fix code qua
 
 ### Phase 2: Manual Fixes (1 file)
 
-8. `frontend/TEXT_ONLY_PIPELINE.md` - Removed trailing colons from 12 level-4 headers
+- `frontend/TEXT_ONLY_PIPELINE.md` - Removed trailing colons from 12 level-4 headers
 
 ### Phase 2 Commit
 

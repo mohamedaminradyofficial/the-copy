@@ -603,7 +603,11 @@ class ConflictInferenceEngine {
 
     for (const pattern of conflictPatterns) {
       let match;
-      while ((match = pattern.exec(text)) !== null) {
+      while (true) {
+        match = pattern.exec(text);
+        if (match === null) {
+          break;
+        }
         let conflictName, involvedChars, conflictDesc;
 
         if (match.length === 4) {

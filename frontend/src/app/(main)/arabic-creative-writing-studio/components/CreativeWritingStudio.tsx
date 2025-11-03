@@ -3,7 +3,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   CreativePrompt,
   CreativeProject,
@@ -11,7 +11,6 @@ import {
   AppSettings,
   CreativeGenre,
   WritingTechnique,
-  DifficultyLevel
 } from '../types';
 import { GeminiService } from '../lib/gemini-service';
 import { PromptLibrary } from './PromptLibrary';
@@ -417,4 +416,4 @@ ${project.content}`;
   );
 };
 
-export default CreativeWritingStudio;
+export { CreativeWritingStudio };

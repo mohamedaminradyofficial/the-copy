@@ -143,13 +143,7 @@ style.css
 MINOR
 Code style
 
-Expected "0.08" to be "8%" (alpha-value-notation)
-
-frontend/src/app/(main)/actorai-arabic/static-source/
-style.css
-
-37
---color-bg-1: rgba(59, 130, 246, 0.08); /_ Light blue _/
+--color-bg-1: rgba(59, 130, 246, 0.08); /_Light blue _/
 MINOR
 Code style
 
@@ -163,13 +157,7 @@ style.css
 MINOR
 Code style
 
-Expected modern color-function notation (color-function-notation)
-
-frontend/src/app/(main)/actorai-arabic/static-source/
-style.css
-
-38
---color-bg-2: rgba(245, 158, 11, 0.08); /_ Light yellow _/
+--color-bg-2: rgba(245, 158, 11, 0.08); /_Light yellow _/
 MINOR
 Code style
 
@@ -696,7 +684,7 @@ frontend/src/app/
 slider.css
 
 1
-/_ Global reset _/
+/_Global reset _/
 MEDIUM
 Code complexity
 
@@ -780,13 +768,7 @@ style.css
 MINOR
 Code style
 
-Expected "0.08" to be "8%" (alpha-value-notation)
-
-frontend/src/app/(main)/actorai-arabic/static-source/
-style.css
-
-39
---color-bg-3: rgba(34, 197, 94, 0.08); /_ Light green _/
+--color-bg-3: rgba(34, 197, 94, 0.08); /_Light green _/
 MINOR
 Code style
 
@@ -1007,7 +989,7 @@ frontend/src/app/
 globals.css
 
 2
-/_ Fonts are loaded locally to comply with CSP headers _/
+/_Fonts are loaded locally to comply with CSP headers_/
 MINOR
 Code style
 
@@ -1017,7 +999,7 @@ frontend/src/app/
 globals.css
 
 3
-/_ Use the fontOptimizer service to generate font-face declarations _/
+/_Use the fontOptimizer service to generate font-face declarations_/
 MEDIUM
 Best practice
 
@@ -1027,7 +1009,7 @@ frontend/src/app/
 globals.css
 
 1
-/_ Production-optimized font loading - CSP compliant _/
+/_Production-optimized font loading - CSP compliant_/
 MINOR
 Code style
 
