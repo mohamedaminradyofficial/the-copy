@@ -217,7 +217,7 @@ export class AnalysisPipeline {
 
   private calculatePerformanceMetrics(result: OrchestrationResult) {
     const completedStations = result.progressLog.filter(
-      (p) => p.status === "completed"
+      (p) => p.status === "completed" && p.duration != null
     );
 
     if (completedStations.length === 0) {
@@ -230,20 +230,20 @@ export class AnalysisPipeline {
       };
     }
 
-    const durations = completedStations.map((s) => s.duration ?? 0);
+    const durations = completedStations.map((s) => s.duration!);
     const averageStationTime =
       durations.reduce((a, b) => a + b, 0) / durations.length;
 
     const slowest = completedStations.reduce((prev, curr) =>
-      (curr.duration ?? 0) > (prev.duration ?? 0) ? curr : prev
+      curr.duration! > prev.duration! ? curr : prev
     );
 
     const fastest = completedStations.reduce((prev, curr) =>
-      (curr.duration ?? 0) < (prev.duration ?? 0) ? curr : prev
+      curr.duration! < prev.duration! ? curr : prev
     );
 
     const totalRetries = result.progressLog.reduce(
-      (sum, p) => sum + ((p.attempt ?? 1) - 1),
+      (sum, p) => sum + (p.attempt ?? 1) - 1,
       0
     );
 
@@ -257,12 +257,12 @@ export class AnalysisPipeline {
       slowestStation: {
         number: slowest.stationNumber,
         name: slowest.stationName,
-        duration: slowest.duration ?? 0,
+        duration: slowest.duration!,
       },
       fastestStation: {
         number: fastest.stationNumber,
         name: fastest.stationName,
-        duration: fastest.duration ?? 0,
+        duration: fastest.duration!,
       },
       totalRetries,
       successRate: Math.round(successRate * 100) / 100,
