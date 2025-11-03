@@ -1,11 +1,11 @@
 {
   "name": "the-copy-monorepo",
   "private": true,
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "start:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1",
     "kill:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./kill-dev.ps1",
-    "postinstall": "pnpm dedupe --filter \"./frontend...\" --filter \"./backend...\"",
-    "prepare": "husky"
+    "postinstall": "corepack pnpm -w dedupe || PATH=\"$PNPM_HOME:$HOME/.local/share/pnpm:$PATH\" pnpm -w dedupe || true"
   },
   "dependencies": {
     "tailwindcss": "^4.1.16",
@@ -13,5 +13,14 @@
   },
   "devDependencies": {
     "vitest": "^4.0.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/d3-array": "^3.2.1",
+      "@types/d3-scale": "^4.0.8",
+      "@types/d3-shape": "^3.1.6",
+      "@types/babel__traverse": "^7.20.5",
+      "@types/eslint": "^8.56.10"
+    }
   }
 }
