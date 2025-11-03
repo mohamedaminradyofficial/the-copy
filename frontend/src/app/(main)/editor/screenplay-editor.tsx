@@ -2,6 +2,14 @@ import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 import FileUpload from "@/components/file-upload";
 import {
+  handleTabKey,
+  handleEnterKey,
+  createShortcutHandlers,
+  executeShortcut,
+  type ScreenplayFormat as KeyboardScreenplayFormat,
+  type FormatAction,
+} from "./keyboard-handlers";
+import {
   Sparkles,
   X,
   Loader2,
@@ -977,86 +985,34 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   // Handle key down
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Tab") {
-      e.preventDefault();
-      const nextFormat =
-        getNextFormatOnTab(currentFormat, e.shiftKey) || "action";
-      applyFormatToCurrentLine(nextFormat);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const nextFormat = getNextFormatOnEnter(currentFormat) || "action";
-      applyFormatToCurrentLine(nextFormat);
-    } else if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case "b":
-        case "B":
-          e.preventDefault();
-          formatText("bold");
-          break;
-        case "i":
-        case "I":
-          e.preventDefault();
-          formatText("italic");
-          break;
-        case "u":
-        case "U":
-          e.preventDefault();
-          formatText("underline");
-          break;
-        case "z":
-        case "Z":
-          e.preventDefault();
-          formatText("undo");
-          break;
-        case "y":
-        case "Y":
-          e.preventDefault();
-          formatText("redo");
-          break;
-        case "s":
-        case "S":
-          e.preventDefault();
-          console.log("Save functionality would go here");
-          break;
-        case "f":
-        case "F":
-          e.preventDefault();
-          setShowSearchDialog(true);
-          break;
-        case "h":
-        case "H":
-          e.preventDefault();
-          setShowReplaceDialog(true);
-          break;
-        case "a":
-        case "A":
-          e.preventDefault();
-          formatText("selectAll");
-          break;
-        case "p":
-        case "P":
-          e.preventDefault();
-          formatText("print");
-          break;
-        case "1":
-          e.preventDefault();
-          applyFormatToCurrentLine("scene-header-top-line");
-          break;
-        case "2":
-          e.preventDefault();
-          applyFormatToCurrentLine("character");
-          break;
-        case "3":
-          e.preventDefault();
-          applyFormatToCurrentLine("dialogue");
-          break;
-        case "4":
-          e.preventDefault();
-          applyFormatToCurrentLine("action");
-          break;
-        case "6":
-          e.preventDefault();
-          applyFormatToCurrentLine("transition");
-          break;
+      handleTabKey(
+        e,
+        currentFormat as KeyboardScreenplayFormat,
+        getNextFormatOnTab,
+        applyFormatToCurrentLine
+      );
+      return;
+    }
+
+    if (e.key === "Enter") {
+      handleEnterKey(
+        e,
+        currentFormat as KeyboardScreenplayFormat,
+        getNextFormatOnEnter,
+        applyFormatToCurrentLine
+      );
+      return;
+    }
+
+    if (e.ctrlKey || e.metaKey) {
+      const shortcuts = createShortcutHandlers(
+        formatText as (action: FormatAction) => void,
+        applyFormatToCurrentLine,
+        setShowSearchDialog,
+        setShowReplaceDialog
+      );
+      if (executeShortcut(e.key, shortcuts)) {
+        e.preventDefault();
       }
     }
   };
