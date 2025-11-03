@@ -13,7 +13,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 REPORT_PATH = Path("SECURITY_SCAN_REPORT.md")
 
@@ -43,16 +43,6 @@ def run_command(cmd: List[str], dry_run: bool = False) -> Tuple[int, str]:
 def sanitize(text: str) -> str:
     """Clean and sanitize text for use in commands."""
     return text.strip().strip("`").strip()
-
-
-def sanitize_for_argument(text: str) -> str:
-    """Sanitize text for use as command argument.
-
-    SECURITY: When passing arguments directly to subprocess without shell=True,
-    no special escaping is needed as there's no shell interpretation.
-    This function is kept for backwards compatibility but simplified.
-    """
-    return text
 
 
 def parse_severity(text: str) -> str:

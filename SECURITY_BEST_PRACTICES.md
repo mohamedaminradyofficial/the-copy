@@ -89,7 +89,7 @@ Before every commit, verify:
 
 3. **Immediately revoke the exposed secret:**
 
-   - GitHub tokens: https://github.com/settings/tokens
+   - GitHub tokens: <https://github.com/settings/tokens>
    - AWS keys: AWS IAM Console
    - Database passwords: Change immediately
    - API keys: Regenerate from provider
@@ -394,7 +394,7 @@ Instead, use:
 ### Security Team
 
 - **Security Owner**: mohamedaminradyofficial
-- **Repository**: https://github.com/mohamedaminradyofficial/the-copy
+- **Repository**: <https://github.com/mohamedaminradyofficial/the-copy>
 - **Security Policy**: [SECURITY.md](./SECURITY.md)
 - **Security Process**: [SECURITY_PROCESS.md](./SECURITY_PROCESS.md)
 
