@@ -60,6 +60,7 @@ exports.saveText = saveText;
 const fs_1 = require("fs");
 const path = __importStar(require("path"));
 async function saveText(filePath, content) {
+  if (filePath.includes('..') || filePath.startsWith('/')) throw new Error('Invalid file path');
   const fullPath = path.resolve(process.cwd(), filePath);
   await fs_1.promises.mkdir(path.dirname(fullPath), { recursive: true });
   await fs_1.promises.writeFile(fullPath, content, "utf-8");
