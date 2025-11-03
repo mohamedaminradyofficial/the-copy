@@ -139,5 +139,8 @@
     "*.{js,jsx,json,css,md}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "next@<=15.4.7": "15.4.7"
   }
 }
