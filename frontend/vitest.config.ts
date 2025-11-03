@@ -1,10 +1,37 @@
 import path from "path";
 import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { createRequire } from "module";
+import type { PluginOption } from "vite";
 import { defineConfig } from "vitest/config";
 
+const require = createRequire(import.meta.url);
+
+type TsconfigPathsFactory = () => PluginOption;
+
+const resolveTsconfigPathsPlugin = (): PluginOption => {
+  let factory: TsconfigPathsFactory | undefined;
+
+  try {
+    const loaded = require("vite-tsconfig-paths");
+    factory = (loaded?.default ?? loaded) as TsconfigPathsFactory;
+  } catch (error) {
+    console.warn(
+      "[vitest] vite-tsconfig-paths is unavailable; falling back to a no-op plugin.",
+      error,
+    );
+  }
+
+  if (!factory) {
+    return {
+      name: "tsconfig-paths-stub",
+    };
+  }
+
+  return factory();
+};
+
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [react(), resolveTsconfigPathsPlugin()],
   test: {
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts", "./jest.setup.ts"],
