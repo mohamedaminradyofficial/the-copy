@@ -13,21 +13,21 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 REPORT_PATH = Path("SECURITY_SCAN_REPORT.md")
 
 
-def run_command(cmd: str, dry_run: bool = False) -> Tuple[int, str]:
-    """Execute shell command and return (returncode, output)."""
+def run_command(cmd: List[str], dry_run: bool = False) -> Tuple[int, str]:
+    """Execute command and return (returncode, output)."""
     if dry_run:
-        print(f"[DRY-RUN] Would execute: {cmd}")
+        print(f"[DRY-RUN] Would execute: {' '.join(cmd)}")
         return 0, ""
 
-    print(f" Executing: {cmd}")
+    print(f" Executing: {' '.join(cmd)}")
     try:
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, encoding="utf-8"
+            cmd, shell=False, capture_output=True, text=True, encoding="utf-8"
         )
         return result.returncode, result.stdout + result.stderr
     except subprocess.SubprocessError as e:
@@ -38,17 +38,6 @@ def run_command(cmd: str, dry_run: bool = False) -> Tuple[int, str]:
 def sanitize(text: str) -> str:
     """Clean and sanitize text for use in commands."""
     return text.strip().strip("`").strip()
-
-
-def escape_for_shell(text: str) -> str:
-    """Escape text for safe shell command usage."""
-    # Replace double quotes with escaped double quotes
-    text = text.replace('"', '\\"')
-    # Replace backticks
-    text = text.replace("`", "\\`")
-    # Replace dollar signs
-    text = text.replace("$", "\\$")
-    return text
 
 
 def parse_severity(text: str) -> str:
@@ -314,12 +303,8 @@ This issue was automatically created from `SECURITY_SCAN_REPORT.md`.
 - Security Policy: [SECURITY.md](../SECURITY.md)
 """
 
-    # Escape for shell
-    title_escaped = escape_for_shell(title)
-    body_escaped = escape_for_shell(body)
-
-    # Create gh CLI command
-    cmd = f'gh issue create --title "{title_escaped}" --body "{body_escaped}" --label "{labels}"'
+    # Create gh CLI command (no escaping needed with shell=False)
+    cmd = ["gh", "issue", "create", "--title", title, "--body", body, "--label", labels]
 
     returncode, output = run_command(cmd, dry_run)
 
@@ -334,7 +319,7 @@ This issue was automatically created from `SECURITY_SCAN_REPORT.md`.
 
 def check_github_cli() -> None:
     """Check if GitHub CLI is installed and authenticated."""
-    returncode, output = run_command("gh auth status", dry_run=False)
+    returncode, output = run_command(["gh", "auth", "status"], dry_run=False)
     if returncode != 0:
         print(" GitHub CLI not authenticated. Please run: gh auth login")
         sys.exit(1)
