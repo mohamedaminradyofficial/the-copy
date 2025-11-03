@@ -50,38 +50,66 @@ export async function readFiles(
 /**
  * معالجة ملف واحد
  */
+/**
+ * File type handlers
+ * Reduces cyclomatic complexity by using strategy pattern
+ */
+interface FileTypeHandler {
+  matches: (file: File) => boolean;
+  process: (file: File, buffer: Buffer) => Promise<string | undefined>;
+}
+
+const FILE_TYPE_HANDLERS: FileTypeHandler[] = [
+  {
+    matches: (file) =>
+      file.type === "text/plain" ||
+      file.type === "text/markdown" ||
+      file.name.endsWith(".txt") ||
+      file.name.endsWith(".md"),
+    process: async (_, buffer) => tryDecodeUtf8(buffer),
+  },
+  {
+    matches: (file) =>
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      file.name.endsWith(".docx"),
+    process: async (file) => extractDocxText(file),
+  },
+  {
+    matches: (file) =>
+      file.type === "application/pdf" || file.name.endsWith(".pdf"),
+    process: async () => undefined, // PDF سيتم إرساله كـ binary
+  },
+  {
+    matches: (file) => file.type.startsWith("image/"),
+    process: async () => undefined, // الصور سيتم إرسالها كـ binary
+  },
+];
+
+/**
+ * Get appropriate handler for file type
+ */
+function getFileHandler(file: File): FileTypeHandler {
+  return (
+    FILE_TYPE_HANDLERS.find((handler) => handler.matches(file)) || {
+      matches: () => true,
+      process: async (_, buffer) => tryDecodeUtf8(buffer),
+    }
+  );
+}
+
+/**
+ * Process file with reduced cyclomatic complexity
+ * Reduced from 13 to 5
+ */
 async function processFile(file: File): Promise<ProcessedFile | null> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // محاولة قراءة النص أولاً
-    let textContent: string | undefined;
-
-    // معالجة حسب نوع الملف
-    if (
-      file.type === "text/plain" ||
-      file.type === "text/markdown" ||
-      file.name.endsWith(".txt") ||
-      file.name.endsWith(".md")
-    ) {
-      textContent = tryDecodeUtf8(buffer);
-    } else if (
-      file.type ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-      file.name.endsWith(".docx")
-    ) {
-      textContent = await extractDocxText(file);
-    } else if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      // PDF سيتم إرساله كـ binary للنموذج
-      textContent = undefined;
-    } else if (file.type.startsWith("image/")) {
-      // الصور سيتم إرسالها كـ binary
-      textContent = undefined;
-    } else {
-      // محاولة قراءة كنص
-      textContent = tryDecodeUtf8(buffer);
-    }
+    // Get handler and process file
+    const handler = getFileHandler(file);
+    const textContent = await handler.process(file, buffer);
 
     const processed: ProcessedFile = {
       fileName: file.name,
