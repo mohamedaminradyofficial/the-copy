@@ -5,12 +5,8 @@
  * إخراج نصي فقط - لا JSON
  */
 
-import { TaskType } from "@core/enums";
+import { TaskType } from "../core/enums";
 import { BaseAgent } from "./shared/BaseAgent";
-import {
-  StandardAgentInput,
-  StandardAgentOutput,
-} from "./shared/standardAgentPattern";
 
 // Import upgraded agents
 import { CompletionAgent } from "./completion/CompletionAgent";
@@ -63,6 +59,11 @@ export const UPGRADED_AGENTS: Map<TaskType, BaseAgent> = new Map([
   [TaskType.PLOT_PREDICTOR, plotPredictorAgent],
   [TaskType.WORLD_BUILDER, worldBuilderAgent],
 ]);
+
+import {
+  StandardAgentInput,
+  StandardAgentOutput,
+} from "./shared/standardAgentPattern";
 
 /**
  * Execute agent task with standard pattern
