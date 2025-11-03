@@ -4,6 +4,10 @@ import dynamic from "next/dynamic";
 import React, { useState, useEffect, useCallback } from "react";
 import { TaskCategory, TaskType } from "@/lib/drama-analyst/enums";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getTaskIcon as getTaskIconUtil,
+  getCreativeTaskIcon as getCreativeTaskIconUtil,
+} from "./utils/task-icon-mapper";
 import { toText } from "@/lib/ai/gemini-core";
 import {
   AIResponse,
@@ -324,87 +328,13 @@ const DramaAnalystApp: React.FC = () => {
     toast,
   ]);
 
+  // Use utility functions for reduced complexity
   const getCreativeTaskIcon = (taskType: TaskType) => {
-    switch (taskType) {
-      case TaskType.CREATIVE:
-        return <Wand2 className="w-4 h-4" />;
-      case TaskType.COMPLETION:
-        return <PenTool className="w-4 h-4" />;
-      case TaskType.ADAPTIVE_REWRITING:
-        return <Brain className="w-4 h-4" />;
-      case TaskType.SCENE_GENERATOR:
-        return <Film className="w-4 h-4" />;
-      case TaskType.CHARACTER_VOICE:
-        return <MessageSquare className="w-4 h-4" />;
-      case TaskType.WORLD_BUILDER:
-        return <Globe className="w-4 h-4" />;
-      case TaskType.PLOT_PREDICTOR:
-        return <TrendingUp className="w-4 h-4" />;
-      case TaskType.TENSION_OPTIMIZER:
-        return <Zap className="w-4 h-4" />;
-      case TaskType.RHYTHM_MAPPING:
-        return <Music className="w-4 h-4" />;
-      case TaskType.CHARACTER_NETWORK:
-        return <Network className="w-4 h-4" />;
-      case TaskType.DIALOGUE_FORENSICS:
-        return <Search className="w-4 h-4" />;
-      case TaskType.THEMATIC_MINING:
-        return <Lightbulb className="w-4 h-4" />;
-      case TaskType.STYLE_FINGERPRINT:
-        return <Palette className="w-4 h-4" />;
-      case TaskType.CONFLICT_DYNAMICS:
-        return <Target className="w-4 h-4" />;
-      default:
-        return <Sparkles className="w-4 h-4" />;
-    }
+    return getCreativeTaskIconUtil(taskType);
   };
 
   const getTaskIcon = (taskType: TaskType) => {
-    const taskCategory = TASK_CATEGORY_MAP[taskType];
-
-    switch (taskCategory) {
-      case TaskCategory.CORE:
-        if (taskType === TaskType.ANALYSIS)
-          return <Lightbulb className="w-4 h-4" />;
-        if (taskType === TaskType.CREATIVE)
-          return <Sparkles className="w-4 h-4" />;
-        if (taskType === TaskType.INTEGRATED)
-          return <FileText className="w-4 h-4" />;
-        if (taskType === TaskType.COMPLETION)
-          return <PenTool className="w-4 h-4" />;
-        break;
-      case TaskCategory.ANALYSIS:
-        return <Lightbulb className="w-4 h-4" />;
-      case TaskCategory.CREATIVE:
-        return <Sparkles className="w-4 h-4" />;
-      case TaskCategory.PREDICTIVE:
-        return <Beaker className="w-4 h-4" />;
-      case TaskCategory.ADVANCED_MODULES:
-        switch (taskType) {
-          case TaskType.CHARACTER_DEEP_ANALYZER:
-            return <Users className="w-4 h-4" />;
-          case TaskType.DIALOGUE_ADVANCED_ANALYZER:
-            return <Search className="w-4 h-4" />;
-          case TaskType.VISUAL_CINEMATIC_ANALYZER:
-            return <Film className="w-4 h-4" />;
-          case TaskType.THEMES_MESSAGES_ANALYZER:
-            return <Lightbulb className="w-4 h-4" />;
-          case TaskType.CULTURAL_HISTORICAL_ANALYZER:
-            return <Globe className="w-4 h-4" />;
-          case TaskType.PRODUCIBILITY_ANALYZER:
-            return <BarChart className="w-4 h-4" />;
-          case TaskType.TARGET_AUDIENCE_ANALYZER:
-            return <Users className="w-4 h-4" />;
-          case TaskType.LITERARY_QUALITY_ANALYZER:
-            return <PenTool className="w-4 h-4" />;
-          case TaskType.RECOMMENDATIONS_GENERATOR:
-            return <Sparkles className="w-4 h-4" />;
-          default:
-            return <Clipboard className="w-4 h-4" />;
-        }
-      default:
-        return <Sparkles className="w-4 h-4" />;
-    }
+    return getTaskIconUtil(taskType, TASK_CATEGORY_MAP);
   };
 
   const creativeTasks = Object.keys(CREATIVE_DEVELOPMENT_TASKS) as TaskType[];

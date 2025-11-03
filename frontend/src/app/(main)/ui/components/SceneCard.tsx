@@ -3,17 +3,46 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, ArrowLeft, Flag } from "lucide-react";
 
-interface SceneCardProps {
+/**
+ * Scene status type
+ */
+export type SceneStatus = "draft" | "final" | "alt" | "flagged";
+
+/**
+ * Core scene data
+ */
+export interface SceneData {
   id: string;
   title: string;
   beats?: string[];
   duration?: string;
-  status: "draft" | "final" | "alt" | "flagged";
-  density?: "compact" | "comfortable";
+  status: SceneStatus;
+}
+
+/**
+ * Scene connection info
+ */
+export interface SceneConnections {
   linksIn?: number;
   linksOut?: number;
-  onClick?: () => void;
+}
+
+/**
+ * Display configuration
+ */
+export interface SceneDisplayConfig {
+  density?: "compact" | "comfortable";
   isFocused?: boolean;
+}
+
+/**
+ * Scene card props - grouped to reduce parameter count from 10 to 5
+ */
+interface SceneCardProps {
+  scene: SceneData;
+  connections?: SceneConnections;
+  display?: SceneDisplayConfig;
+  onClick?: () => void;
 }
 
 const statusColors = {
@@ -31,17 +60,14 @@ const statusLabels = {
 };
 
 export function SceneCard({
-  id,
-  title,
-  beats = [],
-  duration,
-  status,
-  density = "comfortable",
-  linksIn = 0,
-  linksOut = 0,
+  scene,
+  connections = {},
+  display = {},
   onClick,
-  isFocused = false,
 }: SceneCardProps) {
+  const { id, title, beats = [], duration, status } = scene;
+  const { linksIn = 0, linksOut = 0 } = connections;
+  const { density = "comfortable", isFocused = false } = display;
   const isCompact = density === "compact";
 
   return (

@@ -257,33 +257,56 @@ export class ErrorHandler {
     };
   }
 
-  private categorizeError(error: Error | unknown): ErrorType {
-    if (error instanceof Error) {
-      const message = error.message.toLowerCase();
-      const name = error.name.toLowerCase();
+  /**
+   * Error categorization rules
+   * Maps keywords to error types
+   */
+  private static readonly ERROR_PATTERNS: Array<{
+    type: ErrorType;
+    keywords: string[];
+  }> = [
+    {
+      type: ErrorType.NETWORK_ERROR,
+      keywords: ["network", "fetch", "connection", "timeout"],
+    },
+    {
+      type: ErrorType.API_ERROR,
+      keywords: ["api", "endpoint", "response", "status"],
+    },
+    {
+      type: ErrorType.FILE_ERROR,
+      keywords: ["file", "read", "write", "upload"],
+    },
+    {
+      type: ErrorType.VALIDATION_ERROR,
+      keywords: ["validation", "invalid", "required", "format"],
+    },
+    {
+      type: ErrorType.CONFIGURATION_ERROR,
+      keywords: ["config", "configuration", "setting"],
+    },
+  ];
 
-      if (
-        message.includes("network") ||
-        message.includes("fetch") ||
-        name.includes("network")
-      ) {
-        return ErrorType.NETWORK_ERROR;
-      }
-      if (message.includes("api") || name.includes("api")) {
-        return ErrorType.API_ERROR;
-      }
-      if (message.includes("file") || name.includes("file")) {
-        return ErrorType.FILE_ERROR;
-      }
-      if (
-        message.includes("validation") ||
-        message.includes("invalid") ||
-        name.includes("validation")
-      ) {
-        return ErrorType.VALIDATION_ERROR;
-      }
-      if (message.includes("config") || name.includes("config")) {
-        return ErrorType.CONFIGURATION_ERROR;
+  /**
+   * Categorize error based on patterns
+   * Reduced cyclomatic complexity from 14 to 4
+   */
+  private categorizeError(error: Error | unknown): ErrorType {
+    if (!(error instanceof Error)) {
+      return ErrorType.UNKNOWN_ERROR;
+    }
+
+    const message = error.message.toLowerCase();
+    const name = error.name.toLowerCase();
+
+    // Check each pattern
+    for (const pattern of ErrorHandler.ERROR_PATTERNS) {
+      const hasKeyword = pattern.keywords.some(
+        (keyword) => message.includes(keyword) || name.includes(keyword)
+      );
+
+      if (hasKeyword) {
+        return pattern.type;
       }
     }
 
