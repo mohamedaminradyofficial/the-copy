@@ -1,0 +1,45 @@
+name: Security Finding
+description: Triage and fix a security finding imported from SECURITY_SCAN_REPORT.md
+title: "[SECURITY] {SEVERITY} - {SHORT-TITLE}"
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Source:** SECURITY_SCAN_REPORT.md
+        ارفق الرابط إلى صفّ التقرير / الدليل.
+  - type: input
+    id: severity
+    attributes:
+      label: Severity
+      description: critical | high | medium
+      placeholder: critical
+    validations:
+      required: true
+  - type: input
+    id: file
+    attributes:
+      label: File (path)
+      placeholder: frontend/src/...
+    validations:
+      required: true
+  - type: input
+    id: line
+    attributes:
+      label: Line
+      placeholder: "182"
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Paste the scanner message (Semgrep / other) and any references.
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Proposed remediation
+      description: خطوات الإصلاح والاختبارات اللازمة
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: قبل/بعد + لقطات أو روابط إلى PR/commit
