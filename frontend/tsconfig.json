@@ -11,6 +11,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -23,11 +24,12 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "~/*": ["./src/*"],
       "@core/*": ["./src/lib/drama-analyst/*"],
+      "@agents/*": ["./src/lib/drama-analyst/agents/*"],
       "@services/*": ["./src/lib/drama-analyst/services/*"],
       "@orchestration/*": ["./src/lib/drama-analyst/orchestration/*"],
-      "@ui/*": ["./src/lib/drama-analyst/ui/*"],
-      "@agents/*": ["./src/lib/drama-analyst/agents/*"],
+      "@components/*": ["./src/components/*"],
       "@shared/*": ["./src/app/(main)/directors-studio/shared/*"]
     }
   },
