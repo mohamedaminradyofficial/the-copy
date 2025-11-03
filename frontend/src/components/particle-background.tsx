@@ -3,8 +3,123 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import type { ParticleVelocity, ParticlePosition, EffectConfig } from "./particle-effects";
+import {
+  applySparkEffect,
+  applyWaveEffect,
+  applyVortexEffect,
+  applyDefaultEffect,
+  calculateWaveColor,
+  calculateVortexColor,
+} from "./particle-effects";
 
 type Effect = "default" | "spark" | "wave" | "vortex";
+
+/**
+ * Update camera position based on rotation
+ */
+function updateCameraPosition(
+  camera: THREE.PerspectiveCamera,
+  rotationX: number,
+  rotationY: number
+): void {
+  camera.position.x = Math.sin(rotationY) * 3.5;
+  camera.position.z = Math.cos(rotationY) * 3.5;
+  camera.position.y = rotationX * 0.5;
+  camera.lookAt(0, 0, 0);
+}
+
+/**
+ * Apply particle effect using lookup strategy
+ */
+function applyParticleEffect(
+  effect: Effect,
+  position: ParticlePosition,
+  intersection: THREE.Vector3,
+  velocity: ParticleVelocity,
+  config: EffectConfig,
+  time: number
+): ParticleVelocity {
+  const intersectionPoint = { x: intersection.x, y: intersection.y, z: intersection.z };
+
+  switch (effect) {
+    case "spark":
+      return applySparkEffect(position, intersectionPoint, velocity, config);
+    case "wave":
+      return applyWaveEffect(position, intersectionPoint, velocity, config, time);
+    case "vortex":
+      return applyVortexEffect(position, intersectionPoint, velocity, config);
+    case "default":
+      return applyDefaultEffect(position, intersectionPoint, velocity, config);
+  }
+}
+
+/**
+ * Apply attraction to original position
+ */
+function applyAttraction(
+  position: ParticlePosition,
+  target: { x: number; y: number; z: number },
+  velocity: ParticleVelocity,
+  attractStrength: number
+): ParticleVelocity {
+  return {
+    vx: velocity.vx + (target.x - position.px) * attractStrength,
+    vy: velocity.vy + (target.y - position.py) * attractStrength,
+    vz: velocity.vz + (target.z - position.pz) * attractStrength,
+  };
+}
+
+/**
+ * Apply damping to velocity
+ */
+function applyDamping(velocity: ParticleVelocity, damping: number): ParticleVelocity {
+  return {
+    vx: velocity.vx * damping,
+    vy: velocity.vy * damping,
+    vz: velocity.vz * damping,
+  };
+}
+
+/**
+ * Update position based on velocity
+ */
+function updatePosition(
+  position: ParticlePosition,
+  velocity: ParticleVelocity
+): ParticlePosition {
+  return {
+    px: position.px + velocity.vx,
+    py: position.py + velocity.vy,
+    pz: position.pz + velocity.vz,
+  };
+}
+
+/**
+ * Calculate particle color based on effect
+ */
+function calculateParticleColor(
+  effect: Effect,
+  position: ParticlePosition,
+  intersection: THREE.Vector3 | null,
+  effectRadius: number,
+  time: number
+): { r: number; g: number; b: number } {
+  if (!intersection) {
+    return { r: 1, g: 1, b: 1 };
+  }
+
+  const intersectionPoint = { x: intersection.x, y: intersection.y, z: intersection.z };
+
+  if (effect === "wave") {
+    return calculateWaveColor(position, intersectionPoint, effectRadius, time);
+  }
+  if (effect === "vortex") {
+    return calculateVortexColor(position, intersectionPoint, effectRadius, time);
+  }
+
+  return { r: 1, g: 1, b: 1 };
+}
 
 export default function V0ParticleAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -734,149 +849,69 @@ export default function V0ParticleAnimation() {
         "color"
       ) as THREE.BufferAttribute;
 
-      const localIntersection = intersectionPoint;
-      const effectRadius = 0.5;
-      const repelStrength = 0.08;
+      const config: EffectConfig = {
+        effectRadius: 0.5,
+        repelStrength: 0.08,
+      };
       const attractStrength = 0.15;
       const damping = 0.92;
 
       // Apply rotation
-      camera.position.x = Math.sin(rotationY) * 3.5;
-      camera.position.z = Math.cos(rotationY) * 3.5;
-      camera.position.y = rotationX * 0.5;
-      camera.lookAt(0, 0, 0);
+      updateCameraPosition(camera, rotationX, rotationY);
 
       for (let j = 0; j < particleCount; j++) {
         const idx = j * 3;
-        let px = positionAttribute.getX(j);
-        let py = positionAttribute.getY(j);
-        let pz = positionAttribute.getZ(j);
+        const position: ParticlePosition = {
+          px: positionAttribute.getX(j),
+          py: positionAttribute.getY(j),
+          pz: positionAttribute.getZ(j),
+        };
 
-        const targetX = originalPositions[idx] ?? 0;
-        const targetY = originalPositions[idx + 1] ?? 0;
-        const targetZ = originalPositions[idx + 2] ?? 0;
+        const target = {
+          x: originalPositions[idx] ?? 0,
+          y: originalPositions[idx + 1] ?? 0,
+          z: originalPositions[idx + 2] ?? 0,
+        };
 
-        let vx = velocities[idx] ?? 0;
-        let vy = velocities[idx + 1] ?? 0;
-        let vz = velocities[idx + 2] ?? 0;
+        let velocity: ParticleVelocity = {
+          vx: velocities[idx] ?? 0,
+          vy: velocities[idx + 1] ?? 0,
+          vz: velocities[idx + 2] ?? 0,
+        };
 
-        // Apply effects based on mouse interaction
-        if (localIntersection) {
-          const dx = px - localIntersection.x;
-          const dy = py - localIntersection.y;
-          const dz = pz - localIntersection.z;
-          const distSq = dx * dx + dy * dy + dz * dz;
-          const dist = Math.sqrt(distSq);
-
-          if (
-            currentEffect === "spark" &&
-            distSq < effectRadius * effectRadius &&
-            distSq > 0.0001
-          ) {
-            const force = (1 - dist / effectRadius) * repelStrength * 3;
-            vx += (dx / dist) * force;
-            vy += (dy / dist) * force;
-            vz += (dz / dist) * force;
-          } else if (currentEffect === "wave") {
-            if (distSq < effectRadius * effectRadius) {
-              const wavePhase = time * 8 - dist * 12;
-              const waveStrength = 0.12;
-              const waveForce =
-                Math.sin(wavePhase) * waveStrength * (1 - dist / effectRadius);
-              if (dist > 0.001) {
-                vx += (dx / dist) * waveForce;
-                vy += (dy / dist) * waveForce;
-                vz += waveForce * 0.5;
-              }
-            }
-          } else if (currentEffect === "vortex") {
-            if (distSq < effectRadius * effectRadius && dist > 0.05) {
-              const vortexStrength = 0.15;
-              const spiralForce = vortexStrength * (1 - dist / effectRadius);
-
-              const tangentX = -dy;
-              const tangentY = dx;
-              const tangentLength = Math.sqrt(
-                tangentX * tangentX + tangentY * tangentY
-              );
-              if (tangentLength > 0.001) {
-                vx += (tangentX / tangentLength) * spiralForce;
-                vy += (tangentY / tangentLength) * spiralForce;
-              }
-
-              const pullStrength = spiralForce * 0.3;
-              vx -= (dx / dist) * pullStrength;
-              vy -= (dy / dist) * pullStrength;
-            }
-          } else if (currentEffect === "default") {
-            if (distSq < effectRadius * effectRadius && distSq > 0.0001) {
-              const force = (1 - dist / effectRadius) * repelStrength;
-              vx += (dx / dist) * force;
-              vy += (dy / dist) * force;
-              vz += (dz / dist) * force;
-            }
-          }
+        // Apply effect based on mouse interaction
+        if (intersectionPoint) {
+          velocity = applyParticleEffect(
+            currentEffect,
+            position,
+            intersectionPoint,
+            velocity,
+            config,
+            time
+          );
         }
 
         // Attract back to original position
-        const attractDx = targetX - px;
-        const attractDy = targetY - py;
-        const attractDz = targetZ - pz;
-        vx += attractDx * attractStrength;
-        vy += attractDy * attractStrength;
-        vz += attractDz * attractStrength;
-
-        // Apply damping
-        vx *= damping;
-        vy *= damping;
-        vz *= damping;
+        velocity = applyAttraction(position, target, velocity, attractStrength);
+        velocity = applyDamping(velocity, damping);
 
         // Update position
-        px += vx;
-        py += vy;
-        pz += vz;
+        const newPos = updatePosition(position, velocity);
+        positionAttribute.setXYZ(j, newPos.px, newPos.py, newPos.pz);
 
-        positionAttribute.setXYZ(j, px, py, pz);
+        velocities[idx] = velocity.vx;
+        velocities[idx + 1] = velocity.vy;
+        velocities[idx + 2] = velocity.vz;
 
-        velocities[idx] = vx;
-        velocities[idx + 1] = vy;
-        velocities[idx + 2] = vz;
-
-        // Color effects
-        let r = 1,
-          g = 1,
-          b = 1;
-
-        if (localIntersection) {
-          const dx = px - localIntersection.x;
-          const dy = py - localIntersection.y;
-          const dz = pz - localIntersection.z;
-          const distSq = dx * dx + dy * dy + dz * dz;
-          const dist = Math.sqrt(distSq);
-
-          if (
-            currentEffect === "wave" &&
-            distSq < effectRadius * effectRadius
-          ) {
-            const wavePhase = time * 8 - dist * 15;
-            const intensity =
-              Math.abs(Math.sin(wavePhase)) * (1 - dist / effectRadius) + 1;
-            r = intensity * 0.5 + 0.8;
-            g = intensity * 0.8 + 0.6;
-            b = intensity * 1.2 + 0.4;
-          } else if (
-            currentEffect === "vortex" &&
-            distSq < effectRadius * effectRadius
-          ) {
-            const angle = Math.atan2(dy, dx) + time * 5;
-            const intensity = (1 - dist / effectRadius) * 2 + 1;
-            r = (Math.sin(angle) * 0.5 + 0.5) * intensity;
-            g = (Math.sin(angle + (Math.PI * 2) / 3) * 0.5 + 0.5) * intensity;
-            b = (Math.sin(angle + (Math.PI * 4) / 3) * 0.5 + 0.5) * intensity;
-          }
-        }
-
-        colorAttribute.setXYZ(j, r, g, b);
+        // Calculate and apply color
+        const color = calculateParticleColor(
+          currentEffect,
+          newPos,
+          intersectionPoint,
+          config.effectRadius,
+          time
+        );
+        colorAttribute.setXYZ(j, color.r, color.g, color.b);
       }
 
       positionAttribute.needsUpdate = true;
