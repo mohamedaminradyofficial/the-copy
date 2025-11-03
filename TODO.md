@@ -1,144 +1,130 @@
+قائمة TODO المتبقّية (مرتّبة بالأولوية)
+أولًا: أولوية حرجة (قبل أي دمج)
 
-# قائمة TODO جديدة — «تنفيذ المتبقي» حتى الجاهزية للدمج
+توحيد نوع GeminiService وإزالة التعارض في BaseStation
 
-> موجّه لوكيل الترميز للتنفيذ الفوري داخل `frontend/`. الهدف: **Build إنتاج ناجح + E2E شاملة + أدلة كاملة + تقرير مُحدّث**.
+المواقع الحرجة:
+frontend/src/lib/ai/core/base-station.ts، الفرق بين:
+../stations/gemini-service و ../gemini-service.
 
-## 1) إنهاء أخطاء Build الإنتاج (TypeScript Strict)
+المطلوب: اعتماد نوع واحد واسترجاع خدمة واحدة متوافقة مع التوقيعات المستخدمة في BaseStation، وتحديث getGeminiService() لإرجاع النوع المعتمد.
 
-1. **تطبيع الأنواع في طبقة الذكاء الاصطناعي** (`src/lib/ai/**`):
+معايير القبول:
 
-   * عرّف أنواع الاستجابات (Response DTOs) لكل استدعاء خارجي مع **Zod** للتحقق (parse/refine) بدل `any`.
-   * استخدم **discriminated unions** لحالات النجاح/الفشل بدل `boolean`ات فضفاضة.
-   * عالج خصائص اختيارية مع `exactOptionalPropertyTypes`:
-     اكتب `prop?: T | undefined` وتحقق منها قبل الاستخدام.
-   * أزل/صحّح الاستيرادات المكسورة والـ **re-exports** غير الضرورية.
+لا توجد أخطاء TypeScript مرتبطة بـ GeminiService.
 
-2. **حواجز نوعية حول الأطراف الخارجية**:
+بناء الإنتاج يمرّ دون أخطاء بسبب هذا النوع.
 
-   * أنشئ وحدات *Boundary* لمزودي الذكاء الاصطناعي (مثلاً `geminiServiceBoundary.ts`) تُصدر دوالًا **مؤنطَقة Typed**؛ اجعل بقية النظام تتعامل مع **واجهات ثابتة** داخل المشروع.
+تلميح تطبيقي سريع:
 
-3. **تشغيل البناء حتى النجاح**:
+وحّد الاستيرادين إلى مصدر واحد، ثم عالج التوقيعات الداخلية بدل ازدواج التنفيذ/النوع.
 
-   ```bash
-   pnpm -C frontend build
-   ```
+إصلاح بناء الإنتاج (TypeScript) كاملًا
 
-   **معيار قبول:** نجاح بلا أخطاء TypeScript أو تحذيرات كاسرة. (التقرير السابق سجّل فشل build) 
+المطلوب: معالجة كل أخطاء TS المتبقية في طبقة الـ AI والملفات ذات الصلة حتى ينجح:
+npm run build دون أي Error.
 
----
+معايير القبول:
 
-## 2) إعداد وتشغيل اختبارات E2E (Playwright) مع أدلة
+نجاح بناء الإنتاج محليًا في بيئة نظيفة.
 
-1. **تهيئة Playwright** (إن لم يكن موجودًا بالكامل):
+إصلاح اختبار الوحدة لصفحة Home المرتبط بقراءة Manifest
 
-   ```bash
-   pnpm -C frontend dlx playwright install
-   ```
+المواقع الحرجة:
+frontend/src/app/page.tsx و frontend/src/app/page.test.tsx و frontend/src/config/pages.manifest.json.
 
-2. **اختبار تغطية الصفحات الـ 11**:
+العَرَض المرصود: map is not a function عند استخدام pagesManifest.
 
-   * أضف `tests/e2e/pages.spec.ts` لزيارة `/` ثم جميع المسارات المكتشفة من `src/config/pages.manifest.json`.
-   * التقط **لقطة شاشة** لكل صفحة إلى:
-     `frontend/evidence/<YYYY-MM-DD>/screens/<slug>.png`
-   * سجّل **HAR** لكل صفحة إلى:
-     `frontend/evidence/<YYYY-MM-DD>/network/<slug>.har`
+المطلوب: ضمان أن المكوّن يقرأ Array صحيحة (أو pages من كائن) قبل الاستدعاء.
 
-3. **سيناريوهات وظيفية قصيرة لكل صفحة** (خطوة تحقق دنيا):
+معايير القبول:
 
-   * `editor`: إنشاء/حفظ/إعادة فتح مستند قصير.
-   * `analysis`: تشغيل خط الأنابيب حتى محطة 7 على نص قصير (fixture).
-   * `development`: استيراد ناتج التحليل وإنشاء بطاقة تطوير.
-   * `brainstorm`: توليد 3 أفكار والاحتفاظ بها.
-   * `breakdown`: رفع ملف نصّي صغير واستخراج عناصر أولية.
-   * `ui`: تفاعل مكوّن أساسي (زر/حوار).
-   * `new`: إنشاء مشروع/مساحة جديدة وفق تدفق الصفحة.
+ينجح تشغيل: npm run test -- src/app/page.test.tsx.
 
-**معيار قبول:** نجاح `pnpm -C frontend e2e`، وإنشاء جميع لقطات الشاشة وملفات HAR المطلوبة (كان التقرير السابق يفتقدها). 
+لا تظهر أخطاء تحويل/استيراد JSON، ولا يتم استدعاء map على قيمة غير Array.
 
----
+ثانيًا: أولوية متوسطة (تثبت الجاهزية)
 
-## 3) تحديث الصفحة الرئيسية + الـ Manifest (تحقق نهائي)
+تشغيل اختبارات E2E وتوليد أدلة Evidence فعلية
 
-* بما أن الوكيل أفاد بإظهار **11/11 صفحة**، أضف اختبارًا وحداتيًا بسيطًا يحمّل `pages.manifest.json` ويقارن العدّاد بـ 11، ويؤكد وجود الروابط على `/`.
-* احفظ ملف `pages-discovered.json` المُولّد ضمن:
-  `frontend/evidence/<YYYY-MM-DD>/logs/pages-discovered.json`
+المطلوب: تشغيل Playwright لضمان الوصول إلى الصفحات الـ 11 وتوليد الأدلة تلقائيًا.
 
-**معيار قبول:** `/` تعرض روابط فعّالة لجميع الصفحات، وملف السجلّ محدث. (التقرير السابق أشار إلى 4/11؛ هذا يغلق الفجوة) 
+مخرجات مُتوقَّعة (تلقائيًا تحت):
+frontend/evidence/<YYYY-MM-DD>/{logs, screens, network}
 
----
+Screens: 11 لقطة شاشة (كل صفحة).
 
-## 4) تقرير وأدلة — تسليم رسمي
+Network: 11 ملف HAR.
 
-1. **هيكل الأدلة**:
+Logs: health.json و pages-discovered.json.
 
-   ```
-   frontend/evidence/<YYYY-MM-DD>/
-     logs/
-       health.json
-       pages-discovered.json
-     screens/
-       <11 لقطة>
-     network/
-       <11 ملف HAR>
-   ```
-2. **تقرير مُحدّث**:
-   أنشئ/حدّث `frontend/RUN_REPORT_<YYYY-MM-DD>.md` يتضمن:
+معايير القبول:
 
-   * حالة Health + رابط سجلّاته.
-   * جدول الصفحات (11/11 ✅) مع روابط اللقطات/ملفات HAR.
-   * نتيجة `pnpm build` (✅).
-   * نتائج E2E والسيناريوهات المنفّذة.
-   * «قرار الدمج»: **جاهز** بلا تحفظات.
+مجلد Evidence موجود وممتلئ بكل الملفات المشار إليها.
 
-**معيار قبول:** وجود اللقطات وHAR في المسارات المذكورة (التقرير السابق ذكر غيابها). 
+لا توجد سيناريوهات فاشلة بلا معالجة.
 
----
+تشغيل سكربت CI والتحقق من Hooks (Husky) قبل الدفع
 
-## 5) دمج وتشغيل حواجز CI
+المطلوب:
 
-* أضِف/ثبّت سكربتات `package.json` (إن لزم):
+تشغيل npm run ci محليًا والتأكد من النجاح.
 
-  ```json
-  {
-    "scripts": {
-      "lint": "next lint",
-      "typecheck": "tsc -p tsconfig.json --noEmit",
-      "test": "vitest run",
-      "e2e": "playwright test",
-      "build": "next build",
-      "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm e2e"
-    }
-  }
-  ```
-* اربط pre-push (Husky) بـ `lint && typecheck && test && build`.
+تفعيل/التحقق من pre-push hook إن لزم (lint/test/e2e أو subset منطقي).
 
-**معيار قبول:** فشل الـ push عند أي كسر لنوعية الكود أو البناء.
+معايير القبول:
 
----
+فشل أي خطوة يمنع الـ push محليًا حتى التصحيح.
 
-## 6) تسليم فرعي وقرار دمج
+سجّل النتائج في تقرير التشغيل.
 
-1. **تسليم:**
+ثالثًا: إقفال توثيقي/صحي
 
-   ```bash
-   git add -A
-   git commit -m "feat(frontend): fix strict TS in ai layer, add E2E with screenshots+HAR, update RUN_REPORT and evidence"
-   git push
-   ```
-2. **قرار الدمج** داخل PR:
+تحديث تقارير التشغيل
 
-   * Build: ✅
-   * Pages @ Home: ✅ 11/11
-   * E2E + أدلة: ✅
-   * **القرار**: جاهز للدمج إلى `main`.
+المطلوب: تحديث RUN_REPORT_CURRENT.md بنتائج فعلية (Build/E2E/Unit/CI) مع روابط مباشرة إلى أدلة Evidence (screens/HAR/logs).
 
----
+معايير القبول:
 
-### ملاحظتان أخيرتان
+التقرير يضمّ جدول حالة مُحدّث وروابط تُفتح وتعمل.
 
-* إن ظهرت تبعيات مذكورة في التقرير السابق (مثل `sonner`, `framer-motion`, `@tanstack/react-query`) فتثبيتها/إزالتها يجب أن تُحسَم بالنظر إلى **الاستخدام الفعلي** فقط، لتقليل سطح التعقيد. 
-* تأكد أن هذا الفرع موجود وحالي على GitHub قبل فتح PR النهائي. ([GitHub][1])
+مراجعة الاعتمادات والتبعيات
 
-**نفّذ القائمة أعلاه الآن.**
+المطلوب: تحقق سريع من سلامة التبعيات المثبتة وغياب المفقود/المكرر.
 
-[1]: https://github.com/mohamedaminradyofficial/the-copy/tree/claude/complete-todo-items-011CUjh8vMgxjNXNnT1Ehdm8 "GitHub - mohamedaminradyofficial/the-copy at claude/complete-todo-items-011CUjh8vMgxjNXNnT1Ehdm8"
+معايير القبول:
+
+لا تحذيرات حرجة عند التثبيت والبناء.
+
+لا تبعيات غير مُستخدمة بشكل صريح في البناء النهائي.
+
+ترتيب التنفيذ الموصى به (سير عمل حتمي)
+
+معالجة GeminiService وتوحيد النوع.
+
+تصفير أخطاء TS وتشغيل npm run build.
+
+إصلاح اختبار الوحدة للصفحة الرئيسية وتشغيل npm run test.
+
+تشغيل npm run e2e وتحصيل Evidence (screens/HAR/logs).
+
+تشغيل npm run ci والتحقق من hooks.
+
+تحديث RUN_REPORT_CURRENT.md ببيانات فعلية وروابط أدلة.
+
+أوامر مرجعية:
+
+# 1) بناء نظيف
+pnpm install
+npm run build
+
+# 2) اختبارات الوحدة (ركّز على الصفحة الرئيسية أولًا)
+npm run test -- src/app/page.test.tsx
+npm run test
+
+# 3) E2E + الأدلة
+cd frontend
+npm run e2e
+
+# 4) CI محلي
+npm run ci
