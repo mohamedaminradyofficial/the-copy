@@ -241,7 +241,7 @@ pnpm eslint . --ext .ts,.tsx,.js,.jsx
 ## جهات الاتصال
 
 - **Security Owner**: mohamedaminradyofficial
-- **Repository**: https://github.com/mohamedaminradyofficial/the-copy-monorepo
+- **Repository**: <https://github.com/mohamedaminradyofficial/the-copy-monorepo>
 - **Security Policy**: SECURITY.md
 - **Security Fixes Log**: SECURITY_FIXES.md
 

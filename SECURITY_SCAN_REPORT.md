@@ -1,6 +1,6 @@
 # Security Scan Report
 
-_Generated on 2025-11-03 11:11:03 UTC_
+### Generated on 2025-11-03 11:11:03 UTC
 
 ## Overview
 

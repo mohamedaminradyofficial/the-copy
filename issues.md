@@ -2000,7 +2000,7 @@ SECURITY_PROCESS.md
 
 219
 
-- **Repository**: https://github.com/mohamedaminradyofficial/the-copy-monorepo
+- **Repository**: <https://github.com/mohamedaminradyofficial/the-copy-monorepo>
   219
 - **Repository**: <https://github.com/mohamedaminradyofficial/the-copy-monorepo>
   MINOR

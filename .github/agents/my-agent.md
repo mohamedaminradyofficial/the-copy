@@ -227,31 +227,31 @@ description: |
 
 ## 7) Quality Standards (quality_standards – Checklist)
 
-**Type Safety**
+### Type Safety
 
 - [ ] No `any` without documented justification.
 - [ ] Interfaces/types for every complex data structure.
 - [ ] TypeScript strict enabled in frontend and backend.
 
-**Error Handling**
+### Error Handling
 
 - [ ] `try/catch` for I/O operations or external calls.
 - [ ] Clear, traceable error messages (no secret leakage).
 - [ ] Logging with appropriate levels.
 
-**Testing**
+### Testing
 
 - [ ] Unit tests for core functions.
 - [ ] Integration for complex flows (including enforcing text-only runtime outputs).
 - [ ] E2E for critical paths, and A11y/Perf when applicable.
 
-**Performance**
+### Performance
 
 - [ ] No gratuitous nested loops, no N+1 issues.
 - [ ] Optimized caching/batching/joins.
 - [ ] Dynamic splitting and reduced frontend payloads.
 
-**Security**
+### Security
 
 - [ ] Comprehensive validation (Zod/Schema).
 - [ ] No hardcoded secrets.
