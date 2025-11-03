@@ -22,6 +22,8 @@ import {
   applyContextUpdates,
   matchesBulletCharacterPattern,
   shouldConvertDialogueToAction,
+  processBulletCharacterPattern,
+  convertDialogueToAction,
   type LineProcessingContext,
   type LineProcessingResult,
 } from "./paste-handlers";
@@ -31,6 +33,7 @@ import {
   hasActionWithPunctuation,
   isLongLineWithAction,
 } from "./action-classifiers";
+import * as CharacterLineDetector from "./utils/character-line-detector";
 import {
   Sparkles,
   X,
@@ -212,6 +215,7 @@ class ScreenplayClassifier {
     line: string,
     context?: { lastFormat: string; isInDialogueBlock: boolean }
   ): boolean {
+    // Early exits for non-character lines
     if (
       ScreenplayClassifier.isSceneHeaderStart(line) ||
       ScreenplayClassifier.isTransition(line) ||
@@ -220,64 +224,30 @@ class ScreenplayClassifier {
       return false;
     }
 
-    const wordCount = ScreenplayClassifier.wordCount(line);
-    // Allow slightly longer character lines for Arabic names
-    if (wordCount > 7) return false;
+    // Word count check
+    if (ScreenplayClassifier.wordCount(line) > 7) return false;
 
+    // Action verb check
     const normalized = ScreenplayClassifier.normalizeLine(line);
-    // If it starts with an action verb, it's not a character line
     if (ScreenplayClassifier.ACTION_VERBS.test(normalized)) return false;
 
-    // Enhanced character line detection for Arabic
-    // Check if line ends with a colon (common in Arabic screenplays)
     const hasColon = line.includes(":");
 
-    // Special handling for Arabic character names that might not follow Western patterns
-    const arabicCharacterPattern =
-      /^[\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+[:\s]*$/;
-
-    // If it ends with a colon, it's very likely a character line
-    if (hasColon && line.trim().endsWith(":")) {
-      return true;
+    // Apply context-aware checks first
+    const contextResult = CharacterLineDetector.applyContextChecks(
+      line,
+      ScreenplayClassifier.CHARACTER_RE,
+      hasColon,
+      context
+    );
+    if (contextResult !== null) {
+      return contextResult;
     }
 
-    // If it matches Arabic character pattern, it's likely a character line
-    if (arabicCharacterPattern.test(line)) {
-      return true;
-    }
-
-    // If it doesn't have a colon and doesn't match character patterns, it's likely action
-    if (!hasColon) return false;
-
-    // Context-aware checks
-    if (context) {
-      // If we're already in a dialogue block, this might be a new character
-      if (context.isInDialogueBlock) {
-        // If the last line was also a character, this is likely a new character
-        if (context.lastFormat === "character") {
-          return (
-            ScreenplayClassifier.CHARACTER_RE.test(line) ||
-            arabicCharacterPattern.test(line)
-          );
-        }
-        // If the last line was dialogue, this is probably not a character
-        if (context.lastFormat === "dialogue") {
-          return false;
-        }
-      }
-
-      // If the last format was action, and this line has a colon, it's likely a character
-      if (context.lastFormat === "action" && hasColon) {
-        return (
-          ScreenplayClassifier.CHARACTER_RE.test(line) ||
-          arabicCharacterPattern.test(line)
-        );
-      }
-    }
-
-    return (
-      ScreenplayClassifier.CHARACTER_RE.test(line) ||
-      arabicCharacterPattern.test(line)
+    // Fall back to basic checks
+    return CharacterLineDetector.isCharacterLineBasic(
+      line,
+      ScreenplayClassifier.CHARACTER_RE
     );
   }
 
