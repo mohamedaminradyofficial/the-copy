@@ -70,6 +70,20 @@ module.exports = [
     rules: {
       'import/no-default-export': 'error',
     },
+    ignores: [
+      'src/app/**/page.tsx',
+      'src/app/**/page.ts',
+      'src/app/**/layout.tsx',
+      'src/app/**/layout.ts',
+      'src/app/**/error.tsx',
+      'src/app/**/loading.tsx',
+      'src/app/**/not-found.tsx',
+      'src/app/**/template.tsx',
+      'src/app/**/default.tsx',
+      'src/app/**/route.ts',
+      'src/middleware.ts',
+      'src/**/middleware.ts',
+    ],
   },
 
   // Allow Next.js app router defaults
