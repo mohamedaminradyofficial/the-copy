@@ -20,6 +20,8 @@ import {
   processSceneHeaderLine,
   isActionDescription,
   applyContextUpdates,
+  matchesBulletCharacterPattern,
+  shouldConvertDialogueToAction,
   type LineProcessingContext,
   type LineProcessingResult,
 } from "./paste-handlers";

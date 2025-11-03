@@ -163,3 +163,49 @@ export function applyContextUpdates(
     ...updates,
   };
 }
+
+/**
+ * Check if text matches bullet character pattern
+ */
+export function matchesBulletCharacterPattern(text: string): {
+  match: boolean;
+  characterName?: string;
+  dialogueText?: string;
+} {
+  const bulletCharacterPattern = /^\s*[•·●○■▪▫–—‣⁃]([^:]+):(.*)/;
+  const match = text.match(bulletCharacterPattern);
+
+  if (match && match[1] && match[2]) {
+    return {
+      match: true,
+      characterName: match[1].trim(),
+      dialogueText: match[2].trim(),
+    };
+  }
+
+  return { match: false };
+}
+
+/**
+ * Check if dialogue should be converted to action
+ */
+export function shouldConvertDialogueToAction(text: string, wordCount: (text: string) => number): boolean {
+  const actionPatterns = [
+    /^\s*[-–—]?\s*(?:[ي|ت][\u0600-\u06FF]+|نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|يظهر|تظهر)/,
+    /^\s*[-–—]\s*.+/,
+    /^\s*(?:نرى|ننظر|نسمع|نلاحظ|نشهد|نشاهد|نلمس|نشعر|نصدق|نفهم|نصدق|نشك|نتمنى|نأمل|نخشى|نخاف|نحب|نكره|نحسد|نغبط|ن admire|نحترم)/,
+    /\s+(?:يقول|تقول|قال|قالت|يقوم|تقوم|يبدأ|تبدأ|ينتهي|تنتهي|يذهب|تذهب|يكتب|تكتب|ينظر|تنظر|يبتسم|تبتسم|يقف|تقف|يجلس|تجلس|يدخل|تدخل|يخرج|تخرج|يركض|تركض|يمشي|تمشي|يجري|تجرى|يصرخ|اصرخ|يبكي|تبكي|يضحك|تضحك|يغني|تغني|يرقص|ترقص|يأكل|تأكل|يشرب|تشرب|ينام|تنام|يستيقظ|تستيقظ|يقرأ|تقرأ|يسمع|تسمع|يشم|تشم|يلمس|تلمس|يأخذ|تأخذ|يعطي|تعطي|يفتح|تفتح|يغلق|تغلق|يعود|تعود|يأتي|تأتي|يموت|تموت|يحيا|تحيا|يقاتل|تقاتل|ينصر|تنتصر|يخسر|تخسر|يرسم|ترسم|يصمم|تخطط|يقرر|تقرر|يفكر|تفكر|يتذكر|تذكر|يحاول|تحاول|يستطيع|تستطيع|يريد|تريد|يحتاج|تحتاج|يبحث|تبحث|يجد|تجد|يفقد|تفقد|يحمي|تحمي|يراقب|تراقب|يخفي|تخفي|يكشف|تكشف|يكتشف|تكتشف|يعرف|تعرف|يتعلم|تعلن|يعلم|تعلن)\s+/,
+  ];
+
+  // Check action patterns
+  if (actionPatterns.some((pattern) => pattern.test(text))) {
+    return true;
+  }
+
+  // Check long sentences
+  if (text.length > 20 && wordCount(text) > 5) {
+    return true;
+  }
+
+  return false;
+}
