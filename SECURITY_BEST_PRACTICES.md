@@ -8,10 +8,10 @@ This document outlines critical security practices for developers working on thi
 
 ## ⚠️ CRITICAL: Never Commit Secrets
 
-### What NOT to commit:
+### What NOT to commit
 
 ❌ **NEVER commit these to Git:**
-- API keys and tokens (GitHub, AWS, Google Cloud, etc.)
+
 - Database passwords and connection strings
 - Private keys (.pem, .key files)
 - `.env` files containing secrets

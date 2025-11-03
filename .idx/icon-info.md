@@ -9,6 +9,6 @@ For "The Copy" Arabic drama analysis platform, consider using:
 - AI/analysis themed icon
 
 The icon should be:
-- PNG format
+
 - Square dimensions (recommended: 256x256px)
 - Clear and recognizable at small sizes

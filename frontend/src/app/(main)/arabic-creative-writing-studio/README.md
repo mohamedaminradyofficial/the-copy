@@ -54,7 +54,7 @@ The application uses React hooks for local state management:
 ### API Integration
 
 The Gemini service is initialized with user-provided API key and handles:
-- Text analysis
+
 - Prompt enhancement
 - Connection testing
 

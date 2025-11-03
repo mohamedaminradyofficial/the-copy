@@ -57,7 +57,7 @@ python3 scripts/parse_create_issues.py
 ```
 
 **Features:**
-- Parses `SECURITY_SCAN_REPORT.md` automatically
+
 - Extracts severity, file path, line number, and description
 - Creates issues with appropriate labels:
   - `security-critical` + `priority-p0`
