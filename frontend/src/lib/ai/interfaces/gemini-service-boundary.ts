@@ -86,13 +86,24 @@ export function createGeminiServiceBoundary(
 ): GeminiServiceBoundary {
   return {
     async generateText(prompt, options = {}) {
-      const response = await service.generate<{ raw: string }>({
+      const request: {
+        prompt: string;
+        temperature: number;
+        maxTokens: number;
+        systemInstruction?: string;
+        context?: string;
+      } = {
         prompt,
         temperature: options.temperature ?? 0.4,
         maxTokens: options.maxTokens ?? 4096,
-        systemInstruction: options.systemInstruction,
-        context: options.context,
-      });
+      };
+      if (options.systemInstruction !== undefined) {
+        request.systemInstruction = options.systemInstruction;
+      }
+      if (options.context !== undefined) {
+        request.context = options.context;
+      }
+      const response = await service.generate<{ raw: string }>(request);
 
       if (typeof response.content === "object" && response.content !== null && "raw" in response.content) {
         return (response.content as { raw: string }).raw;

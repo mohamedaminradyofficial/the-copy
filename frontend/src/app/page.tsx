@@ -50,7 +50,9 @@ const iconMap: Record<string, typeof PenSquare> = {
 };
 
 // Generate features from manifest
-const features = pagesManifest.pages.map((page) => ({
+// Ensure pages is an array before mapping
+const pagesArray = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+const features = pagesArray.map((page) => ({
   icon: iconMap[page.slug] || FileText,
   title: page.title,
   description: (pagesManifest.metadata as Record<string, {title: string, description: string}>)[page.slug]?.description || "",

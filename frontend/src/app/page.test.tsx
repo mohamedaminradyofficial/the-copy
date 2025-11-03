@@ -8,11 +8,14 @@ import pagesManifest from "../config/pages.manifest.json";
 
 describe("Homepage Verification", () => {
   it("should have exactly 11 pages in manifest", () => {
-    expect(pagesManifest.pages).toHaveLength(11);
+    // Ensure pages is an array
+    const pages = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+    expect(pages).toHaveLength(11);
   });
 
   it("should have all required page properties", () => {
-    pagesManifest.pages.forEach((page) => {
+    const pages = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+    pages.forEach((page) => {
       expect(page).toHaveProperty("slug");
       expect(page).toHaveProperty("path");
       expect(page).toHaveProperty("title");
@@ -23,19 +26,22 @@ describe("Homepage Verification", () => {
   });
 
   it("should have unique slugs", () => {
-    const slugs = pagesManifest.pages.map((p) => p.slug);
+    const pages = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+    const slugs = pages.map((p) => p.slug);
     const uniqueSlugs = new Set(slugs);
     expect(uniqueSlugs.size).toBe(slugs.length);
   });
 
   it("should have unique paths", () => {
-    const paths = pagesManifest.pages.map((p) => p.path);
+    const pages = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+    const paths = pages.map((p) => p.path);
     const uniquePaths = new Set(paths);
     expect(uniquePaths.size).toBe(paths.length);
   });
 
   it("should match expected page count from previous report", () => {
     // Previous report mentioned 4/11, now should be 11/11
-    expect(pagesManifest.pages.length).toBe(11);
+    const pages = Array.isArray(pagesManifest.pages) ? pagesManifest.pages : [];
+    expect(pages.length).toBe(11);
   });
 });

@@ -1,6 +1,6 @@
 // frontend/src/lib/ai/rag/context-retriever.ts
 
-import { GeminiService } from "../services/gemini-service";
+import { GeminiService } from "../stations/gemini-service";
 import { TextChunk, ContextMap } from "./text-chunking";
 
 export interface RetrievalOptions {

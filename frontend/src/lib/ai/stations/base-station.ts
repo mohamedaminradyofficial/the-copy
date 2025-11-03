@@ -1,6 +1,6 @@
 // frontend/src/lib/ai/stations/base-station.ts
 
-import { GeminiService } from "../services/gemini-service";
+import { GeminiService } from "./gemini-service";
 import {
   checkConstitutionalCompliance,
   ConstitutionalCheckResult,
@@ -205,7 +205,8 @@ export abstract class BaseStation {
       }
 
       // إضافة نتائج الفحص الدستوري إلى النتيجة
-      result.constitutionalCheck = {
+      const resultObj = result as Record<string, unknown>;
+      resultObj.constitutionalCheck = {
         checked: true,
         compliant: !hasViolations,
         violations: constitutionalResults.flatMap((r) =>
@@ -219,7 +220,8 @@ export abstract class BaseStation {
       console.error("Constitutional check failed:", error);
 
       // إضافة معلومات الفشل إلى النتيجة
-      result.constitutionalCheck = {
+      const resultObj = result as Record<string, unknown>;
+      resultObj.constitutionalCheck = {
         checked: false,
         compliant: false,
         violations: [`فشل الفحص: ${(error as Error).message}`],
@@ -269,7 +271,8 @@ export abstract class BaseStation {
         overallConfidence / Math.max(uncertaintyResults.length, 1);
 
       // إضافة نتائج قياس عدم اليقين إلى النتيجة
-      result.uncertaintyQuantification = {
+      const resultObj = result as Record<string, unknown>;
+      resultObj.uncertaintyQuantification = {
         quantified: true,
         overallConfidence,
         uncertaintyType,
@@ -281,7 +284,8 @@ export abstract class BaseStation {
       console.error("Uncertainty quantification failed:", error);
 
       // إضافة معلومات الفشل إلى النتيجة
-      result.uncertaintyQuantification = {
+      const resultObj = result as Record<string, unknown>;
+      resultObj.uncertaintyQuantification = {
         quantified: false,
         overallConfidence: 0.5,
         uncertaintyType: "epistemic",

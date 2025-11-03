@@ -529,3 +529,47 @@ export function createDevelopmentGeminiService(apiKey: string): GeminiService {
     requestsPerMinute: 100,
   });
 }
+
+// Singleton instance for use in BaseStation and other core modules
+let geminiServiceSingleton: GeminiService | null = null;
+
+/**
+ * Get or create the singleton GeminiService instance
+ * Uses environment variables to determine the API key and configuration
+ */
+export function getGeminiService(config?: GeminiConfig): GeminiService {
+  if (!geminiServiceSingleton) {
+    if (config) {
+      geminiServiceSingleton = new GeminiService(config);
+    } else {
+      // Try to get API key from environment (server-side only)
+      let apiKey: string;
+      try {
+        // Dynamic import to avoid issues if env.ts is not available
+        const { getApiKey } = require("../../env");
+        apiKey = getApiKey();
+      } catch (error) {
+        // Fallback: try to get from process.env directly
+        apiKey =
+          process.env.GEMINI_API_KEY_PROD ||
+          process.env.GEMINI_API_KEY_STAGING ||
+          "";
+      }
+
+      if (!apiKey) {
+        throw new Error(
+          "GeminiService requires a config object or GEMINI_API_KEY environment variable"
+        );
+      }
+
+      // Determine environment and create appropriate service
+      const isProduction = process.env.NODE_ENV === "production";
+      if (isProduction) {
+        geminiServiceSingleton = createProductionGeminiService(apiKey);
+      } else {
+        geminiServiceSingleton = createDevelopmentGeminiService(apiKey);
+      }
+    }
+  }
+  return geminiServiceSingleton;
+}

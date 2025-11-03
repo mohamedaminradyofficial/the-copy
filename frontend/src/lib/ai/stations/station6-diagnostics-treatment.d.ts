@@ -1,4 +1,4 @@
-import { GeminiService } from "../services/gemini-service";
+import { GeminiService } from "./gemini-service";
 import { Station5Output, StationMetadata, UncertaintyReport } from "./station-types";
 import { DebateResult } from "../constitutional/multi-agent-debate";
 export interface DiagnosticIssue {

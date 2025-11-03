@@ -1,4 +1,4 @@
-import { GeminiService } from "../services/gemini-service";
+import { GeminiService } from "./gemini-service";
 import {
   Station5Output,
   AllStationsOutput,
