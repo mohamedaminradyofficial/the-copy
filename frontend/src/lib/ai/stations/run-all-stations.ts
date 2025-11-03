@@ -62,42 +62,52 @@ export class AnalysisPipeline {
   private readonly delayBetweenStations: number;
 
   constructor(config: AnalysisPipelineConfig) {
+    this.geminiService = this.initializeGeminiService(config);
+    this.outputDirectory = this.initializeOutputDirectory(config);
+    this.enableProgressTracking = config.enableProgressTracking ?? true;
+    this.enableDetailedLogging = config.enableDetailedLogging ?? true;
+    this.delayBetweenStations = config.delayBetweenStations ?? 6000;
+    this.orchestrator = this.createOrchestrator(config);
+  }
+
+  private initializeGeminiService(config: AnalysisPipelineConfig): GeminiService {
+    if (config.geminiService) {
+      return config.geminiService;
+    }
+
     if (!config.apiKey) {
       logger.warn(
         "[AnalysisPipeline] GEMINI_API_KEY not set. AI analysis will fail."
       );
-      this.geminiService =
-        config.geminiService ??
-        new GeminiService({
-          apiKey: "dummy-key-ai-disabled",
-          defaultModel: GeminiModel.FLASH,
-          fallbackModel: GeminiModel.FLASH,
-          maxRetries: 0,
-          timeout: 1000,
-        });
-    } else {
-      this.geminiService =
-        config.geminiService ??
-        new GeminiService({
-          apiKey: config.apiKey,
-          defaultModel: config.geminiModel ?? GeminiModel.PRO,
-          fallbackModel: config.fallbackModel ?? GeminiModel.FLASH,
-          maxRetries: config.maxRetries ?? 3,
-          timeout: config.timeout ?? 120_000,
-        });
+      return new GeminiService({
+        apiKey: "dummy-key-ai-disabled",
+        defaultModel: GeminiModel.FLASH,
+        fallbackModel: GeminiModel.FLASH,
+        maxRetries: 0,
+        timeout: 1000,
+      });
     }
 
-    this.outputDirectory =
+    return new GeminiService({
+      apiKey: config.apiKey,
+      defaultModel: config.geminiModel ?? GeminiModel.PRO,
+      fallbackModel: config.fallbackModel ?? GeminiModel.FLASH,
+      maxRetries: config.maxRetries ?? 3,
+      timeout: config.timeout ?? 120_000,
+    });
+  }
+
+  private initializeOutputDirectory(config: AnalysisPipelineConfig): string {
+    const outputDirectory =
       config.outputDir ?? path.join(process.cwd(), "analysis_output");
-    if (!fs.existsSync(this.outputDirectory)) {
-      fs.mkdirSync(this.outputDirectory, { recursive: true });
+    if (!fs.existsSync(outputDirectory)) {
+      fs.mkdirSync(outputDirectory, { recursive: true });
     }
+    return outputDirectory;
+  }
 
-    this.enableProgressTracking = config.enableProgressTracking ?? true;
-    this.enableDetailedLogging = config.enableDetailedLogging ?? true;
-    this.delayBetweenStations = config.delayBetweenStations ?? 6000;
-
-    this.orchestrator = new StationsOrchestrator({
+  private createOrchestrator(config: AnalysisPipelineConfig): StationsOrchestrator {
+    return new StationsOrchestrator({
       geminiService: this.geminiService,
       outputDirectory: this.outputDirectory,
       enableCaching: config.enableCaching ?? false,
