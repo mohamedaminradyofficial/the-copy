@@ -10,6 +10,20 @@ import {
   type FormatAction,
 } from "./keyboard-handlers";
 import {
+  processBlankLine,
+  processBasmalaLine,
+  processTransitionLine,
+  processCharacterLine,
+  processParentheticalLine,
+  processActionLine,
+  processDialogueLine,
+  processSceneHeaderLine,
+  isActionDescription,
+  applyContextUpdates,
+  type LineProcessingContext,
+  type LineProcessingResult,
+} from "./paste-handlers";
+import {
   Sparkles,
   X,
   Loader2,
@@ -1106,188 +1120,122 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   };
 
   // Handle paste
+  /**
+   * Process a single line during paste operation
+   */
+  const processLine = (
+    line: string,
+    context: LineProcessingContext,
+    currentCharacter: string,
+    ctx: { inDialogue: boolean }
+  ): LineProcessingResult | null => {
+    // Blank line
+    if (ScreenplayClassifier.isBlank(line)) {
+      return processBlankLine();
+    }
+
+    // Basmala
+    if (ScreenplayClassifier.isBasmala(line)) {
+      return processBasmalaLine(line);
+    }
+
+    // Scene header (complex)
+    const sceneHeaderMatch = line.trim().match(/^(مشهد\s*\d+)\s*[-–—:،]?\s*(.*)$/i);
+    if (sceneHeaderMatch) {
+      const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
+      const processed = processSceneHeaderLine(line, ctx, sceneHeaderResult);
+      if (processed) return processed;
+    }
+
+    // Scene header (simple)
+    const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
+    const processed = processSceneHeaderLine(line, ctx, sceneHeaderResult);
+    if (processed) return processed;
+
+    // Transition
+    if (ScreenplayClassifier.isTransition(line)) {
+      return processTransitionLine(line);
+    }
+
+    // Character line
+    if (ScreenplayClassifier.isCharacterLine(line, context)) {
+      return processCharacterLine(line);
+    }
+
+    // Parenthetical
+    if (ScreenplayClassifier.isParenShaped(line)) {
+      return processParentheticalLine(line);
+    }
+
+    // Dialogue or action after character
+    if (currentCharacter && !line.includes(":")) {
+      if (ScreenplayClassifier.isLikelyAction(line) || isActionDescription(line)) {
+        return processActionLine(line);
+      }
+      return processDialogueLine(line);
+    }
+
+    // Action line
+    if (ScreenplayClassifier.isLikelyAction(line)) {
+      return processActionLine(line);
+    }
+
+    // Fallback to action
+    return processActionLine(line);
+  };
+
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const clipboardData = e.clipboardData;
     const pastedText = clipboardData.getData("text/plain");
 
-    if (editorRef.current) {
-      const lines = pastedText.split("\n");
-      let currentCharacter = "";
-      let htmlResult = "";
+    if (!editorRef.current) return;
 
-      // Context object for the SceneHeaderAgent
-      const ctx = { inDialogue: false };
+    const lines = pastedText.split("\n");
+    let currentCharacter = "";
+    let htmlResult = "";
+    const ctx = { inDialogue: false };
+    const context: LineProcessingContext = {
+      lastFormat: "action",
+      isInDialogueBlock: false,
+      pendingCharacterLine: false,
+    };
 
-      // Context tracking for better classification
-      const context = {
-        lastFormat: "action",
-        isInDialogueBlock: false,
-        pendingCharacterLine: false,
-      };
-
-      for (const line of lines) {
-        if (ScreenplayClassifier.isBlank(line)) {
-          currentCharacter = "";
-          context.isInDialogueBlock = false;
-          context.lastFormat = "action";
-          htmlResult +=
-            '<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;"></div>';
-          continue;
+    for (const line of lines) {
+      const result = processLine(line, context, currentCharacter, ctx);
+      if (result) {
+        htmlResult += result.html;
+        if (result.currentCharacter !== undefined) {
+          currentCharacter = result.currentCharacter;
         }
-
-        if (ScreenplayClassifier.isBasmala(line)) {
-          context.lastFormat = "basmala";
-          context.isInDialogueBlock = false;
-          htmlResult += `<div class="basmala" style="direction: rtl; text-align: left; margin: 0;">${line}</div>`;
-          continue;
+        if (result.updateContext) {
+          Object.assign(context, applyContextUpdates(context, result.updateContext));
         }
-
-        // Enhanced scene header processing
-        // Check for complex scene headers first
-        const sceneHeaderMatch = line
-          .trim()
-          .match(/^(مشهد\s*\d+)\s*[-–—:،]?\s*(.*)$/i);
-        if (sceneHeaderMatch) {
-          const sceneHeaderResult = SceneHeaderAgent(
-            line,
-            ctx,
-            getFormatStyles
-          );
-          if (sceneHeaderResult && sceneHeaderResult.processed) {
-            context.lastFormat = "scene-header";
-            context.isInDialogueBlock = false;
-            context.pendingCharacterLine = false;
-            htmlResult += sceneHeaderResult.html;
-
-            // Add scene header 3 if needed (location)
-            // Check if there's a separate line that might be scene header 3
-            continue;
-          }
-        }
-
-        // Use SceneHeaderAgent for proper scene header formatting
-        const sceneHeaderResult = SceneHeaderAgent(line, ctx, getFormatStyles);
-        if (sceneHeaderResult && sceneHeaderResult.processed) {
-          context.lastFormat = "scene-header";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          htmlResult += sceneHeaderResult.html;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isTransition(line)) {
-          context.lastFormat = "transition";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="transition" style="direction: rtl; text-align: center; font-weight: bold; text-transform: uppercase; margin: 1rem 0;">${line}</div>`;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isCharacterLine(line, context)) {
-          currentCharacter = line.trim().replace(":", ""); // Remove colon for cleaner display
-          context.lastFormat = "character";
-          context.isInDialogueBlock = true;
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="character" style="direction: rtl; text-align: center; font-weight: bold; text-transform: uppercase; width: 2.5in; margin: 12px auto 0 auto;">${line}</div>`;
-          continue;
-        }
-
-        if (ScreenplayClassifier.isParenShaped(line)) {
-          context.lastFormat = "parenthetical";
-          context.pendingCharacterLine = false;
-          htmlResult += `<div class="parenthetical" style="direction: rtl; text-align: center; font-style: italic; width: 2.0in; margin: 6px auto;">${line}</div>`;
-          continue;
-        }
-
-        if (currentCharacter && !line.includes(":")) {
-          // If we have a current character and this line doesn't look like a new character,
-          // check if it's actually dialogue or just an action description
-          if (ScreenplayClassifier.isLikelyAction(line)) {
-            // Treat as action line
-            context.lastFormat = "action";
-            context.isInDialogueBlock = false;
-            context.pendingCharacterLine = false;
-            // Remove leading dashes from action lines
-            const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-            htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-            continue;
-          } else {
-            // Additional check for action descriptions that might be misclassified as dialogue
-            // Check if this is an action description starting with a dash or descriptive verb
-            const actionDescriptionPatterns = [
-              /^\s*[-–—]\s*(?:نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|تظهر)/,
-              /^\s*[-–—]\s*[ي|ت][\u0600-\u06FF]+/, // Verbs starting with ي or ت
-              /^\s*(?:نرى|ننظر|نسمع|نلاحظ|يبدو|يظهر|يبدأ|ينتهي|يستمر|يتوقف|يتحرك|يحدث|يكون|يوجد|توجد|تظهر)/,
-            ];
-
-            let isActionDescription = false;
-            for (const pattern of actionDescriptionPatterns) {
-              if (pattern.test(line)) {
-                isActionDescription = true;
-                break;
-              }
-            }
-
-            if (isActionDescription) {
-              // Treat as action line
-              context.lastFormat = "action";
-              context.isInDialogueBlock = false;
-              context.pendingCharacterLine = false;
-              // Remove leading dashes from action lines
-              const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-              htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-              continue;
-            } else {
-              // Treat as dialogue
-              context.lastFormat = "dialogue";
-              context.pendingCharacterLine = false;
-              htmlResult += `<div class="dialogue" style="direction: rtl; text-align: center; width: 2.5in; line-height: 1.2; margin: 0 auto 12px auto;">${line}</div>`;
-              continue;
-            }
-          }
-        }
-
-        if (ScreenplayClassifier.isLikelyAction(line)) {
-          context.lastFormat = "action";
-          context.isInDialogueBlock = false;
-          context.pendingCharacterLine = false;
-          // Remove leading dashes from action lines
-          const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-          htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-          continue;
-        }
-
-        // Fallback - treat as action
-        context.lastFormat = "action";
-        context.isInDialogueBlock = false;
-        context.pendingCharacterLine = false;
-        // Remove leading dashes from action lines
-        const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
-        htmlResult += `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`;
-      }
-
-      // Post-process to correct misclassifications
-      const correctedHtmlResult = postProcessFormatting(htmlResult);
-
-      // Insert the HTML at cursor position
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = correctedHtmlResult;
-
-        const fragment = document.createDocumentFragment();
-        while (tempDiv.firstChild) {
-          fragment.appendChild(tempDiv.firstChild);
-        }
-
-        range.insertNode(fragment);
-        updateContent();
       }
     }
+
+    // Post-process and insert
+    const correctedHtmlResult = postProcessFormatting(htmlResult);
+    insertHtmlAtCursor(correctedHtmlResult);
+    updateContent();
+  };
+
+  const insertHtmlAtCursor = (html: string): void => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+
+    const fragment = document.createDocumentFragment();
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild);
+    }
+
+    range.insertNode(fragment);
   };
 
   // Fetch with retry
