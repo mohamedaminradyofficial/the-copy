@@ -1,36 +1,27 @@
-🟥 المهام المطلوبة (TODO LIST) — ترتيب تنفيذي إلزامي
-────────────────────────
+✅ المرحلة 1 — الإصلاحات الحرجة (Blockers – ممنوع المتابعة قبل إتمامها)
 
-1️⃣ تثبيت التبعيات الناقصة (cross-env، lucide-react، zod، drizzle، generative-ai …)
-✅ النجاح = لا يظهر أي missing dependency أثناء build أو typecheck.
+| رقم | نوع الثغرة                                   | عدد الحالات | الملفات المصابة                       | المطلوب                                                              |
+| --- | -------------------------------------------- | ----------- | ------------------------------------- | -------------------------------------------------------------------- |
+| 1   | Dynamic file paths (Path Traversal)          | 30+         | `frontend/scripts/*.js`               | ✅ استبدال input-based `path.join` بـ safe wrapper + validate baseDir |
+| 2   | XSS: `dangerouslySetInnerHTML` / `innerHTML` | 6           | `screenplay-editor.tsx` + `chart.tsx` | ✅ استبدال الـ unsafe render بــ DOMPurify أو sanitizer محلي          |
+| 3   | Regex DoS (dynamic `new RegExp`)             | 25+         | كل Agents في `drama-analyst`          | ✅ استخدام SafeRegex أو boundary + limit length                       |
+| 4   | Hardcoded Passwords                          | 3           | `auth.service.test.ts`                | ✅ استبدال بقيم test env + `.env.test.local`                          |
+| 5   | Insecure GitHub Actions (unpinned SHA)       | 3           | `.github/workflows/*.yml`             | ✅ تثبيت كل `uses:` على commit SHA بدل tag                            |
 
-2️⃣ تصفير كل أخطاء TypeScript (حاليًا 200+ خطأ)
-✅ النجاح = `pnpm -r run typecheck` يمرّ بلا أخطاء.
 
-3️⃣ إصلاح أخطاء الملفات المحددة:
-   - stations/network-diagnostics.ts
-   - stations/orchestrator.ts
-   - stations/run-all-stations.ts
-   - drama-analyst/agents/*.ts
-✅ النجاح = لا تبقى أي أخطاء signature / schema / missing export.
+✅ المرحلة 2 — إصلاحات High Priority
 
-4️⃣ بناء المشروع بنجاح
-✅ النجاح = `pnpm -r run build` يمرّ بدون TS errors أو dependency failures.
+| رقم | نوع                                     | المطلوب                                                   |
+| --- | --------------------------------------- | --------------------------------------------------------- |
+| 6   | Insecure dependency (`next@15.3.3`)     | ترقية إلى `15.4.7` أو `16.x`                              |
+| 7   | Prototype Pollution risk                | مراجعة `kv-utils.ts` + تطبيق structuredClone بدل mutation |
+| 8   | Weak random generator (`Math.random()`) | استبدال بـ `crypto.randomUUID()`                          |
 
-5️⃣ تشغيل اختبار الوحدة الخاص بصفحة Home
-✅ النجاح = `npm run test -- src/app/page.test.tsx` يمرّ بدون فشل وبدون map errors.
 
-6️⃣ تشغيل Playwright وإنتاج Evidence:
-   - 11 Screenshot
-   - 11 HAR
-   - logs: health.json + pages-discovered.json
-✅ يتم الحفظ تحت: `/frontend/evidence/<YYYY-MM-DD>/`
+✅ المرحلة 3 — إصلاحات تنظيمية
 
-7️⃣ تشغيل CI محليًا
-✅ النجاح = `npm run ci` يمرّ بلا أخطاء + تفعيل pre-push hook يمنع الدفع عند الفشل.
+| رقم | نوع                                 | المطلوب              |
+| --- | ----------------------------------- | -------------------- |
+| 9   | Missing link anchors in README      | إصلاح fragments      |
+| 10  | PowerShell readonly variable misuse | تعديل المتغير `$pid` |
 
-8️⃣ تحديث RUN_REPORT_CURRENT.md
-✅ يحتوي على:
-   - نتائج Build / Unit / E2E / CI
-   - روابط الأدلة (screens, HAR, logs)
-   - ملخص ما تم إصلاحه
