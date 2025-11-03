@@ -18,16 +18,21 @@ from typing import List, Dict, Tuple
 REPORT_PATH = Path("SECURITY_SCAN_REPORT.md")
 
 
-def run_command(cmd: str, dry_run: bool = False) -> Tuple[int, str]:
-    """Execute shell command and return (returncode, output)."""
+def run_command(cmd: List[str], dry_run: bool = False) -> Tuple[int, str]:
+    """Execute command safely without shell and return (returncode, output).
+
+    SECURITY: This function does NOT use shell=True to prevent command injection.
+    Commands must be passed as a list of arguments.
+    """
     if dry_run:
-        print(f"[DRY-RUN] Would execute: {cmd}")
+        print(f"[DRY-RUN] Would execute: {' '.join(cmd)}")
         return 0, ""
 
-    print(f" Executing: {cmd}")
+    print(f" Executing: {' '.join(cmd)}")
     try:
+        # SECURITY FIX: Removed shell=True to prevent command injection
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, encoding="utf-8"
+            cmd, shell=False, capture_output=True, text=True, encoding="utf-8"
         )
         return result.returncode, result.stdout + result.stderr
     except subprocess.SubprocessError as e:
@@ -40,14 +45,13 @@ def sanitize(text: str) -> str:
     return text.strip().strip("`").strip()
 
 
-def escape_for_shell(text: str) -> str:
-    """Escape text for safe shell command usage."""
-    # Replace double quotes with escaped double quotes
-    text = text.replace('"', '\\"')
-    # Replace backticks
-    text = text.replace("`", "\\`")
-    # Replace dollar signs
-    text = text.replace("$", "\\$")
+def sanitize_for_argument(text: str) -> str:
+    """Sanitize text for use as command argument.
+
+    SECURITY: When passing arguments directly to subprocess without shell=True,
+    no special escaping is needed as there's no shell interpretation.
+    This function is kept for backwards compatibility but simplified.
+    """
     return text
 
 
@@ -278,7 +282,10 @@ def _extract_finding_from_text_line(line: str, current_severity: str) -> Optiona
 
 
 def create_github_issue(finding: Dict[str, str], dry_run: bool = False) -> bool:
-    """Create a GitHub issue for a single finding."""
+    """Create a GitHub issue for a single finding.
+
+    SECURITY: Uses subprocess without shell=True to prevent command injection.
+    """
     severity = finding["severity"].upper()
     labels = get_labels_for_severity(finding["severity"])
 
@@ -314,12 +321,9 @@ This issue was automatically created from `SECURITY_SCAN_REPORT.md`.
 - Security Policy: [SECURITY.md](../SECURITY.md)
 """
 
-    # Escape for shell
-    title_escaped = escape_for_shell(title)
-    body_escaped = escape_for_shell(body)
-
-    # Create gh CLI command
-    cmd = f'gh issue create --title "{title_escaped}" --body "{body_escaped}" --label "{labels}"'
+    # SECURITY FIX: Build command as list to avoid shell injection
+    # When using subprocess without shell=True, no escaping is needed
+    cmd = ["gh", "issue", "create", "--title", title, "--body", body, "--label", labels]
 
     returncode, output = run_command(cmd, dry_run)
 
@@ -334,7 +338,7 @@ This issue was automatically created from `SECURITY_SCAN_REPORT.md`.
 
 def check_github_cli() -> None:
     """Check if GitHub CLI is installed and authenticated."""
-    returncode, output = run_command("gh auth status", dry_run=False)
+    returncode, output = run_command(["gh", "auth", "status"], dry_run=False)
     if returncode != 0:
         print(" GitHub CLI not authenticated. Please run: gh auth login")
         sys.exit(1)
