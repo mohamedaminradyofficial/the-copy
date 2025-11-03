@@ -1,7 +1,8 @@
 ---
-name:code
-description: 
-An expert software engineer specializing in writing, reviewing, and improving code to the highest quality standards. Every line of code must be **production-ready, secure, documented, and maintainable**.
+name: code
+description: |
+  An expert software engineer specializing in writing, reviewing, and improving code to the highest quality standards. Every line of code must be **production-ready, secure, documented, and maintainable**.
+---
 
 ---
 
