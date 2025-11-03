@@ -5,6 +5,15 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { TENSION_OPTIMIZER_AGENT_CONFIG } from "./agent";
+import {
+  buildOriginalTextSection,
+  buildSceneBreakdownSection,
+  buildTensionInfoSection,
+  buildConditionalInstructions,
+  getBaseInstructions,
+  getMiddleInstructions,
+  getClosingInstructions,
+} from "./prompt-builder";
 
 interface TensionOptimizerContext {
   originalText?: string;
@@ -39,6 +48,7 @@ export class TensionOptimizerAgent extends BaseAgent {
     const { input: taskInput, context } = input;
     const ctx = context as TensionOptimizerContext;
 
+    // Extract context with defaults
     const originalText = ctx?.originalText || "";
     const sceneBreakdown = ctx?.sceneBreakdown || [];
     const currentTensionLevel = ctx?.currentTensionLevel || "medium";
@@ -49,100 +59,31 @@ export class TensionOptimizerAgent extends BaseAgent {
     const identifyPeaks = ctx?.identifyPeaks ?? true;
     const analyzeRelease = ctx?.analyzeRelease ?? true;
 
+    // Build prompt sections
     let prompt = `مهمة تحسين وتحليل التوتر الدرامي\n\n`;
-
-    if (originalText) {
-      prompt += `النص المراد تحليله:\n${originalText.substring(0, 2500)}...\n\n`;
-    }
-
-    if (sceneBreakdown.length > 0) {
-      prompt += `تفصيل المشاهد:\n`;
-      sceneBreakdown.slice(0, 5).forEach((scene: any, idx: number) => {
-        const sceneDesc =
-          typeof scene === "string"
-            ? scene
-            : scene.description || `مشهد ${idx + 1}`;
-        prompt += `${idx + 1}. ${sceneDesc}\n`;
-      });
-      prompt += "\n";
-    }
-
-    prompt += `معلومات التوتر:\n`;
-    prompt += `- المستوى الحالي: ${this.translateLevel(currentTensionLevel)}\n`;
-    prompt += `- المستوى المستهدف: ${this.translateLevel(targetTensionLevel)}\n`;
-    prompt += `- نوع التوتر: ${this.translateTensionType(tensionType)}\n`;
-    prompt += `- تفضيل الوتيرة: ${this.translatePace(pacePreference)}\n`;
-    prompt += `- تحديد القمم: ${identifyPeaks ? "نعم" : "لا"}\n`;
-    prompt += `- تحليل التحرر: ${analyzeRelease ? "نعم" : "لا"}\n`;
-    prompt += `- تقديم توصيات: ${provideRecommendations ? "نعم" : "لا"}\n\n`;
-
+    prompt += buildOriginalTextSection(originalText);
+    prompt += buildSceneBreakdownSection(sceneBreakdown);
+    prompt += buildTensionInfoSection(
+      currentTensionLevel,
+      targetTensionLevel,
+      tensionType,
+      pacePreference,
+      identifyPeaks,
+      analyzeRelease,
+      provideRecommendations,
+      this.translateLevel.bind(this),
+      this.translateTensionType.bind(this),
+      this.translatePace.bind(this)
+    );
     prompt += `المهمة المطلوبة:\n${taskInput}\n\n`;
-
-    prompt += `التعليمات:
-
-1. **تقييم التوتر الحالي** (3-4 جمل):
-   - حدد مستوى التوتر العام في النص
-   - أين يكون التوتر فعالاً وأين يكون ضعيفاً
-   - مدى ملاءمة التوتر للنوع الدرامي والجمهور
-
-2. **تحليل منحنى التوتر**:
-   - كيف يتطور التوتر عبر النص
-   - الارتفاعات والانخفاضات
-   - التدرج والتصاعد
-   - العلاقة بين التوتر وبنية الحبكة
-
-${
-  identifyPeaks
-    ? `3. **نقاط الذروة** (Tension Peaks):
-   - حدد اللحظات ذات التوتر الأقصى
-   - ما الذي يجعلها فعالة (أو غير فعالة)
-   - توقيتها في البنية السردية
-   - مدى إشباعها للتوقعات`
-    : ""
-}
-
-${
-  analyzeRelease
-    ? `4. **لحظات التحرر** (Tension Release):
-   - أين وكيف يتم تخفيف التوتر
-   - هل التحرر مناسب أم سابق لأوانه
-   - التوازن بين البناء والتحرر
-   - الفرص الضائعة لتعزيز التوتر`
-    : ""
-}
-
-5. **تقنيات بناء التوتر المستخدمة**:
-   - التأخير والتعليق (Suspense)
-   - المعلومات الناقصة (Mystery)
-   - تصاعد الصراع
-   - ضيق الوقت (Ticking Clock)
-   - الرهانات المتزايدة (Rising Stakes)
-   - التضارب والتناقض
-   - التنبؤ والتلميح (Foreshadowing)
-
-6. **تحليل الوتيرة والإيقاع**:
-   - سرعة تصاعد التوتر
-   - التوازن بين لحظات الهدوء والتوتر
-   - الإيقاع العام (بطيء، سريع، متقطع)
-
-${
-  provideRecommendations
-    ? `7. **التوصيات والتحسينات**:
-   - كيفية رفع مستوى التوتر إلى المستوى المستهدف
-   - مواضع محددة تحتاج تعزيز
-   - تقنيات يمكن تطبيقها
-   - أمثلة على تعديلات محتملة
-   - تحذيرات من الإفراط أو المبالغة`
-    : ""
-}
-
-8. **التقييم النهائي**:
-   - فعالية التوتر الحالي (درجة من 10)
-   - الإمكانات غير المستغلة
-   - التوقعات للقارئ/المشاهد
-
-اكتب بشكل نصي تحليلي مباشر مع أمثلة محددة من النص.
-لا تستخدم JSON أو رسوم بيانية معقدة - تحليل نصي واضح فقط.`;
+    prompt += getBaseInstructions();
+    prompt += buildConditionalInstructions(
+      identifyPeaks,
+      analyzeRelease,
+      provideRecommendations
+    );
+    prompt += getMiddleInstructions();
+    prompt += getClosingInstructions();
 
     return prompt;
   }
