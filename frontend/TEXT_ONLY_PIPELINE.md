@@ -8,14 +8,14 @@
 
 ### 1. طبقة الذكاء الاصطناعي النصية (`gemini-core.ts`)
 
-#### الميزات:
+#### الميزات
 
 - ✅ **نصوص فقط**: لا JSON، لا كائنات، فقط نصوص
 - ✅ **Throttling موحد**: 6 ثواني لـ Flash-Lite، 10 ثواني لـ Flash، 15 ثانية لـ Pro
 - ✅ **حد التوكنز الموحد**: 48,192 توكن لجميع النماذج
 - ✅ **أدوات آمنة**: `toText()`, `safeSub()`, `safeSplit()` لمنع أخطاء React
 
-#### النماذج المستخدمة حصريًا:
+#### النماذج المستخدمة حصريًا
 
 ```typescript
 export type ModelId =
@@ -24,7 +24,7 @@ export type ModelId =
   | "gemini-2.5-pro"; // 15s throttle
 ```
 
-#### الواجهة الرئيسية:
+#### الواجهة الرئيسية
 
 ```typescript
 export async function callGeminiText(opts: CallOpts): Promise<string>;
@@ -32,7 +32,7 @@ export async function callGeminiText(opts: CallOpts): Promise<string>;
 
 ### 2. منسق خط الأنابيب (`pipeline-orchestrator.ts`)
 
-#### البنية التسلسلية:
+#### البنية التسلسلية
 
 ```
 النص المدخل
@@ -52,7 +52,7 @@ export async function callGeminiText(opts: CallOpts): Promise<string>;
 محطة 7: التقرير النهائي (Pro, temp=0.2) ← يعتمد على س1-6
 ```
 
-#### مثال على الاعتماد التسلسلي:
+#### مثال على الاعتماد التسلسلي
 
 ```typescript
 // المحطة 2 تستقبل نتائج المحطة 1 + النص الأصلي
@@ -66,19 +66,19 @@ c.s3 = await station3_network(
 
 ### 3. واجهة المستخدم المحدّثة
 
-#### بطاقات المحطات (`station-card.tsx`):
+#### بطاقات المحطات (`station-card.tsx`)
 
 - ✅ عرض ملخص (أول 300 حرف) من كل محطة
 - ✅ زر **عرض** - يفتح Modal بالتقرير الكامل
 - ✅ زر **تصدير** - يحفظ تقرير المحطة كـ `.txt`
 - ✅ استخدام `toText()` لجميع المخرجات
 
-#### زر التصدير الشامل (`stations-pipeline.tsx`):
+#### زر التصدير الشامل (`stations-pipeline.tsx`)
 
 - ✅ **تصدير التقرير النهائي الشامل** - يجمع جميع المحطات (س1-7) في ملف واحد
 - ✅ يظهر فقط عند اكتمال جميع المحطات
 
-#### مثال على التصدير:
+#### مثال على التصدير
 
 ```typescript
 function exportStationToFile(stationNum, content, stationName) {
@@ -94,7 +94,7 @@ function exportStationToFile(stationNum, content, stationName) {
 
 ### 4. إزالة السجلات المتعلقة بـ JSON
 
-#### قبل:
+#### قبل
 
 ```typescript
 logger.warn(
@@ -105,7 +105,7 @@ console.warn(
 );
 ```
 
-#### بعد:
+#### بعد
 
 ```typescript
 logger.info("[AI] text generated");
@@ -114,7 +114,7 @@ console.log("[AI] text generated");
 
 ### 5. تحديث التسميات
 
-#### القائمة الجانبية:
+#### القائمة الجانبية
 
 | قبل         | بعد    |
 | ----------- | ------ |
@@ -123,7 +123,7 @@ console.log("[AI] text generated");
 | تحليل معمق  | تحليل  |
 | عصف ذهني    | الورشة |
 
-#### الصفحة الرئيسية:
+#### الصفحة الرئيسية
 
 - تم تبديل كلمة "تحليل" و"تطوير" في عناوين الميزات للتناسق
 
