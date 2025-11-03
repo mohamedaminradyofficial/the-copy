@@ -11,12 +11,14 @@ This project is a back-end application or API built with Node.js and the Express
 ## 3. Coding Standards & Best Practices
 
 ### General
+
 - **Language:** Use modern JavaScript (ES6+) or TypeScript, depending on the project's configuration.
 - **Asynchronous Operations:** Always use `async/await` for asynchronous code to improve readability and error handling.
 - **Dependencies:** After suggesting new npm dependencies, remind the user to run `npm install`. Regularly audit dependencies for vulnerabilities using `npm audit`.
 - **Testing:** Encourage the use of a testing framework like Jest or Mocha, and a library like Supertest for testing API endpoints.
 
 ### Node.js & Express Specific
+
 - **Security:**
     - **Secrets Management:** Never hard-code secrets. Use environment variables (and a `.env` file) for all sensitive information.
     - **Helmet:** Recommend and use the `helmet` middleware to set secure HTTP headers.
