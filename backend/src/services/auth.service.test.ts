@@ -3,6 +3,9 @@ import { AuthService } from './auth.service';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// SECURITY FIX: Use environment variables instead of hardcoded passwords
+const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'fallback_test_pwd_123';
+
 // Mock dependencies
 vi.mock('../db', () => ({
   db: {
@@ -28,7 +31,7 @@ describe('AuthService', () => {
   describe('signup', () => {
     it('should successfully create a new user', async () => {
       const email = 'test@example.com';
-      const password = 'password123';
+      const password = TEST_PASSWORD;
       const firstName = 'Test';
       const lastName = 'User';
       const userId = 'user-123';
@@ -82,7 +85,7 @@ describe('AuthService', () => {
 
     it('should throw error if user already exists', async () => {
       const email = 'existing@example.com';
-      const password = 'password123';
+      const password = TEST_PASSWORD;
 
       // Mock database - user exists
       mockDb.select.mockReturnValue({
@@ -101,7 +104,7 @@ describe('AuthService', () => {
 
     it('should handle optional firstName and lastName', async () => {
       const email = 'test@example.com';
-      const password = 'password123';
+      const password = TEST_PASSWORD;
       const userId = 'user-123';
       const hashedPassword = 'hashed-password';
       const token = 'jwt-token';
@@ -142,7 +145,7 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should successfully login with valid credentials', async () => {
       const email = 'test@example.com';
-      const password = 'password123';
+      const password = TEST_PASSWORD;
       const userId = 'user-123';
       const hashedPassword = 'hashed-password';
       const token = 'jwt-token';
@@ -183,7 +186,7 @@ describe('AuthService', () => {
 
     it('should throw error if user not found', async () => {
       const email = 'nonexistent@example.com';
-      const password = 'password123';
+      const password = TEST_PASSWORD;
 
       // Mock database - user not found
       mockDb.select.mockReturnValue({
@@ -201,7 +204,7 @@ describe('AuthService', () => {
 
     it('should throw error if password is invalid', async () => {
       const email = 'test@example.com';
-      const password = 'wrongpassword';
+      const password = 'wrong_' + TEST_PASSWORD;
       const hashedPassword = 'hashed-password';
 
       // Mock database - find user

@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { CHARACTER_NETWORK_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface CharacterNetworkContext {
   originalText?: string;
@@ -231,10 +232,8 @@ ${
       "ارتباط",
       "شخصية",
     ];
-    const termCount = networkTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, networkTerms);
     score += Math.min(0.25, termCount * 0.015);
 
     const aspectsTerms = [
@@ -246,10 +245,8 @@ ${
       "قوة",
       "تأثير",
     ];
-    const aspectsCount = aspectsTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const aspectsCount = safeCountMultipleTerms(text, aspectsTerms);
     score += Math.min(0.15, aspectsCount * 0.02);
 
     if (text.length > 1500) score += 0.1;
@@ -268,10 +265,8 @@ ${
       "مهنية",
       "سلطوية",
     ];
-    const typesCount = relTypes.reduce(
-      (count, type) => count + (text.match(new RegExp(type, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const typesCount = safeCountMultipleTerms(text, relTypes);
     score += Math.min(0.25, typesCount * 0.04);
 
     const dynamicTerms = [
@@ -283,10 +278,8 @@ ${
       "ضعيف",
       "متوازن",
     ];
-    const dynamicCount = dynamicTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const dynamicCount = safeCountMultipleTerms(text, dynamicTerms);
     score += Math.min(0.15, dynamicCount * 0.03);
 
     const hasDirectionalIndicators =
@@ -309,10 +302,8 @@ ${
       "موزعة",
       "متشابكة",
     ];
-    const structCount = structuralTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const structCount = safeCountMultipleTerms(text, structuralTerms);
     score += Math.min(0.25, structCount * 0.04);
 
     const insightTerms = [
@@ -323,10 +314,8 @@ ${
       "الأهمية",
       "التأثير",
     ];
-    const insightCount = insightTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const insightCount = safeCountMultipleTerms(text, insightTerms);
     score += Math.min(0.25, insightCount * 0.03);
 
     return Math.min(1, score);
@@ -343,11 +332,8 @@ ${
       "في المشهد",
       "عندما",
     ];
-    const evidenceCount = evidenceMarkers.reduce(
-      (count, marker) =>
-        count + (text.match(new RegExp(marker, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const evidenceCount = safeCountMultipleTerms(text, evidenceMarkers);
     score += Math.min(0.25, evidenceCount * 0.025);
 
     const hasExamples = (text.match(/["«]/g) || []).length >= 2;

@@ -76,28 +76,36 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  );
+  // SECURITY FIX: Replaced dangerouslySetInnerHTML with safe CSS-in-JS approach
+  // Generate CSS custom properties as a style object instead of raw HTML injection
+  const styleRef = React.useRef<HTMLStyleElement>(null);
+
+  React.useEffect(() => {
+    if (!styleRef.current) return;
+
+    // Build CSS rules safely without HTML injection
+    const cssRules = Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const selector = `${prefix} [data-chart="${id}"]`;
+        const properties = colorConfig
+          .map(([key, itemConfig]) => {
+            const color =
+              itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+              itemConfig.color;
+            return color ? `  --color-${key}: ${color};` : null;
+          })
+          .filter(Boolean)
+          .join("\n");
+
+        return `${selector} {\n${properties}\n}`;
+      })
+      .join("\n");
+
+    // Safely set textContent instead of innerHTML
+    styleRef.current.textContent = cssRules;
+  }, [id, colorConfig]);
+
+  return <style ref={styleRef} />;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
