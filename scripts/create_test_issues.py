@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-scripts/create_security_issues_direct.py
+scripts/create_test_issues.py
 
-Create GitHub issues directly using GitHub API (no gh CLI required).
-Reads SECURITY_SCAN_REPORT.md and creates issues for each finding.
+Test script to create a limited number of security issues from SECURITY_SCAN_REPORT.md
+This is useful for testing before creating all issues.
 
 Usage:
-    python scripts/create_security_issues_direct.py --token YOUR_GITHUB_TOKEN
-    python scripts/create_security_issues_direct.py --dry-run
+    python scripts/create_test_issues.py --limit 5
+    python scripts/create_test_issues.py --limit 10 --severity critical
 """
 
 import argparse
@@ -18,7 +17,7 @@ import re
 import sys
 from pathlib import Path
 from typing import List, Dict, Optional
-from urllib import request, parse, error
+from urllib import request, error
 
 # Fix encoding for Windows console
 if sys.platform == "win32":
@@ -36,7 +35,7 @@ class GitHubAPI:
 
     def __init__(self, token: str, repo: str):
         self.token = token
-        self.repo = repo  # Format: "owner/repo"
+        self.repo = repo
         self.headers = {
             "Accept": "application/vnd.github+json",
             "Authorization": f"Bearer {token}",
@@ -59,8 +58,13 @@ class GitHubAPI:
             with request.urlopen(req) as response:
                 return json.loads(response.read().decode("utf-8"))
         except error.HTTPError as e:
-            print(f"[ERROR] HTTP Error: {e.code} - {e.reason}")
-            print(f"   Response: {e.read().decode('utf-8')}")
+            print(f"[ERROR] HTTP {e.code}: {e.reason}")
+            error_body = e.read().decode("utf-8")
+            try:
+                error_json = json.loads(error_body)
+                print(f"[ERROR] {error_json.get('message', 'Unknown error')}")
+            except:
+                print(f"[ERROR] {error_body}")
             return None
         except Exception as e:
             print(f"[ERROR] {e}")
@@ -107,12 +111,10 @@ def parse_report() -> List[Dict[str, str]]:
     with REPORT_PATH.open(encoding="utf-8", errors="ignore") as f:
         content = f.read()
 
-    # Parse line by line looking for findings
     lines = content.split("\n")
     current_severity = "MEDIUM"
 
     for line in lines:
-        # Track severity sections
         if "CRITICAL" in line.upper() or "Critical" in line:
             current_severity = "CRITICAL"
         elif "HIGH" in line.upper():
@@ -120,7 +122,6 @@ def parse_report() -> List[Dict[str, str]]:
         elif "MEDIUM" in line.upper():
             current_severity = "MEDIUM"
 
-        # Look for code/file references
         if any(
             ext in line
             for ext in [
@@ -133,9 +134,10 @@ def parse_report() -> List[Dict[str, str]]:
                 ".css",
                 ".json",
                 ".md",
+                ".sh",
+                ".ps1",
             ]
         ):
-            # Extract file path
             file_match = re.search(
                 r"([^\s|]+\.(ts|tsx|js|jsx|py|yml|yaml|css|json|md|sh|ps1))", line
             )
@@ -143,23 +145,18 @@ def parse_report() -> List[Dict[str, str]]:
                 continue
 
             file_path = file_match.group(1).strip("`")
-
-            # Extract line number if present
             line_num = "N/A"
             line_match = re.search(r"\b(\d{1,5})\b", line)
             if line_match:
                 line_num = line_match.group(1)
 
-            # Get severity from line or use current section
             severity = (
                 parse_severity(line)
                 if any(s in line.lower() for s in ["critical", "high", "medium", "low"])
                 else current_severity.lower()
             )
 
-            # Extract category/description
             summary = line.strip()
-            # Clean up table markers
             summary = re.sub(r"\|", " ", summary)
             summary = " ".join(summary.split())
 
@@ -173,7 +170,6 @@ def parse_report() -> List[Dict[str, str]]:
                 "summary": summary,
             }
 
-            # Avoid duplicates
             if finding not in findings:
                 findings.append(finding)
 
@@ -181,19 +177,19 @@ def parse_report() -> List[Dict[str, str]]:
 
 
 def create_issue_for_finding(
-    api: GitHubAPI, finding: Dict[str, str], dry_run: bool
+    api: GitHubAPI, finding: Dict[str, str], index: int
 ) -> bool:
     """Create GitHub issue for a finding."""
     severity = finding["severity"].upper()
     labels = get_labels(finding["severity"])
 
-    # Title
-    title = f"[{severity}] Security Issue - {finding['file']}:{finding['line']}"
+    title = (
+        f"[{severity}] Security Issue #{index} - {finding['file']}:{finding['line']}"
+    )
     if len(title) > 256:
         title = title[:253] + "..."
 
-    # Body
-    body = f"""## 🔒 Security Finding
+    body = f"""## Security Finding
 
 **Severity:** {severity}
 **File:** `{finding["file"]}`
@@ -217,13 +213,11 @@ Auto-generated from `SECURITY_SCAN_REPORT.md`
 - [Security Policy](../SECURITY.md)
 """
 
-    if dry_run:
-        print(f"[DRY-RUN] Would create: {title}")
-        return True
-
     result = api.create_issue(title, body, labels)
     if result:
+        issue_url = result.get("html_url", "")
         print(f"[OK] Created issue #{result['number']}: {title}")
+        print(f"     URL: {issue_url}")
         return True
     else:
         print(f"[ERROR] Failed: {title}")
@@ -242,9 +236,6 @@ def get_repo_from_git() -> Optional[str]:
             check=True,
         )
         url = result.stdout.strip()
-
-        # Parse GitHub URL
-        # Format: https://github.com/owner/repo.git or git@github.com:owner/repo.git
         if "github.com" in url:
             parts = url.replace(".git", "").split("github.com")[1].strip(":/")
             return parts
@@ -255,17 +246,23 @@ def get_repo_from_git() -> Optional[str]:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create GitHub issues from security report"
+        description="Create limited security issues for testing"
     )
     parser.add_argument("--token", help="GitHub Personal Access Token")
     parser.add_argument("--repo", help="Repository (owner/repo)")
     parser.add_argument(
-        "--dry-run", action="store_true", help="Don't actually create issues"
+        "--limit", type=int, default=5, help="Number of issues to create (default: 5)"
+    )
+    parser.add_argument(
+        "--severity", help="Filter by severity (critical/high/medium/low)"
+    )
+    parser.add_argument(
+        "--yes", "-y", action="store_true", help="Skip confirmation prompt"
     )
     args = parser.parse_args()
 
     print("=" * 80)
-    print("Security Issue Creator (Direct API)")
+    print("Security Issue Creator - TEST MODE")
     print("=" * 80)
     print()
 
@@ -275,9 +272,12 @@ def main():
         or os.getenv("GITHUB_TOKEN")
         or os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
     )
-    if not token and not args.dry_run:
-        print("[ERROR] GitHub token required. Set GITHUB_TOKEN env var or use --token")
+    if not token:
+        print("[ERROR] GitHub token required. Set GITHUB_PERSONAL_ACCESS_TOKEN in .env")
         sys.exit(1)
+
+    # Remove quotes if present
+    token = token.strip('"').strip("'")
 
     # Get repo
     repo = args.repo or get_repo_from_git()
@@ -286,45 +286,38 @@ def main():
         sys.exit(1)
 
     print(f"Repository: {repo}")
+    print(f"Limit: {args.limit} issues")
+    if args.severity:
+        print(f"Severity filter: {args.severity}")
     print()
-
-    if args.dry_run:
-        print("[DRY-RUN] No issues will be created")
-        print()
 
     # Parse report
     print(f"Reading {REPORT_PATH}...")
     findings = parse_report()
-    print(f"[OK] Found {len(findings)} findings")
+    print(f"[OK] Found {len(findings)} total findings")
+
+    # Filter by severity if requested
+    if args.severity:
+        findings = [
+            f for f in findings if f["severity"].lower() == args.severity.lower()
+        ]
+        print(f"[OK] Filtered to {len(findings)} {args.severity} findings")
+
+    # Limit
+    findings = findings[: args.limit]
+    print(f"[OK] Creating {len(findings)} issues")
     print()
-
-    # Show distribution
-    severity_counts = {}
-    for f in findings:
-        s = f["severity"]
-        severity_counts[s] = severity_counts.get(s, 0) + 1
-
-    print("Distribution:")
-    for sev in ["critical", "high", "medium", "low"]:
-        count = severity_counts.get(sev, 0)
-        if count > 0:
-            print(f"   {sev.upper()}: {count}")
-    print()
-
-    if not findings:
-        print("[WARNING] No findings detected")
-        sys.exit(0)
 
     # Confirm
-    if not args.dry_run and sys.stdin.isatty():
+    if not args.yes and sys.stdin.isatty():
         response = input(f"Create {len(findings)} issues? [y/N]: ")
         if response.lower() not in ["y", "yes"]:
-            print("[CANCELLED] User cancelled operation")
+            print("[CANCELLED]")
             sys.exit(0)
         print()
 
     # Create API client
-    api = GitHubAPI(token, repo) if not args.dry_run else None
+    api = GitHubAPI(token, repo)
 
     # Create issues
     print(f"Creating issues...")
@@ -335,12 +328,12 @@ def main():
 
     for i, finding in enumerate(findings, 1):
         print(f"[{i}/{len(findings)}] ", end="")
-        if create_issue_for_finding(api, finding, args.dry_run):
+        if create_issue_for_finding(api, finding, i):
             created += 1
         else:
             failed += 1
+        print()
 
-    print()
     print("=" * 80)
     print(f"[OK] Created: {created}")
     if failed > 0:
