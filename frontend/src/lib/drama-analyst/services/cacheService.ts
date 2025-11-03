@@ -509,4 +509,3 @@ class CacheService {
 const cacheService = new CacheService();
 
 export { cacheService };
-export default cacheService;

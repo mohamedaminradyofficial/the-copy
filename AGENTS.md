@@ -381,4 +381,4 @@ pnpm --filter ./frontend run e2e
 - Avoid loading heavy bundles on the homepage; use dynamic splitting.
 - Do not include any sensitive data in SSR/CSR props.
 
-*
+-

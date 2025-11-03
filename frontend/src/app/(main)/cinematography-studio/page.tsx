@@ -1,5 +1,5 @@
-import CineAIStudio from "./components/CineAIStudio";
+import { CinematographyStudio } from "./components/CinematographyStudio";
 
 export default function CinematographyStudioPage() {
-  return <CineAIStudio />;
+  return <CinematographyStudio />;
 }

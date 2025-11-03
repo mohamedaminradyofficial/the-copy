@@ -69,7 +69,7 @@ class AppState {
     this.notify();
   }
 
-  login(email, password) {
+  login(email, _password) {
     // Simulated login
     this.user = {
       id: '1',
@@ -79,7 +79,7 @@ class AppState {
     this.setPage('dashboard');
   }
 
-  register(name, email, password) {
+  register(name, email, _password) {
     // Simulated registration
     this.user = {
       id: '1',
@@ -163,7 +163,7 @@ class Component {
 
 class Navbar extends Component {
   render() {
-    const { currentPage, user } = appState;
+    const { user } = appState;
 
     const nav = this.createElement('nav', { className: 'navbar' },
       this.createElement('div', { className: 'navbar-content' },
@@ -884,8 +884,8 @@ class RegisterPage extends Component {
     e.preventDefault();
     const name = e.target.name.value;
     const email = e.target.email.value;
-    const password = e.target.password.value;
-    appState.register(name, email, password);
+    const _password = e.target.password.value;
+    appState.register(name, email, _password);
   }
 
   render() {
