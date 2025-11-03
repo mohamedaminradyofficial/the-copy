@@ -1,0 +1,148 @@
+# Security Scan Report
+
+*Generated on 2025-11-03 11:11:03 UTC*
+
+## Overview
+
+- **Source:** Automated Semgrep security scan provided by user
+- **Total findings:** 103
+- **Severity distribution:** Critical 91, High 6, Medium 6, Low 0
+- **Board name:** `Security Remediation Board` (hosted on GitHub Projects or Jira)
+
+## Security Board Columns
+
+| Column | Description | Entry Criteria | Exit Criteria |
+| --- | --- | --- | --- |
+| Critical Fixes | Immediate blockers that must be addressed before any other work. | CRITICAL severity findings. | Fix merged, verified, and regression tests updated. |
+| High | High-priority items required before the next release. | HIGH severity findings. | Patch merged and validated in staging. |
+| Medium | Planned remediation after foundational issues are fixed. | MEDIUM severity findings. | Fix merged with post-release verification plan. |
+| To Verify | Items awaiting validation after a fix or mitigation. | Tickets that have proposed fixes pending validation. | Validation complete, move to Done. |
+| Done | Closed tickets with verified fixes. | Verified remediation. | n/a |
+
+> **Action:** Create the board with the columns above and track each ticket listed below. Link each ticket to this report for traceability.
+
+## Mandatory Rule Update
+
+- Enforce repository policy: **No pull request may be merged if the Security CI workflow fails.** Integrate this gate into branch protection rules and document it in SECURITY.md.
+
+## Ticket Backlog
+
+The following tables enumerate every finding as an individual ticket. Each ticket is currently **Open** and must be triaged on the security board.
+
+### Critical Fixes
+
+| Ticket | Severity | Category | Location | Lines | Summary | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| SEC-CRIT-001 | CRITICAL | File Access | `frontend/scripts/bundle-analysis.js` | 26 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-002 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 113 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-003 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 66 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-004 | CRITICAL | XSS | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 1838 | The application was found calling \`dangerouslySetInnerHTML\` which may lead to Cross Site Scripting (XSS). By default, React components will encode the data properly before rendering. | Open |
+| SEC-CRIT-005 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/styleFingerprint/StyleFingerprintAgent.ts` | 182 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-006 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 107 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-007 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 80 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-008 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 103 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-009 | CRITICAL | File Access | `frontend/scripts/check-forbidden-term.js` | 24 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-010 | CRITICAL | File Access | `frontend/scripts/enforce-coverage.js` | 50 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-011 | CRITICAL | Insecure Modules Libraries | `frontend/src/lib/utils/kv-utils.ts` | 30 | Possibility of prototype polluting function detected. | Open |
+| SEC-CRIT-012 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/thematicMining/ThematicMiningAgent.ts` | 208 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-013 | CRITICAL | File Access | `frontend/scripts/bundle-analysis.js` | 16 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-014 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 102 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-015 | CRITICAL | Do S | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 48 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-016 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/characterNetwork/CharacterNetworkAgent.ts` | 235 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-017 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 64 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-018 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.ts` | 291 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-019 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 79 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-020 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/tensionOptimizer/TensionOptimizerAgent.ts` | 261 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-021 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/conflictDynamics/ConflictDynamicsAgent.ts` | 328 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-022 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/adaptiveRewriting/AdaptiveRewritingAgent.ts` | 221 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-023 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/styleFingerprint/StyleFingerprintAgent.ts` | 250 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-024 | CRITICAL | File Access | `frontend/scripts/bundle-analysis.js` | 9 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-025 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 75 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-026 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.ts` | 341 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-027 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 70 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-028 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 85 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-029 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 37 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-030 | CRITICAL | File Access | `frontend/scripts/enforce-coverage.js` | 57 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-031 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/creative/CreativeAgent.ts` | 231 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-032 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/conflictDynamics/ConflictDynamicsAgent.ts` | 264 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-033 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.ts` | 251 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-034 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 63 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-035 | CRITICAL | File Access | `frontend/scripts/check-forbidden-term.js` | 19 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-036 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 66 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-037 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 79 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-038 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/worldBuilder/WorldBuilderAgent.ts` | 214 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-039 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/completion/CompletionAgent.ts` | 197 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-040 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/creative/CreativeAgent.ts` | 244 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-041 | CRITICAL | Do S | `frontend/tests/e2e/pages.spec.ts` | 73 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-042 | CRITICAL | Do S | `frontend/src/lib/utils/text-protocol.ts` | 181 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-043 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/tensionOptimizer/TensionOptimizerAgent.ts` | 221 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-044 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 61 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-045 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 67 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-046 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 82 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-047 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 112 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-048 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 10 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-049 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 20 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-050 | CRITICAL | XSS | `frontend/src/components/ui/chart.tsx` | 79 | The application was found calling \`dangerouslySetInnerHTML\` which may lead to Cross Site Scripting (XSS). By default, React components will encode the data properly before rendering. | Open |
+| SEC-CRIT-051 | CRITICAL | Insecure Modules Libraries | `frontend/scripts/enforce-coverage.js` | 31 | Possibility of prototype polluting function detected. | Open |
+| SEC-CRIT-052 | CRITICAL | XSS | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 1324 | User controlled data in a \`tempDiv.innerHTML\` is an anti-pattern that can lead to XSS vulnerabilities | Open |
+| SEC-CRIT-053 | CRITICAL | Cryptography | `frontend/src/lib/ai/stations/station3-network-builder.js` | 420 | This rule identifies use of cryptographically weak random number generators. | Open |
+| SEC-CRIT-054 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 68 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-055 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/conflictDynamics/ConflictDynamicsAgent.ts` | 236 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-056 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 70 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-057 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 68 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-058 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/conflictDynamics/ConflictDynamicsAgent.ts` | 205 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-059 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 78 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-060 | CRITICAL | XSS | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 1068 | User controlled data in a \`tempDiv.innerHTML\` is an anti-pattern that can lead to XSS vulnerabilities | Open |
+| SEC-CRIT-061 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/characterVoice/CharacterVoiceAgent.ts` | 348 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-062 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 65 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-063 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.js` | 64 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-064 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 9 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-065 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/characterVoice/CharacterVoiceAgent.ts` | 303 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-066 | CRITICAL | Do S | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 69 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-067 | CRITICAL | File Access | `frontend/scripts/check-forbidden-term.js` | 18 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-068 | CRITICAL | File Access | `frontend/src/lib/ai/utils/saveText.ts` | 13 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-069 | CRITICAL | Do S | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 57 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-070 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/adaptiveRewriting/AdaptiveRewritingAgent.ts` | 198 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-071 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/sceneGenerator/SceneGeneratorAgent.ts` | 372 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-072 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 109 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-073 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 76 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-074 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 71 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-075 | CRITICAL | File Access | `frontend/scripts/bundle-analysis.js` | 25 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-076 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/sceneGenerator/SceneGeneratorAgent.ts` | 261 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-077 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/thematicMining/ThematicMiningAgent.ts` | 167 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-078 | CRITICAL | XSS | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 1068 | User controlled data in methods like \`innerHTML\`, \`outerHTML\` or \`document.write\` is an anti-pattern that can lead to XSS vulnerabilities | Open |
+| SEC-CRIT-079 | CRITICAL | File Access | `frontend/scripts/generate-pages-manifest.ts` | 108 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-080 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 64 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-081 | CRITICAL | File Access | `frontend/scripts/find-untested-files.js` | 62 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-082 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/thematicMining/ThematicMiningAgent.ts` | 234 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-083 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/rhythmMapping/RhythmMappingAgent.ts` | 317 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-084 | CRITICAL | XSS | `frontend/src/app/(main)/editor/screenplay-editor.tsx` | 1324 | User controlled data in methods like \`innerHTML\`, \`outerHTML\` or \`document.write\` is an anti-pattern that can lead to XSS vulnerabilities | Open |
+| SEC-CRIT-085 | CRITICAL | File Access | `frontend/scripts/performance-report.js` | 39 | The application dynamically constructs file or path information. | Open |
+| SEC-CRIT-086 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/dialogueForensics/DialogueForensicsAgent.ts` | 219 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-087 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/tensionOptimizer/TensionOptimizerAgent.ts` | 310 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-088 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/characterNetwork/CharacterNetworkAgent.ts` | 272 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-089 | CRITICAL | File Access | `frontend/scripts/bundle-analysis.js` | 30 | Detected possible user input going into a \`path.join\` or \`path.resolve\` function. | Open |
+| SEC-CRIT-090 | CRITICAL | Do S | `frontend/tests/e2e/pages.spec.ts` | 46 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+| SEC-CRIT-091 | CRITICAL | Do S | `frontend/src/lib/drama-analyst/agents/characterNetwork/CharacterNetworkAgent.ts` | 348 | The \`RegExp\` constructor was called with a non-literal value. | Open |
+
+### High
+
+| Ticket | Severity | Category | Location | Lines | Summary | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| SEC-HIGH-001 | HIGH | Insecure Modules Libraries | `frontend/.github/workflows/ci-cd.yml` | 257 | An action sourced from a third-party repository on GitHub is not pinned to a full length commit SHA. Pinning an action to a full length commit SHA is currently the only way to use an action as an immutable release. | Open |
+| SEC-HIGH-002 | HIGH | Insecure Modules Libraries | `frontend/.github/workflows/ci-cd.yml` | 308 | An action sourced from a third-party repository on GitHub is not pinned to a full length commit SHA. Pinning an action to a full length commit SHA is currently the only way to use an action as an immutable release. | Open |
+| SEC-HIGH-003 | HIGH | Insecure Storage | `backend/src/services/auth.service.test.ts` | 31 | Hardcoded passwords are a security risk. | Open |
+| SEC-HIGH-004 | HIGH | Insecure Storage | `backend/src/services/auth.service.test.ts` | 204 | Hardcoded passwords are a security risk. | Open |
+| SEC-HIGH-005 | HIGH | Insecure Modules Libraries | `frontend/.github/workflows/ci.yml` | 29 | An action sourced from a third-party repository on GitHub is not pinned to a full length commit SHA. Pinning an action to a full length commit SHA is currently the only way to use an action as an immutable release. | Open |
+| SEC-HIGH-006 | HIGH | Insecure Storage | `backend/src/services/auth.service.test.ts` | 35 | Hardcoded passwords are a security risk. | Open |
+
+### Medium
+
+| Ticket | Severity | Category | Location | Lines | Summary | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| SEC-MED-001 | MEDIUM | Insecure Modules Libraries | `frontend/package-lock.json` | 19842 | Insecure dependency npm/next@15.3.3 (CVE-2025-57752: nextjs: Next.js Affected by Cache Key Confusion for Image Optimization API Routes) (update to 15.4.5) | Open |
+| SEC-MED-002 | MEDIUM | Insecure Modules Libraries | `frontend/package-lock.json` | 19842 | Insecure dependency npm/next@15.3.3 (CVE-2025-57822: Next.js Improper Middleware Redirect Handling Leads to SSRF) (update to 15.4.7) | Open |
+| SEC-MED-003 | MEDIUM | Insecure Modules Libraries | `backend/package-lock.json` | 480 | Insecure dependency npm/esbuild@0.18.20 (GHSA-67mh-4wv8-2f99: esbuild enables any website to send any requests to the development server and read the response) (update to 0.25.0) | Open |
+| SEC-MED-004 | MEDIUM | Link fragments should be valid | `backend/README.md` | 12 | [🚀 البدء السريع](#-البدء-السريع) • [📖 API التوثيق](#-api-التوثيق) • [🧪 الاختبارات](#-الاختبارات) • [🚀 النشر](#-النشر) | Open |
+| SEC-MED-005 | MEDIUM | Link fragments should be valid | `frontend/README.md` | 12 | [🚀 البدء السريع](#-البدء-السريع) • [📖 التوثيق](#-التوثيق) • [🧪 الاختبارات](#-الاختبارات) • [🚀 النشر](#-النشر) | Open |
+| SEC-MED-006 | MEDIUM | The Variable 'pid' cannot be assigned since it is a readonly automatic variable that is built into PowerShell, please use a different name. | `kill-dev.ps1` | 12 | foreach ($pid in $pids) { | Open |
