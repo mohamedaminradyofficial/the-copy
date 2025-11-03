@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(pnpm:*)",
+      "Bash(where:*)",
+      "Bash(corepack enable:*)",
+      "Bash(echo:*)",
+      "Bash(/c/Users/sinsw/AppData/Roaming/npm/pnpm -v)",
+      "Bash(/c/Users/sinsw/AppData/Roaming/npm/pnpm install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

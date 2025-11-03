@@ -1,0 +1,42 @@
+name: Security Gate - Block merges if open critical issues
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-open-critical-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub CLI
+        run: |
+          type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Auth GH CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Check open security-critical issues
+        id: check
+        run: |
+          OPEN=$(gh issue list --label "security-critical" --state open --json number --limit 1000 | jq '. | length')
+          echo "open_critical=$OPEN" >> $GITHUB_OUTPUT
+          echo "Open critical issues: $OPEN"
+
+      - name: Fail if open critical issues
+        if: ${{ steps.check.outputs.open_critical != '0' }}
+        run: |
+          echo "⛔ There are open security-critical issues. Blocking pipeline/merge until they are resolved."
+          gh issue list --label "security-critical" --state open
+          exit 1

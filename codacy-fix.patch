@@ -1,0 +1,521 @@
+diff --git a/backend/MCP_SERVER_README.md b/backend/MCP_SERVER_README.md
+--- a/backend/MCP_SERVER_README.md
++++ b/backend/MCP_SERVER_README.md
+@@ -20,1 +20,1 @@
+-### Development Mode (with auto-reload)
++### Development Mode (with auto-reload)
+
+@@ -26,1 +26,1 @@
+-### Production Mode
++### Production Mode
+
+@@ -43,1 +43,1 @@
+-### 1. MCP Inspector
++### 1. MCP Inspector
+
+@@ -49,1 +49,1 @@
+-### 2. Claude Code
++### 2. Claude Code
+
+@@ -54,1 +54,1 @@
+-### 3. VS Code
++### 3. VS Code
+
+@@ -59,1 +59,1 @@
+-### 4. Cursor
++### 4. Cursor
+
+@@ -65,1 +65,1 @@
+-1. Ask the AI agent to add two numbers using the `add` tool
++
+1. Ask the AI agent to add two numbers using the `add` tool
+@@ -97,1 +97,1 @@
+-1. Add more tools in `mcp-server.ts` using `server.registerTool()`
++
+1. Add more tools in `mcp-server.ts` using `server.registerTool()`
+@@ -103,1 +103,1 @@
+-- Session management
++
+- Session management
+diff --git a/.idx/airules.md b/.idx/airules.md
+--- a/.idx/airules.md
++++ b/.idx/airules.md
+@@ -23,1 +23,1 @@
+-    - **Secrets Management:** Never hard-code secrets. Use environment variables (and a `.env` file) for all sensitive information.
++  - **Secrets Management:** Never hard-code secrets. Use environment variables (and a `.env` file) for all sensitive information.
+@@ -24,1 +24,1 @@
+-    - **Helmet:** Recommend and use the `helmet` middleware to set secure HTTP headers.
++  - **Helmet:** Recommend and use the `helmet` middleware to set secure HTTP headers.
+@@ -25,1 +25,1 @@
+-    - **Input Sanitization:** Sanitize and validate all user input to prevent XSS and injection attacks.
++  - **Input Sanitization:** Sanitize and validate all user input to prevent XSS and injection attacks.
+@@ -26,1 +26,1 @@
+-    - **Rate Limiting:** Suggest implementing rate limiting to protect against brute-force attacks.
++  - **Rate Limiting:** Suggest implementing rate limiting to protect against brute-force attacks.
+@@ -28,1 +28,1 @@
+-    - **Modular Design:** Organize the application into logical modules. Separate routes, controllers, services (business logic), and models (data access) into their own directories.
++  - **Modular Design:** Organize the application into logical modules. Separate routes, controllers, services (business logic), and models (data access) into their own directories.
+@@ -29,1 +29,1 @@
+-    - **Centralized Configuration:** Keep all configuration in a dedicated file or manage it through environment variables.
++  - **Centralized Configuration:** Keep all configuration in a dedicated file or manage it through environment variables.
+@@ -31,1 +31,1 @@
+-    - **Centralized Middleware:** Implement a centralized error-handling middleware function to catch and process all errors.
++  - **Centralized Middleware:** Implement a centralized error-handling middleware function to catch and process all errors.
+@@ -32,1 +32,1 @@
+-    - **Asynchronous Errors:** Ensure all asynchronous errors in route handlers are properly caught and passed to the error-handling middleware.
++  - **Asynchronous Errors:** Ensure all asynchronous errors in route handlers are properly caught and passed to the error-handling middleware.
+@@ -34,1 +34,1 @@
+-    - **Gzip Compression:** Use the `compression` middleware to enable gzip compression.
++  - **Gzip Compression:** Use the `compression` middleware to enable gzip compression.
+@@ -35,1 +35,1 @@
+-    - **Caching:** Recommend caching strategies for frequently accessed data.
++  - **Caching:** Recommend caching strategies for frequently accessed data.
+@@ -36,1 +36,1 @@
+-    - **Clustering:** For production environments, suggest using the `cluster` module to take advantage of multi-core systems.
++  - **Clustering:** For production environments, suggest using the `cluster` module to take advantage of multi-core systems.
+diff --git a/SECURITY_PROCESS.md b/SECURITY_PROCESS.md
+--- a/SECURITY_PROCESS.md
++++ b/SECURITY_PROCESS.md
+@@ -3,1 +3,1 @@
+-## Ø§ÙÙØ·Ø§Ù
++## Ø§ÙÙØ·Ø§Ù
+
+@@ -6,1 +6,1 @@
+-## Ø§ÙØ£Ø¯ÙØ§Ø±
++## Ø§ÙØ£Ø¯ÙØ§Ø±
+
+@@ -7,1 +7,1 @@
+-- **Security Owner**: ÙÙÙÙ Ø¨Ø§ÙÙ triage ÙÙØ¹ÙÙ Ø§ÙÙØ§ÙÙÙÙ ÙÙØ¶Ø¨Ø· Ø§ÙØ£ÙÙÙÙØ§Øª.
++
+- **Security Owner**: ÙÙÙÙ Ø¨Ø§ÙÙ triage ÙÙØ¹ÙÙ Ø§ÙÙØ§ÙÙÙÙ ÙÙØ¶Ø¨Ø· Ø§ÙØ£ÙÙÙÙØ§Øª.
+@@ -11,1 +11,1 @@
+-## SLA (Service Level Agreement)
++## SLA (Service Level Agreement)
+
+@@ -12,1 +12,1 @@
+-- **CRITICAL**: Ø¸Ø±Ù 48 Ø³Ø§Ø¹Ø© ÙØ­Ø¯ Ø£ÙØµÙ ÙÙ ÙÙØª Ø§ÙØ§ÙØªØ´Ø§Ù.
++
+- **CRITICAL**: Ø¸Ø±Ù 48 Ø³Ø§Ø¹Ø© ÙØ­Ø¯ Ø£ÙØµÙ ÙÙ ÙÙØª Ø§ÙØ§ÙØªØ´Ø§Ù.
+@@ -19,1 +19,1 @@
+-### 1. Ø§ÙØªØ´Ø§Ù ÙØªÙØ«ÙÙ
++### 1. Ø§ÙØªØ´Ø§Ù ÙØªÙØ«ÙÙ
+
+@@ -20,1 +20,1 @@
+-1. ÙÙØ­Ø¯ÙØ« Ø§ÙØªÙØ±ÙØ± Ø§ÙØ£ÙÙÙ Ø§ÙÙØ±Ø¬Ø¹Ù `SECURITY_SCAN_REPORT.md` (Ø£ØªÙØªØ© Ø£Ù ÙØ¯ÙÙÙØ§).
++
+1. ÙÙØ­Ø¯ÙØ« Ø§ÙØªÙØ±ÙØ± Ø§ÙØ£ÙÙÙ Ø§ÙÙØ±Ø¬Ø¹Ù `SECURITY_SCAN_REPORT.md` (Ø£ØªÙØªØ© Ø£Ù ÙØ¯ÙÙÙØ§).
+@@ -28,1 +28,1 @@
+-### 2. ØªØ­ÙÙÙ Ø¥ÙÙ Issues
++### 2. ØªØ­ÙÙÙ Ø¥ÙÙ Issues
+
+@@ -30,1 +30,1 @@
+-- `security-critical` - ÙØ«ØºØ±Ø§Øª Ø­Ø±Ø¬Ø© (XSS, SQL Injection, RCE, Path Traversal)
++
+- `security-critical` - ÙØ«ØºØ±Ø§Øª Ø­Ø±Ø¬Ø© (XSS, SQL Injection, RCE, Path Traversal)
+@@ -39,1 +39,1 @@
+-### 3. Ø±Ø¨Ø· Ø¨ÙÙØ­Ø© Ø§ÙÙØ´Ø±ÙØ¹
++### 3. Ø±Ø¨Ø· Ø¨ÙÙØ­Ø© Ø§ÙÙØ´Ø±ÙØ¹
+
+@@ -43,1 +43,1 @@
+-- **Critical Fixes** - Ø«ØºØ±Ø§Øª Ø­Ø±Ø¬Ø© ØªÙÙØ¹ Ø§ÙØ¯ÙØ¬
++
+- **Critical Fixes** - Ø«ØºØ±Ø§Øª Ø­Ø±Ø¬Ø© ØªÙÙØ¹ Ø§ÙØ¯ÙØ¬
+@@ -54,1 +54,1 @@
+-### 4. ØªÙÙÙØ° Ø§ÙØ¥ØµÙØ§Ø­Ø§Øª
++### 4. ØªÙÙÙØ° Ø§ÙØ¥ØµÙØ§Ø­Ø§Øª
+
+@@ -56,1 +56,1 @@
+-1. ÙÙØ´ÙØ± Ø¥ÙÙ Issue ÙØ­Ø¯Ø¯ Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù `Fixes #<issue-number>` Ø£Ù `Closes #<issue-number>`
++
+1. ÙÙØ´ÙØ± Ø¥ÙÙ Issue ÙØ­Ø¯Ø¯ Ø¨Ø§Ø³ØªØ®Ø¯Ø§Ù `Fixes #<issue-number>` Ø£Ù `Closes #<issue-number>`
+@@ -98,1 +98,1 @@
+-### Testing
++### Testing
+
+@@ -99,1 +99,1 @@
+-- â Unit tests added: `chart.test.tsx`
++
+- â Unit tests added: `chart.test.tsx`
+@@ -103,1 +103,1 @@
+-### Evidence
++### Evidence
+
+@@ -104,1 +104,1 @@
+-- Screenshot: [before] vs [after]
++
+- Screenshot: [before] vs [after]
+@@ -105,1 +105,1 @@
+-- Security scan results: [attached]
++- Security scan results: [attached]
+
+@@ -170,1 +170,1 @@
+-### Manual Reviews
++### Manual Reviews
+
+@@ -171,1 +171,1 @@
+-- Code review ÙØ¹ focus Ø¹ÙÙ security hotspots
++
+- Code review ÙØ¹ focus Ø¹ÙÙ security hotspots
+@@ -178,1 +178,1 @@
+-### ØµÙØºØ© Ø§ÙØ¥Ø¯Ø®Ø§Ù ÙÙ SECURITY_FIXES.md
++### ØµÙØºØ© Ø§ÙØ¥Ø¯Ø®Ø§Ù ÙÙ SECURITY_FIXES.md
+
+@@ -201,1 +201,1 @@
+-1. Ø§Ø³ØªØ®Ø¯Ù GitHub Security â Report a vulnerability
++
+1. Ø§Ø³ØªØ®Ø¯Ù GitHub Security â Report a vulnerability
+@@ -219,1 +219,1 @@
+-- **Repository**: https://github.com/mohamedaminradyofficial/the-copy-monorepo
++- **Repository**: <https://github.com/mohamedaminradyofficial/the-copy-monorepo>
+diff --git a/frontend/src/app/(main)/cinematography-studio/README.md b/frontend/src/app/(main)/cinematography-studio/README.md
+--- a/frontend/src/app/(main)/cinematography-studio/README.md
++++ b/frontend/src/app/(main)/cinematography-studio/README.md
+@@ -119,1 +119,1 @@
+-### Generate Shot List
++### Generate Shot List
+
+@@ -126,1 +126,1 @@
+-### Validate Shot
++### Validate Shot
+
+@@ -133,1 +133,1 @@
+-### Color Grading Suggestions
++### Color Grading Suggestions
+
+@@ -152,1 +152,1 @@
+-- React Router (SPA) â Migrated to Next.js App Router
++
+- React Router (SPA) â Migrated to Next.js App Router
+@@ -173,1 +173,1 @@
+-### Adding New Tools
++### Adding New Tools
+
+@@ -174,1 +174,1 @@
+-1. Create tool component in `components/tools/`
++
+1. Create tool component in `components/tools/`
+@@ -178,1 +178,1 @@
+-### AI Integration
++### AI Integration
+
+@@ -180,1 +180,1 @@
+-1. Add API keys to `.env.local`
++
+1. Add API keys to `.env.local`
+@@ -206,1 +206,1 @@
+-- â Uses shared UI components
++
+- â Uses shared UI components
+diff --git a/frontend/src/app/(main)/directors-studio/README.md b/frontend/src/app/(main)/directors-studio/README.md
+--- a/frontend/src/app/(main)/directors-studio/README.md
++++ b/frontend/src/app/(main)/directors-studio/README.md
+@@ -9,1 +9,1 @@
+-### ð Script Analysis - ØªØ­ÙÙÙ Ø§ÙØ³ÙÙØ§Ø±ÙÙ
++### ð Script Analysis - ØªØ­ÙÙÙ Ø§ÙØ³ÙÙØ§Ø±ÙÙ
+
+@@ -12,1 +12,1 @@
+-### ð­ Actor Management - Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙÙØ«ÙÙÙ
++### ð­ Actor Management - Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙÙØ«ÙÙÙ
+
+@@ -15,1 +15,1 @@
+-### ð¨ Storyboard Creator - ÙÙØ­Ø© Ø§ÙÙØµØ©
++### ð¨ Storyboard Creator - ÙÙØ­Ø© Ø§ÙÙØµØ©
+
+@@ -18,1 +18,1 @@
+-### ð Shooting Schedule - Ø¬Ø¯ÙÙØ© Ø§ÙØªØµÙÙØ±
++### ð Shooting Schedule - Ø¬Ø¯ÙÙØ© Ø§ÙØªØµÙÙØ±
+
+@@ -21,1 +21,1 @@
+-### ðï¸ Rough Cut Visualization - Ø§ÙÙÙÙØªØ§Ø¬ Ø§ÙÙØ¨Ø¯Ø¦Ù
++### ðï¸ Rough Cut Visualization - Ø§ÙÙÙÙØªØ§Ø¬ Ø§ÙÙØ¨Ø¯Ø¦Ù
+
+@@ -24,1 +24,1 @@
+-### ð¯ Director's Vision Board - Ø±Ø¤ÙØ© Ø§ÙÙØ®Ø±Ø¬
++### ð¯ Director's Vision Board - Ø±Ø¤ÙØ© Ø§ÙÙØ®Ø±Ø¬
+
+diff --git a/frontend/src/app/(main)/actorai-arabic/README.md b/frontend/src/app/(main)/actorai-arabic/README.md
+--- a/frontend/src/app/(main)/actorai-arabic/README.md
++++ b/frontend/src/app/(main)/actorai-arabic/README.md
+@@ -110,1 +110,1 @@
+-- Button
++
+- Button
+@@ -121,1 +121,1 @@
+-1. Adding `dir="rtl"` to the root element
++
+1. Adding `dir="rtl"` to the root element
+diff --git a/frontend/src/app/(main)/ui/README.md b/frontend/src/app/(main)/ui/README.md
+--- a/frontend/src/app/(main)/ui/README.md
++++ b/frontend/src/app/(main)/ui/README.md
+@@ -125,1 +125,1 @@
+-- Figma: https://www.figma.com/design/tTX3qogmlIZrAwMKCsURlM/Design-System-Documentation
++- Figma: <https://www.figma.com/design/tTX3qogmlIZrAwMKCsURlM/Design-System-Documentation>
+@@ -126,1 +126,1 @@
+-- Repository: https://github.com/mohamedrano/Design-System-Documentation-2-
++- Repository: <https://github.com/mohamedrano/Design-System-Documentation-2->
+diff --git a/.idx/icon-info.md b/.idx/icon-info.md
+--- a/.idx/icon-info.md
++++ b/.idx/icon-info.md
+@@ -6,1 +6,1 @@
+-- A theatrical mask icon
++
+- A theatrical mask icon
+@@ -12,1 +12,1 @@
+-- PNG format
++
+- PNG format
+diff --git a/scripts/README.md b/scripts/README.md
+--- a/scripts/README.md
++++ b/scripts/README.md
+@@ -46,1 +46,1 @@
+-- Python 3.7+
++
+- Python 3.7+
+@@ -60,1 +60,1 @@
+-- Parses `SECURITY_SCAN_REPORT.md` automatically
++
+- Parses `SECURITY_SCAN_REPORT.md` automatically
+@@ -72,1 +72,1 @@
+-- Python 3.7+ (standard library only, no external dependencies)
++
+- Python 3.7+ (standard library only, no external dependencies)
+@@ -94,1 +94,1 @@
+-- `GITHUB_TOKEN` - GitHub Personal Access Token
++
+- `GITHUB_TOKEN` - GitHub Personal Access Token
+@@ -98,1 +98,1 @@
+-- No external dependencies (uses Python standard library)
++
+- No external dependencies (uses Python standard library)
+@@ -108,1 +108,1 @@
+-- GitHub CLI (`gh`) installed and authenticated
++
+- GitHub CLI (`gh`) installed and authenticated
+@@ -125,1 +125,1 @@
+-- Creates GitHub Project (v2) if it doesn't exist
++
+- Creates GitHub Project (v2) if it doesn't exist
+@@ -232,1 +232,1 @@
+-1. Exists in repository root
++
+1. Exists in repository root
+@@ -307,1 +307,1 @@
+-1. Follow existing naming conventions
++
+1. Follow existing naming conventions
+diff --git a/backend/README.md b/backend/README.md
+--- a/backend/README.md
++++ b/backend/README.md
+@@ -158,1 +158,1 @@
+-- `file`: ÙÙÙ Ø§ÙÙØµ (PDF, DOCX, TXT)
++
+- `file`: ÙÙÙ Ø§ÙÙØµ (PDF, DOCX, TXT)
+diff --git a/SECURITY.md b/SECURITY.md
+--- a/SECURITY.md
++++ b/SECURITY.md
+@@ -1,1 +1,1 @@
+-# Security Policy
++# Security Policy
+
+diff --git a/SECURITY_FIXES.md b/SECURITY_FIXES.md
+--- a/SECURITY_FIXES.md
++++ b/SECURITY_FIXES.md
+@@ -24,1 +24,1 @@
+-### Fix Applied
++### Fix Applied
+
+@@ -71,1 +71,1 @@
+-- `escapeRegExp()` - Escapes special characters
++
+- `escapeRegExp()` - Escapes special characters
+@@ -164,1 +164,1 @@
+-- â auth.service.test.ts - 7 replacements
++
+- â auth.service.test.ts - 7 replacements
+@@ -292,1 +292,1 @@
+-### Security Library Created
++### Security Library Created
+
+@@ -296,1 +296,1 @@
+-- `escapeHtml()` - Escapes HTML entities
++
+- `escapeHtml()` - Escapes HTML entities
+diff --git a/TODO.md b/TODO.md
+--- a/TODO.md
++++ b/TODO.md
+@@ -11,1 +11,1 @@
+-
++
+@@ -28,1 +28,1 @@
+-| 10  | PowerShell readonly variable misuse | ØªØ¹Ø¯ÙÙ Ø§ÙÙØªØºÙØ± `$pid` |
++
+diff --git a/frontend/TEXT_ONLY_PIPELINE.md b/frontend/TEXT_ONLY_PIPELINE.md
+--- a/frontend/TEXT_ONLY_PIPELINE.md
++++ b/frontend/TEXT_ONLY_PIPELINE.md
+@@ -11,1 +11,1 @@
+-#### Ø§ÙÙÙØ²Ø§Øª:
++#### Ø§ÙÙÙØ²Ø§Øª
+@@ -18,1 +18,1 @@
+-#### Ø§ÙÙÙØ§Ø°Ø¬ Ø§ÙÙØ³ØªØ®Ø¯ÙØ© Ø­ØµØ±ÙÙØ§:
++#### Ø§ÙÙÙØ§Ø°Ø¬ Ø§ÙÙØ³ØªØ®Ø¯ÙØ© Ø­ØµØ±ÙÙØ§
+@@ -27,1 +27,1 @@
+-#### Ø§ÙÙØ§Ø¬ÙØ© Ø§ÙØ±Ø¦ÙØ³ÙØ©:
++#### Ø§ÙÙØ§Ø¬ÙØ© Ø§ÙØ±Ø¦ÙØ³ÙØ©
+@@ -35,1 +35,1 @@
+-#### Ø§ÙØ¨ÙÙØ© Ø§ÙØªØ³ÙØ³ÙÙØ©:
++#### Ø§ÙØ¨ÙÙØ© Ø§ÙØªØ³ÙØ³ÙÙØ©
+@@ -55,1 +55,1 @@
+-#### ÙØ«Ø§Ù Ø¹ÙÙ Ø§ÙØ§Ø¹ØªÙØ§Ø¯ Ø§ÙØªØ³ÙØ³ÙÙ:
++#### ÙØ«Ø§Ù Ø¹ÙÙ Ø§ÙØ§Ø¹ØªÙØ§Ø¯ Ø§ÙØªØ³ÙØ³ÙÙ
+@@ -69,1 +69,1 @@
+-#### Ø¨Ø·Ø§ÙØ§Øª Ø§ÙÙØ­Ø·Ø§Øª (`station-card.tsx`):
++#### Ø¨Ø·Ø§ÙØ§Øª Ø§ÙÙØ­Ø·Ø§Øª (`station-card.tsx`)
+@@ -76,1 +76,1 @@
+-#### Ø²Ø± Ø§ÙØªØµØ¯ÙØ± Ø§ÙØ´Ø§ÙÙ (`stations-pipeline.tsx`):
++#### Ø²Ø± Ø§ÙØªØµØ¯ÙØ± Ø§ÙØ´Ø§ÙÙ (`stations-pipeline.tsx`)
+@@ -81,1 +81,1 @@
+-#### ÙØ«Ø§Ù Ø¹ÙÙ Ø§ÙØªØµØ¯ÙØ±:
++#### ÙØ«Ø§Ù Ø¹ÙÙ Ø§ÙØªØµØ¯ÙØ±
+@@ -97,1 +97,1 @@
+-#### ÙØ¨Ù:
++#### ÙØ¨Ù
+@@ -108,1 +108,1 @@
+-#### Ø¨Ø¹Ø¯:
++#### Ø¨Ø¹Ø¯
+@@ -117,1 +117,1 @@
+-#### Ø§ÙÙØ§Ø¦ÙØ© Ø§ÙØ¬Ø§ÙØ¨ÙØ©:
++#### Ø§ÙÙØ§Ø¦ÙØ© Ø§ÙØ¬Ø§ÙØ¨ÙØ©
+@@ -126,1 +126,1 @@
+-#### Ø§ÙØµÙØ­Ø© Ø§ÙØ±Ø¦ÙØ³ÙØ©:
++#### Ø§ÙØµÙØ­Ø© Ø§ÙØ±Ø¦ÙØ³ÙØ©
+diff --git a/frontend/src/app/(main)/arabic-creative-writing-studio/README.md b/frontend/src/app/(main)/arabic-creative-writing-studio/README.md
+--- a/frontend/src/app/(main)/arabic-creative-writing-studio/README.md
++++ b/frontend/src/app/(main)/arabic-creative-writing-studio/README.md
+@@ -50,1 +50,1 @@
+-- `useState` for component state
++
+- `useState` for component state
+@@ -57,1 +57,1 @@
+-- Text analysis
++
+- Text analysis
+@@ -67,1 +67,1 @@
+-1. Install dependencies:
++1. Install dependencies:
+
+@@ -73,1 +73,1 @@
+-2. Set up environment variables:
++2. Set up environment variables:
+
+@@ -79,1 +79,1 @@
+-3. Run development server:
++3. Run development server:
+
+@@ -94,1 +94,1 @@
+-#### Unit Tests (Vitest)
++#### Unit Tests (Vitest)
+
+@@ -99,1 +99,1 @@
+-#### E2E Tests (Playwright)
++#### E2E Tests (Playwright)
+
+@@ -107,1 +107,1 @@
+-- **Tailwind CSS**: Utility-first CSS framework
++
+- **Tailwind CSS**: Utility-first CSS framework
+@@ -115,1 +115,1 @@
+-- **URL**: `/arabic-creative-writing-studio`
++
+- **URL**: `/arabic-creative-writing-studio`
+@@ -129,1 +129,1 @@
+-- `react` ^18.2.0
++
+- `react` ^18.2.0
+diff --git a/.idx/README.md b/.idx/README.md
+--- a/.idx/README.md
++++ b/.idx/README.md
+@@ -30,1 +30,1 @@
+-- **Frontend**: http://localhost:9002 (Next.js)
++- **Frontend**: <http://localhost:9002> (Next.js)
+@@ -31,1 +31,1 @@
+-- **Backend**: http://localhost:3001 (Express.js)
++- **Backend**: <http://localhost:3001> (Express.js)
+@@ -42,1 +42,1 @@
+-1. ØªØ´ØºÙÙ Ø³ÙØ±ÙØ¨Øª Ø§ÙØ¥Ø¹Ø¯Ø§Ø¯
++
+1. ØªØ´ØºÙÙ Ø³ÙØ±ÙØ¨Øª Ø§ÙØ¥Ø¹Ø¯Ø§Ø¯
+@@ -50,1 +50,1 @@
+-1. Ø¹Ø¯ÙÙ `dev.nix` ÙØ¥Ø¶Ø§ÙØ© Ø£Ø¯ÙØ§Øª Ø£Ù Ø¥Ø¶Ø§ÙØ§Øª Ø¬Ø¯ÙØ¯Ø©
++
+1. Ø¹Ø¯ÙÙ `dev.nix` ÙØ¥Ø¶Ø§ÙØ© Ø£Ø¯ÙØ§Øª Ø£Ù Ø¥Ø¶Ø§ÙØ§Øª Ø¬Ø¯ÙØ¯Ø©
+diff --git a/backend/BACKEND_DOCUMENTATION.md b/backend/BACKEND_DOCUMENTATION.md
+--- a/backend/BACKEND_DOCUMENTATION.md
++++ b/backend/BACKEND_DOCUMENTATION.md
+@@ -57,1 +57,1 @@
+-### Ø§ÙØ®Ø§Ø¯Ù Ø§ÙØ±Ø¦ÙØ³Ù (server.ts)
++### Ø§ÙØ®Ø§Ø¯Ù Ø§ÙØ±Ø¦ÙØ³Ù (server.ts)
+
+@@ -82,1 +82,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§ÙØ¨ÙØ¦Ø© (config/env.ts)
++### Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§ÙØ¨ÙØ¦Ø© (config/env.ts)
+
+@@ -102,1 +102,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯ Winston Logger
++### Ø¥Ø¹Ø¯Ø§Ø¯ Winston Logger
+
+@@ -134,1 +134,1 @@
+-### Ø®Ø¯ÙØ© Gemini (services/gemini.service.ts)
++### Ø®Ø¯ÙØ© Gemini (services/gemini.service.ts)
+
+@@ -165,1 +165,1 @@
+-### Ø®Ø¯ÙØ© Ø§ÙØªØ­ÙÙÙ (services/analysis.service.ts)
++### Ø®Ø¯ÙØ© Ø§ÙØªØ­ÙÙÙ (services/analysis.service.ts)
+
+@@ -231,1 +231,1 @@
+-### ÙØªØ­ÙÙ Ø§ÙØªØ­ÙÙÙ (controllers/analysis.controller.ts)
++### ÙØªØ­ÙÙ Ø§ÙØªØ­ÙÙÙ (controllers/analysis.controller.ts)
+
+@@ -300,1 +300,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙÙØ³Ø§Ø±Ø§Øª
++### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙÙØ³Ø§Ø±Ø§Øª
+
+@@ -320,1 +320,1 @@
+-### ÙØ³Ø·Ø§Ø¡ Ø§ÙØ£ÙØ§Ù ÙØ§ÙØªØ­ÙÙ
++### ÙØ³Ø·Ø§Ø¡ Ø§ÙØ£ÙØ§Ù ÙØ§ÙØªØ­ÙÙ
+
+@@ -376,1 +376,1 @@
+-### ØªØ­ÙÙÙ ÙÙØ¹Ø§ÙØ¬Ø© Ø§ÙÙÙÙØ§Øª
++### ØªØ­ÙÙÙ ÙÙØ¹Ø§ÙØ¬Ø© Ø§ÙÙÙÙØ§Øª
+
+@@ -423,1 +423,1 @@
+-### ÙØ®Ø·Ø·Ø§Øª Zod
++### ÙØ®Ø·Ø·Ø§Øª Zod
+
+@@ -451,1 +451,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§ÙØ£ÙØ§Ù
++### Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§ÙØ£ÙØ§Ù
+
+@@ -482,1 +482,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙØ§Ø®ØªØ¨Ø§Ø±Ø§Øª
++### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙØ§Ø®ØªØ¨Ø§Ø±Ø§Øª
+
+@@ -519,1 +519,1 @@
+-### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙØ¥ÙØªØ§Ø¬
++### Ø¥Ø¹Ø¯Ø§Ø¯ Ø§ÙØ¥ÙØªØ§Ø¬
+
+@@ -543,1 +543,1 @@
+-### Ø£ÙØ§ÙØ± Ø§ÙÙØ´Ø±
++### Ø£ÙØ§ÙØ± Ø§ÙÙØ´Ø±
+
+@@ -557,1 +557,1 @@
+-### ÙÙØ§ÙÙØ³ Ø§ÙØ£Ø¯Ø§Ø¡
++### ÙÙØ§ÙÙØ³ Ø§ÙØ£Ø¯Ø§Ø¡
+
+@@ -581,1 +581,1 @@
+-### ÙØ´Ø§ÙÙ Ø´Ø§Ø¦Ø¹Ø©
++### ÙØ´Ø§ÙÙ Ø´Ø§Ø¦Ø¹Ø©
+
+@@ -582,1 +582,1 @@
+-1. **Ø®Ø·Ø£ Ø§ØªØµØ§Ù Gemini API**: ØªØ­ÙÙ ÙÙ ÙÙØªØ§Ø­ API
++
+1. **Ø®Ø·Ø£ Ø§ØªØµØ§Ù Gemini API**: ØªØ­ÙÙ ÙÙ ÙÙØªØ§Ø­ API
