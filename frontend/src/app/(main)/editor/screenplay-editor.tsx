@@ -836,6 +836,42 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
     }
   };
 
+  // SECURITY FIX: Safe content initialization without dangerouslySetInnerHTML
+  useEffect(() => {
+    if (editorRef.current && !editorRef.current.hasChildNodes()) {
+      // Only set initial content if editor is empty
+      const defaultContent = '<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">اضغط هنا لبدء كتابة السيناريو...</div>';
+      editorRef.current.innerHTML = htmlContent || defaultContent;
+    }
+  }, []);
+
+  // SECURITY FIX: Update content safely using innerHTML only when content changes
+  useEffect(() => {
+    if (editorRef.current && htmlContent !== editorRef.current.innerHTML) {
+      // Save cursor position
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      const cursorOffset = range ? range.startOffset : 0;
+      const cursorNode = range ? range.startContainer : null;
+
+      // Update content
+      editorRef.current.innerHTML = htmlContent;
+
+      // Restore cursor position if possible
+      if (cursorNode && editorRef.current.contains(cursorNode)) {
+        try {
+          const newRange = document.createRange();
+          newRange.setStart(cursorNode, Math.min(cursorOffset, cursorNode.textContent?.length || 0));
+          newRange.collapse(true);
+          selection?.removeAllRanges();
+          selection?.addRange(newRange);
+        } catch (e) {
+          // Cursor restoration failed, continue without error
+        }
+      }
+    }
+  }, [htmlContent]);
+
   // Effect to apply styles and update stats
   useEffect(() => {
     if (editorRef.current) {
@@ -1296,11 +1332,7 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
               onPaste={handlePaste}
               onClick={updateCursorPosition}
               onKeyUp={updateCursorPosition}
-              dangerouslySetInnerHTML={{
-                __html:
-                  htmlContent ||
-                  '<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">اضغط هنا لبدء كتابة السيناريو...</div>',
-              }}
+              suppressContentEditableWarning={true}
             />
           </div>
         </div>

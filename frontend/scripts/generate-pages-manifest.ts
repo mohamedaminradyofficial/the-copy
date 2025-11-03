@@ -6,6 +6,8 @@
 
 import fs from 'fs';
 import path from 'path';
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require('./safe-path');
 
 interface PageInfo {
   slug: string;
@@ -13,8 +15,9 @@ interface PageInfo {
   title: string;
 }
 
-const MAIN_PAGES_DIR = path.join(__dirname, '../src/app/(main)');
-const OUTPUT_FILE = path.join(__dirname, '../src/config/pages.manifest.json');
+// SECURITY FIX: Use safe path resolution to prevent traversal attacks
+const MAIN_PAGES_DIR = safeResolve(__dirname, '../src/app/(main)');
+const OUTPUT_FILE = safeResolve(__dirname, '../src/config/pages.manifest.json');
 
 // Map of slugs to Arabic titles and descriptions
 const PAGE_METADATA: Record<string, { title: string; description: string }> = {
@@ -79,7 +82,14 @@ function generateManifest(): void {
     if (!entry.isDirectory()) continue;
 
     const slug = entry.name;
-    const pagePath = path.join(MAIN_PAGES_DIR, slug, 'page.tsx');
+    // SECURITY FIX: Use safe path resolution for subdirectories
+    let pagePath: string;
+    try {
+      pagePath = safeResolve(MAIN_PAGES_DIR, path.join(slug, 'page.tsx'));
+    } catch (error) {
+      console.warn(`Skipping invalid path for slug: ${slug}`);
+      continue;
+    }
 
     // Check if page.tsx exists in this directory
     if (fs.existsSync(pagePath)) {

@@ -163,6 +163,11 @@ export class StyleFingerprintAgent extends BaseAgent {
     return text.replace(/\n{3,}/g, "\n\n").trim();
   }
 
+  // SECURITY FIX: Escape special regex characters to prevent ReDoS attacks
+  private escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   private async assessAnalyticalDepth(text: string): Promise<number> {
     let score = 0.5;
 
@@ -178,8 +183,9 @@ export class StyleFingerprintAgent extends BaseAgent {
       "نلاحظ",
       "نجد",
     ];
+    // SECURITY FIX: Use escaped regex patterns to prevent ReDoS
     const termCount = analyticalTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
+      (count, term) => count + (text.match(new RegExp(this.escapeRegExp(term), "g")) || []).length,
       0
     );
     score += Math.min(0.25, termCount * 0.02);
@@ -193,8 +199,9 @@ export class StyleFingerprintAgent extends BaseAgent {
       "التركيب",
       "الدلالة",
     ];
+    // SECURITY FIX: Use escaped regex patterns to prevent ReDoS
     const techCount = technicalTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
+      (count, term) => count + (text.match(new RegExp(this.escapeRegExp(term), "g")) || []).length,
       0
     );
     score += Math.min(0.15, techCount * 0.03);
@@ -246,8 +253,9 @@ export class StyleFingerprintAgent extends BaseAgent {
       "على سبيل المثال",
       "مثلاً",
     ];
+    // SECURITY FIX: Use escaped regex patterns to prevent ReDoS
     const evidenceCount = evidenceWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
+      (count, word) => count + (text.match(new RegExp(this.escapeRegExp(word), "g")) || []).length,
       0
     );
     score += Math.min(0.25, evidenceCount * 0.05);
