@@ -3,7 +3,7 @@
 To set a custom icon for your Firebase Studio workspace, place a PNG file named `icon.png` in this `.idx` directory.
 
 For "The Copy" Arabic drama analysis platform, consider using:
-- A theatrical mask icon
+
 - Arabic calligraphy symbol
 - Drama/theater related imagery
 - AI/analysis themed icon

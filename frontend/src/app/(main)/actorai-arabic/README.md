@@ -107,7 +107,7 @@ export default function ActoraiArabicPage() {
 ### Design System Compatibility
 
 The application uses the project's shared UI components from `@/components/ui/`:
-- Button
+
 - Card
 - Tabs
 - Alert

@@ -20,20 +20,20 @@ This project is a back-end application or API built with Node.js and the Express
 ### Node.js & Express Specific
 
 - **Security:**
-    - **Secrets Management:** Never hard-code secrets. Use environment variables (and a `.env` file) for all sensitive information.
-    - **Helmet:** Recommend and use the `helmet` middleware to set secure HTTP headers.
-    - **Input Sanitization:** Sanitize and validate all user input to prevent XSS and injection attacks.
-    - **Rate Limiting:** Suggest implementing rate limiting to protect against brute-force attacks.
+  - **Secrets Management:** Never hard-code secrets. Use environment variables (and a `.env` file) for all sensitive information.
+  - **Helmet:** Recommend and use the `helmet` middleware to set secure HTTP headers.
+  - **Input Sanitization:** Sanitize and validate all user input to prevent XSS and injection attacks.
+  - **Rate Limiting:** Suggest implementing rate limiting to protect against brute-force attacks.
 - **Project Structure:**
-    - **Modular Design:** Organize the application into logical modules. Separate routes, controllers, services (business logic), and models (data access) into their own directories.
-    - **Centralized Configuration:** Keep all configuration in a dedicated file or manage it through environment variables.
+  - **Modular Design:** Organize the application into logical modules. Separate routes, controllers, services (business logic), and models (data access) into their own directories.
+  - **Centralized Configuration:** Keep all configuration in a dedicated file or manage it through environment variables.
 - **Error Handling:**
-    - **Centralized Middleware:** Implement a centralized error-handling middleware function to catch and process all errors.
-    - **Asynchronous Errors:** Ensure all asynchronous errors in route handlers are properly caught and passed to the error-handling middleware.
+  - **Centralized Middleware:** Implement a centralized error-handling middleware function to catch and process all errors.
+  - **Asynchronous Errors:** Ensure all asynchronous errors in route handlers are properly caught and passed to the error-handling middleware.
 - **Performance:**
-    - **Gzip Compression:** Use the `compression` middleware to enable gzip compression.
-    - **Caching:** Recommend caching strategies for frequently accessed data.
-    - **Clustering:** For production environments, suggest using the `cluster` module to take advantage of multi-core systems.
+  - **Gzip Compression:** Use the `compression` middleware to enable gzip compression.
+  - **Caching:** Recommend caching strategies for frequently accessed data.
+  - **Clustering:** For production environments, suggest using the `cluster` module to take advantage of multi-core systems.
 
 ### Building AI Features with the Gemini SDK (`@google/generative-ai`)
 

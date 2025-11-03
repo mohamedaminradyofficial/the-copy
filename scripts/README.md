@@ -43,7 +43,7 @@ python3 scripts/create_security_issues_direct.py \
 ### parse_create_issues.py
 
 **Requirements:**
-- Python 3.7+
+
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` installed (for JSON processing)
 

@@ -122,8 +122,8 @@ const borderRadius = designTokens.borderRadius.md;
 
 تم استيراد نظام التصميم من:
 
-- Figma: https://www.figma.com/design/tTX3qogmlIZrAwMKCsURlM/Design-System-Documentation
-- Repository: https://github.com/mohamedrano/Design-System-Documentation-2-
+- Figma: <https://www.figma.com/design/tTX3qogmlIZrAwMKCsURlM/Design-System-Documentation>
+- Repository: <https://github.com/mohamedrano/Design-System-Documentation-2->
 
 ## 📝 ملاحظات مهمة
 

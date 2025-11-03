@@ -27,8 +27,8 @@
 
 ### المعاينات
 
-- **Frontend**: http://localhost:9002 (Next.js)
-- **Backend**: http://localhost:3001 (Express.js)
+- **Frontend**: <http://localhost:9002> (Next.js)
+- **Backend**: <http://localhost:3001> (Express.js)
 
 ### المتغيرات البيئية
 

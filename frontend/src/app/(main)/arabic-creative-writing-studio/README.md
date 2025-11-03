@@ -47,7 +47,7 @@ All interactive components are marked with `"use client"` directive.
 ### State Management
 
 The application uses React hooks for local state management:
-- `useState` for component state
+
 - `useEffect` for side effects and API initialization
 - `useCallback` for memoized callbacks
 
