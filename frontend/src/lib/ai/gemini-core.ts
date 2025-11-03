@@ -153,25 +153,23 @@ export type CallOpts = {
  * });
  */
 export async function callGeminiText(opts: CallOpts): Promise<string> {
-  const { model, prompt, temperature = 0.3, systemInstruction } = opts;
-
   // Enforce throttling
-  await throttle(model);
+  await throttle(opts.model);
 
   // Initialize client
   const client = initClient();
 
   // Build full prompt
-  const fullPrompt = systemInstruction
-    ? `${systemInstruction}\n\n${prompt}`
-    : prompt;
+  const fullPrompt = opts.systemInstruction
+    ? `${opts.systemInstruction}\n\n${opts.prompt}`
+    : opts.prompt;
 
   // Call API
   const result = await client.models.generateContent({
-    model,
+    model: opts.model,
     contents: fullPrompt,
     config: {
-      temperature,
+      temperature: opts.temperature ?? 0.3,
       maxOutputTokens: MAX_TOKENS,
     },
   });
