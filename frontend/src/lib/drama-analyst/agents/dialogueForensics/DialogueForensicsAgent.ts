@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { DIALOGUE_FORENSICS_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface DialogueForensicsContext {
   originalText?: string;
@@ -215,17 +216,13 @@ ${
       "صادق",
       "عفوي",
     ];
-    const termCount = authenticityTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, authenticityTerms);
     score += Math.min(0.25, termCount * 0.04);
 
     const negativeTerms = ["مفتعل", "غير طبيعي", "متكلف", "مصطنع"];
-    const negCount = negativeTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const negCount = safeCountMultipleTerms(text, negativeTerms);
     score -= Math.min(0.2, negCount * 0.05);
 
     const hasExamples = (text.match(/["«]/g) || []).length >= 3;
@@ -246,10 +243,8 @@ ${
       "متسق",
       "يعكس",
     ];
-    const charCount = charTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const charCount = safeCountMultipleTerms(text, charTerms);
     score += Math.min(0.25, charCount * 0.03);
 
     const hasVoiceAnalysis = text.includes("الشخصية") && text.includes("حوار");
@@ -270,10 +265,8 @@ ${
       "يخدم",
       "يساهم",
     ];
-    const funcCount = functionalTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const funcCount = safeCountMultipleTerms(text, functionalTerms);
     score += Math.min(0.3, funcCount * 0.03);
 
     const hasPurposeAnalysis =
@@ -297,10 +290,8 @@ ${
       "بنية",
       "صياغة",
     ];
-    const techCount = technicalTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const techCount = safeCountMultipleTerms(text, technicalTerms);
     score += Math.min(0.25, techCount * 0.04);
 
     if (text.length > 1500) score += 0.15;

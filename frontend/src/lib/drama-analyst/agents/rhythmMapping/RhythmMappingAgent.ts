@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { RHYTHM_MAPPING_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface RhythmMappingContext {
   originalText?: string;
@@ -247,10 +248,8 @@ ${
       "تباطؤ",
       "ديناميكية",
     ];
-    const termCount = rhythmTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, rhythmTerms);
     score += Math.min(0.25, termCount * 0.015);
 
     const aspectsTerms = [
@@ -262,10 +261,8 @@ ${
       "ثابت",
       "متغير",
     ];
-    const aspectsCount = aspectsTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const aspectsCount = safeCountMultipleTerms(text, aspectsTerms);
     score += Math.min(0.15, aspectsCount * 0.02);
 
     if (text.length > 1500) score += 0.1;
@@ -286,11 +283,8 @@ ${
       "تصاعد",
       "هبوط",
     ];
-    const techCount = technicalTerms.reduce(
-      (count, term) =>
-        count + (text.match(new RegExp(term, "gi")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const techCount = safeCountMultipleTerms(text, technicalTerms);
     score += Math.min(0.25, techCount * 0.03);
 
     const hasVisualIndicators =
@@ -313,10 +307,8 @@ ${
       "فرصة",
       "إمكانية",
     ];
-    const insightCount = insightWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const insightCount = safeCountMultipleTerms(text, insightWords);
     score += Math.min(0.3, insightCount * 0.03);
 
     const hasOptimization = text.includes("تحسين") || text.includes("اقتراح");
@@ -336,11 +328,8 @@ ${
       "في المشهد",
       "المقطع",
     ];
-    const evidenceCount = evidenceMarkers.reduce(
-      (count, marker) =>
-        count + (text.match(new RegExp(marker, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const evidenceCount = safeCountMultipleTerms(text, evidenceMarkers);
     score += Math.min(0.25, evidenceCount * 0.025);
 
     const hasExamples = (text.match(/["«]/g) || []).length >= 2;

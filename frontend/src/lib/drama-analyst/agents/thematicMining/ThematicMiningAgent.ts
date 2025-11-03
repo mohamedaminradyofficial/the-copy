@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { THEMATIC_MINING_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface ThematicMiningContext {
   originalText?: string;
@@ -163,10 +164,8 @@ ${includeMotifs ? `5. **الموتيفات المتكررة**: الأنماط و
       "معنى",
       "قيمة",
     ];
-    const termCount = thematicTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, thematicTerms);
     score += Math.min(0.25, termCount * 0.015);
 
     const abstractTerms = [
@@ -179,10 +178,8 @@ ${includeMotifs ? `5. **الموتيفات المتكررة**: الأنماط و
       "التضحية",
       "الخيانة",
     ];
-    const abstractCount = abstractTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const abstractCount = safeCountMultipleTerms(text, abstractTerms);
     score += Math.min(0.15, abstractCount * 0.03);
 
     if (text.length > 1500) score += 0.1;
@@ -203,11 +200,8 @@ ${includeMotifs ? `5. **الموتيفات المتكررة**: الأنماط و
       "في المشهد",
       "عندما",
     ];
-    const evidenceCount = evidenceMarkers.reduce(
-      (count, marker) =>
-        count + (text.match(new RegExp(marker, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const evidenceCount = safeCountMultipleTerms(text, evidenceMarkers);
     score += Math.min(0.25, evidenceCount * 0.025);
 
     const hasQuotes = (text.match(/["«]/g) || []).length;
@@ -230,10 +224,8 @@ ${includeMotifs ? `5. **الموتيفات المتكررة**: الأنماط و
       "الأهمية",
       "التأثير",
     ];
-    const insightCount = insightWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const insightCount = safeCountMultipleTerms(text, insightWords);
     score += Math.min(0.3, insightCount * 0.03);
 
     const hasAnalysis =
@@ -257,10 +249,8 @@ ${includeMotifs ? `5. **الموتيفات المتكررة**: الأنماط و
       "بالمقابل",
       "وهكذا",
     ];
-    const connectiveCount = connectiveWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const connectiveCount = safeCountMultipleTerms(text, connectiveWords);
     score += Math.min(0.2, connectiveCount * 0.04);
 
     const hasStructure =

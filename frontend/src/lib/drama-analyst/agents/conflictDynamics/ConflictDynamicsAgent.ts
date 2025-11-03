@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { CONFLICT_DYNAMICS_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface ConflictDynamicsContext {
   originalText?: string;
@@ -201,17 +202,13 @@ ${
       "صدام",
       "احتكاك",
     ];
-    const termCount = conflictTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, conflictTerms);
     score += Math.min(0.25, termCount * 0.02);
 
     const typeTerms = ["داخلي", "خارجي", "بين شخصي", "مجتمعي", "فردي"];
-    const typeCount = typeTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const typeCount = safeCountMultipleTerms(text, typeTerms);
     score += Math.min(0.15, typeCount * 0.05);
 
     if (text.includes("الأطراف") || text.includes("المتصارع")) score += 0.1;
@@ -232,10 +229,8 @@ ${
       "ذروة",
       "حل",
     ];
-    const depthCount = depthIndicators.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const depthCount = safeCountMultipleTerms(text, depthIndicators);
     score += Math.min(0.25, depthCount * 0.025);
 
     const hasCausality =
@@ -259,11 +254,8 @@ ${
       "عندما",
       "حيث",
     ];
-    const evidenceCount = evidenceMarkers.reduce(
-      (count, marker) =>
-        count + (text.match(new RegExp(marker, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const evidenceCount = safeCountMultipleTerms(text, evidenceMarkers);
     score += Math.min(0.25, evidenceCount * 0.025);
 
     const hasQuotes = (text.match(/["«]/g) || []).length;
@@ -285,10 +277,8 @@ ${
       "يشير",
       "نستنتج",
     ];
-    const insightCount = insightWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const insightCount = safeCountMultipleTerms(text, insightWords);
     score += Math.min(0.3, insightCount * 0.03);
 
     const hasFunctionAnalysis =
@@ -324,18 +314,12 @@ ${
     const mediumIntensity = ["متوسط", "متصاعد", "متزايد"];
     const lowIntensity = ["هادئ", "خفيف", "كامن", "مكبوت"];
 
-    const highCount = highIntensity.reduce(
-      (c, w) => c + (text.match(new RegExp(w, "g")) || []).length,
-      0
-    );
-    const mediumCount = mediumIntensity.reduce(
-      (c, w) => c + (text.match(new RegExp(w, "g")) || []).length,
-      0
-    );
-    const lowCount = lowIntensity.reduce(
-      (c, w) => c + (text.match(new RegExp(w, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const highCount = safeCountMultipleTerms(text, highIntensity);
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const mediumCount = safeCountMultipleTerms(text, mediumIntensity);
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const lowCount = safeCountMultipleTerms(text, lowIntensity);
 
     if (highCount > mediumCount && highCount > lowCount) return "عالي";
     if (lowCount > mediumCount && lowCount > highCount) return "منخفض";

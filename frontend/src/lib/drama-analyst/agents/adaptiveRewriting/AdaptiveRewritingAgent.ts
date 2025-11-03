@@ -5,6 +5,7 @@ import {
   StandardAgentOutput,
 } from "../shared/standardAgentPattern";
 import { ADAPTIVE_REWRITING_AGENT_CONFIG } from "./agent";
+import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 interface AdaptiveRewritingContext {
   originalText?: string;
@@ -194,10 +195,8 @@ export class AdaptiveRewritingAgent extends BaseAgent {
       "أقوى",
       "أكثر",
     ];
-    const termCount = achievementTerms.reduce(
-      (count, term) => count + (text.match(new RegExp(term, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const termCount = safeCountMultipleTerms(text, achievementTerms);
     score += Math.min(0.25, termCount * 0.03);
 
     if (text.length > 500) score += 0.15;
@@ -217,10 +216,8 @@ export class AdaptiveRewritingAgent extends BaseAgent {
       "جودة",
       "تحسن",
     ];
-    const qualityCount = qualityIndicators.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const qualityCount = safeCountMultipleTerms(text, qualityIndicators);
     score += Math.min(0.25, qualityCount * 0.04);
 
     const hasExplanation = text.includes("التحسين") || text.includes("التغيير");
@@ -241,10 +238,8 @@ export class AdaptiveRewritingAgent extends BaseAgent {
       "كما",
       "أيضاً",
     ];
-    const connectiveCount = connectiveWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const connectiveCount = safeCountMultipleTerms(text, connectiveWords);
     score += Math.min(0.2, connectiveCount * 0.03);
 
     const paragraphs = text.split("\n\n").filter((p) => p.trim().length > 50);
@@ -257,10 +252,8 @@ export class AdaptiveRewritingAgent extends BaseAgent {
     let score = 0.5;
 
     const creativeWords = ["مبتكر", "جديد", "فريد", "مميز", "إبداعي", "أصيل"];
-    const creativeCount = creativeWords.reduce(
-      (count, word) => count + (text.match(new RegExp(word, "g")) || []).length,
-      0
-    );
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const creativeCount = safeCountMultipleTerms(text, creativeWords);
     score += Math.min(0.3, creativeCount * 0.1);
 
     const hasVariety = text.includes("بينما") || text.includes("من جهة أخرى");

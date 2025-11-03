@@ -9,10 +9,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
 });
 
-// @ts-ignore - Type compatibility issue with drizzle-zod pick()
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = z.object({
+  username: z.string(),
+  password: z.string(),
 });
 
 export type InsertUser = {
@@ -29,14 +28,11 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// @ts-ignore - Type compatibility issue with drizzle-zod
-export const insertProjectSchema = createInsertSchema(projects).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertProjectSchema = createInsertSchema(projects, {
+  title: z.string().min(1, "Title is required"),
+  scriptContent: z.string().optional(),
 });
 
-// @ts-ignore
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
 
@@ -53,12 +49,16 @@ export const scenes = pgTable("scenes", {
   status: text("status").notNull().default("planned"),
 });
 
-// @ts-ignore - Type compatibility issue with drizzle-zod
-export const insertSceneSchema = createInsertSchema(scenes).omit({
-  id: true,
+export const insertSceneSchema = createInsertSchema(scenes, {
+  projectId: z.string(),
+  sceneNumber: z.number(),
+  title: z.string(),
+  location: z.string(),
+  timeOfDay: z.string(),
+  characters: z.array(z.string()),
+  description: z.string().optional(),
 });
 
-// @ts-ignore
 export type InsertScene = z.infer<typeof insertSceneSchema>;
 export type Scene = typeof scenes.$inferSelect;
 
@@ -72,12 +72,12 @@ export const characters = pgTable("characters", {
   notes: text("notes"),
 });
 
-// @ts-ignore - Type compatibility issue with drizzle-zod
-export const insertCharacterSchema = createInsertSchema(characters).omit({
-  id: true,
+export const insertCharacterSchema = createInsertSchema(characters, {
+  projectId: z.string(),
+  name: z.string(),
+  notes: z.string().optional(),
 });
 
-// @ts-ignore
 export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
 export type Character = typeof characters.$inferSelect;
 
@@ -92,11 +92,15 @@ export const shots = pgTable("shots", {
   aiSuggestion: text("ai_suggestion"),
 });
 
-// @ts-ignore - Type compatibility issue with drizzle-zod
-export const insertShotSchema = createInsertSchema(shots).omit({
-  id: true,
+export const insertShotSchema = createInsertSchema(shots, {
+  sceneId: z.string(),
+  shotNumber: z.number(),
+  shotType: z.string(),
+  cameraAngle: z.string(),
+  cameraMovement: z.string(),
+  lighting: z.string(),
+  aiSuggestion: z.string().optional(),
 });
 
-// @ts-ignore
 export type InsertShot = z.infer<typeof insertShotSchema>;
 export type Shot = typeof shots.$inferSelect;

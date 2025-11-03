@@ -7,18 +7,21 @@
 ## الهيكل التقني
 
 ### التقنيات الأساسية
+
 - **Express.js 4.18.2**: إطار عمل خادم Node.js
 - **TypeScript 5.x**: لغة البرمجة مع الكتابة الصارمة
 - **tsx 4.7.0**: تنفيذ TypeScript للتطوير
 - **Google Generative AI 0.24.1**: تكامل Gemini API
 
 ### مكتبات الأمان والوسطاء
+
 - **Helmet 7.1.0**: رؤوس الأمان
 - **CORS 2.8.5**: إدارة طلبات Cross-origin
 - **Express Rate Limit 7.1.5**: تحديد معدل الطلبات
 - **Compression 1.7.4**: ضغط الاستجابات
 
 ### معالجة الملفات والبيانات
+
 - **Multer 1.4.5-lts.1**: تحميل الملفات
 - **PDF.js 4.4.168**: معالجة ملفات PDF
 - **Mammoth 1.7.0**: معالجة ملفات DOCX
@@ -582,6 +585,7 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
 4. **مشاكل CORS**: راجع إعدادات CORS
 
 ### أدوات التشخيص
+
 - **Winston Logs**: سجلات مفصلة
 - **Health Check**: فحص صحة النظام
 - **Performance Metrics**: مقاييس الأداء

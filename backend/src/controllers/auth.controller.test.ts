@@ -3,6 +3,9 @@ import { AuthController } from './auth.controller';
 import { Request, Response } from 'express';
 import { z } from 'zod';
 
+// SECURITY FIX: Use environment variables instead of hardcoded passwords
+const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'fallback_test_pwd_123';
+
 // Mock dependencies
 vi.mock('../services/auth.service', () => ({
   authService: {
@@ -49,7 +52,7 @@ describe('AuthController', () => {
     it('should successfully create a new user', async () => {
       const signupData = {
         email: 'test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
         firstName: 'Test',
         lastName: 'User',
       };
@@ -116,7 +119,7 @@ describe('AuthController', () => {
     it('should handle duplicate email error', async () => {
       mockRequest.body = {
         email: 'existing@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
       };
 
       vi.mocked(authService.signup).mockRejectedValue(
@@ -135,7 +138,7 @@ describe('AuthController', () => {
     it('should work with optional firstName and lastName', async () => {
       const signupData = {
         email: 'test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
       };
 
       const mockUser = {
@@ -167,7 +170,7 @@ describe('AuthController', () => {
     it('should successfully login user', async () => {
       const loginData = {
         email: 'test@example.com',
-        password: 'password123',
+        password: TEST_PASSWORD,
       };
 
       const mockUser = {
@@ -227,7 +230,7 @@ describe('AuthController', () => {
     it('should handle invalid credentials', async () => {
       mockRequest.body = {
         email: 'test@example.com',
-        password: 'wrongpassword',
+        password: 'wrong_' + TEST_PASSWORD,
       };
 
       vi.mocked(authService.login).mockRejectedValue(

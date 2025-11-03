@@ -93,16 +93,19 @@ See `.env.example` for all available variables.
 ### 5. Component Organization
 
 #### UI Components (`src/components/ui/`)
+
 - Base components from shadcn/ui
 - Generic, reusable across features
 - No business logic
 
 #### Feature Components (`src/components/features/`)
+
 - Business logic and feature-specific components
 - Organized by domain (analysis, editor, projects, etc.)
 - Can contain local state and effects
 
 #### Layout Components (`src/components/layouts/`)
+
 - Structural components (page layouts, grids, containers)
 - Reusable across different pages
 
@@ -196,15 +199,18 @@ function ClientPage() {
 ## Testing Strategy
 
 ### Unit Tests (Vitest)
+
 - Test Server Actions in isolation
 - Test utility functions and helpers
 - Test complex business logic
 
 ### Integration Tests
+
 - Test component integration with Server Actions
 - Use MSW for API mocking
 
 ### E2E Tests (Playwright)
+
 - Critical user flows
 - Error boundary behavior
 - Cross-browser compatibility

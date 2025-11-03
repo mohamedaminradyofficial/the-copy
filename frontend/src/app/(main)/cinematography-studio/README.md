@@ -11,24 +11,28 @@ CineAI Studio is a comprehensive AI-powered toolset for cinematographers, coveri
 ### 📋 Pre-Production - ما قبل الإنتاج
 
 #### 📝 Shot List Generator - مولد قائمة اللقطات
+
 - AI-powered shot list generation from scripts
 - توليد قوائم لقطات ذكية من السيناريو
 - Detailed camera angles and movement suggestions
 - اقتراحات زوايا الكاميرا والحركة
 
 #### 📍 Location Scout Assistant - مساعد استكشاف المواقع
+
 - Location analysis and recommendations
 - تحليل المواقع والتوصيات
 - Lighting setup suggestions
 - اقتراحات إعداد الإضاءة
 
 #### 🎨 Mood Board Creator - منشئ لوحة المزاج
+
 - Visual inspiration boards
 - لوحات إلهام بصرية
 - AI-generated reference images
 - صور مرجعية من الذكاء الاصطناعي
 
 #### ⚙️ Equipment Optimizer - محسن المعدات
+
 - Smart equipment recommendations
 - توصيات ذكية للمعدات
 - Camera and lighting optimization
@@ -37,6 +41,7 @@ CineAI Studio is a comprehensive AI-powered toolset for cinematographers, coveri
 ### 🎬 Production - الإنتاج
 
 #### ✅ Real-Time Shot Validator - مدقق اللقطات المباشر
+
 - Instant shot quality analysis
 - تحليل فوري لجودة اللقطة
 - Composition, exposure, and focus validation
@@ -45,12 +50,14 @@ CineAI Studio is a comprehensive AI-powered toolset for cinematographers, coveri
 - اقتراحات فورية للتحسين
 
 #### 🤖 Real-Time Assistant - المساعد الفوري
+
 - On-set technical consultation
 - استشارات تقنية أثناء التصوير
 - Quick answers to cinematography questions
 - إجابات سريعة على أسئلة التصوير
 
 #### 📊 Data Logger - مسجل البيانات
+
 - Camera settings documentation
 - توثيق إعدادات الكاميرا
 - Shot metadata tracking
@@ -59,6 +66,7 @@ CineAI Studio is a comprehensive AI-powered toolset for cinematographers, coveri
 ### ✨ Post-Production - ما بعد الإنتاج
 
 #### 🎨 Color Grading Assistant - مساعد تدريج الألوان
+
 - AI-suggested color palettes
 - لوحات ألوان مقترحة
 - LUT recommendations
@@ -67,18 +75,21 @@ CineAI Studio is a comprehensive AI-powered toolset for cinematographers, coveri
 - تدريج خاص بكل مشهد
 
 #### ✂️ Editorial Assistant - مساعد المونتاج
+
 - Pacing and rhythm analysis
 - تحليل الإيقاع والسرعة
 - Transition suggestions
 - اقتراحات الانتقالات
 
 #### 📹 Footage Analyzer - محلل المشاهد
+
 - Technical analysis of recorded footage
 - تحليل تقني للمشاهد المسجلة
 - Quality assessment
 - تقييم الجودة
 
 #### 📦 Delivery Manager - مدير التسليم
+
 - Export settings for different platforms
 - إعدادات التصدير لمنصات مختلفة
 - Format optimization
@@ -171,6 +182,7 @@ Currently using mock data. To integrate real AI:
 3. Use OpenAI, Google Gemini, or other AI services
 
 ### Styling Guidelines
+
 - Follow project design tokens
 - Use Tailwind utility classes
 - Maintain RTL support

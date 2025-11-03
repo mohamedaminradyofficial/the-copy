@@ -486,18 +486,18 @@ export class StationsOrchestrator {
     return null;
   }
 
-  private createStationConfig<T>(
+  private createStationConfig(
     stationNumber: number,
     stationName: string
-  ): StationConfig<any, T> {
+  ): StationConfig<any, any> {
     return {
       stationId: `station${stationNumber}`,
       name: stationName,
       description: stationName,
       cacheEnabled: this.enableCaching,
       performanceTracking: true,
-      inputValidation: (input: any) => input !== undefined && input !== null,
-      outputValidation: (output: T) => output !== undefined && output !== null,
+      inputValidation: (input) => !!input,
+      outputValidation: (output) => !!output,
     };
   }
 

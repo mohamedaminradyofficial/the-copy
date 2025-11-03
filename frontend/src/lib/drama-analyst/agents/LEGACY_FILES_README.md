@@ -13,7 +13,7 @@
 
 الملفات التالية **تراثية** وتُستخدم فقط للتكوين الأساسي:
 
-### الوكلاء المرقّاة (مجلد بملفين):
+### الوكلاء المرقّاة (مجلد بملفين)
 
 1. `adaptiveRewriting/agent.ts` + `AdaptiveRewritingAgent.ts` ✅
 2. `characterNetwork/agent.ts` + `CharacterNetworkAgent.ts` ✅

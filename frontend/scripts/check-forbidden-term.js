@@ -2,6 +2,8 @@
 
 const fs = require("fs");
 const path = require("path");
+// SECURITY FIX: Import safe path utilities to prevent path traversal
+const { safeResolve } = require("./safe-path");
 
 const FORBIDDEN_TERM = "json";
 const TARGET_FILES = [
@@ -15,9 +17,16 @@ const TARGET_FILES = [
 ];
 
 function checkFile(filePath) {
-  const fullPath = path.join(process.cwd(), filePath);
-  if (!fs.existsSync(fullPath)) {
-    console.warn(`⚠️ File not found: ${filePath}`);
+  // SECURITY FIX: Use safe path resolution to prevent traversal attacks
+  let fullPath;
+  try {
+    fullPath = safeResolve(process.cwd(), filePath);
+    if (!fs.existsSync(fullPath)) {
+      console.warn(`⚠️ File not found: ${filePath}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`🚨 SECURITY: Invalid path "${filePath}": ${error.message}`);
     return false;
   }
 

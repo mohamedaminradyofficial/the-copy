@@ -6,6 +6,7 @@ import {
 } from "../shared/standardAgentPattern";
 import { COMPLETION_AGENT_CONFIG } from "./agent";
 import { COMPLETION_MODE_INSTRUCTIONS } from "./instructions";
+import { safeCountOccurrences, safeCountMultipleTerms } from "@/lib/security/safe-regexp";
 
 /**
  * Completion Agent - وكيل استكمال السرد
@@ -193,9 +194,8 @@ export class CompletionAgent extends BaseAgent {
       "بينما",
       "عندما",
     ];
-    const connectorCount = connectors.reduce((count, conn) => {
-      return count + (text.match(new RegExp(conn, "g")) || []).length;
-    }, 0);
+    // SECURITY FIX: Use safe RegExp utility to prevent injection
+    const connectorCount = safeCountMultipleTerms(text, connectors);
 
     // More connectors suggest better flow (normalized)
     const flowScore = Math.min(1, connectorCount / 10);

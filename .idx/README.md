@@ -12,10 +12,12 @@
 ## المميزات المُفعلة
 
 ### الأدوات النظام
+
 - Node.js 20
 - Git, curl, wget, unzip
 
 ### الإضافات
+
 - Google Gemini AI Companion
 - TypeScript/JavaScript support
 - Tailwind CSS IntelliSense
@@ -24,10 +26,12 @@
 - JSON/YAML support
 
 ### المعاينات
+
 - **Frontend**: http://localhost:9002 (Next.js)
 - **Backend**: http://localhost:3001 (Express.js)
 
 ### المتغيرات البيئية
+
 - `NODE_ENV=development`
 - `FRONTEND_PORT=9002`
 - `BACKEND_PORT=3001`
