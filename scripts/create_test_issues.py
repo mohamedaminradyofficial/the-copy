@@ -43,8 +43,17 @@ class GitHubAPI:
         }
 
     def create_issue(self, title: str, body: str, labels: List[str]) -> Optional[Dict]:
-        """Create a GitHub issue."""
+        """Create a GitHub issue.
+
+        SECURITY: Validates URL scheme to prevent file:// or custom scheme access.
+        """
         url = f"{GITHUB_API}/repos/{self.repo}/issues"
+
+        # SECURITY FIX: Validate URL scheme to prevent file:// or custom schemes
+        if not url.startswith("https://"):
+            print(f"[ERROR] Invalid URL scheme. Only HTTPS is allowed: {url}")
+            return None
+
         data = {"title": title, "body": body, "labels": labels}
 
         req = request.Request(
@@ -248,10 +257,15 @@ Auto-generated from `SECURITY_SCAN_REPORT.md`
 
 
 def get_repo_from_git() -> Optional[str]:
-    """Extract repo from git remote."""
+    """Extract repo from git remote.
+
+    SECURITY: Uses subprocess.run with command as list (not shell=True)
+    to prevent command injection.
+    """
     try:
         import subprocess
 
+        # SECURITY: Command passed as list without shell=True is safe
         result = subprocess.run(
             ["git", "config", "--get", "remote.origin.url"],
             capture_output=True,

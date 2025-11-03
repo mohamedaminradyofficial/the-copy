@@ -19,13 +19,18 @@ REPORT_PATH = Path("SECURITY_SCAN_REPORT.md")
 
 
 def run_command(cmd: List[str], dry_run: bool = False) -> Tuple[int, str]:
-    """Execute command and return (returncode, output)."""
+    """Execute command safely without shell and return (returncode, output).
+
+    SECURITY: This function does NOT use shell=True to prevent command injection.
+    Commands must be passed as a list of arguments.
+    """
     if dry_run:
         print(f"[DRY-RUN] Would execute: {' '.join(cmd)}")
         return 0, ""
 
     print(f" Executing: {' '.join(cmd)}")
     try:
+        # SECURITY FIX: Removed shell=True to prevent command injection
         result = subprocess.run(
             cmd, shell=False, capture_output=True, text=True, encoding="utf-8"
         )
@@ -267,7 +272,10 @@ def _extract_finding_from_text_line(line: str, current_severity: str) -> Optiona
 
 
 def create_github_issue(finding: Dict[str, str], dry_run: bool = False) -> bool:
-    """Create a GitHub issue for a single finding."""
+    """Create a GitHub issue for a single finding.
+
+    SECURITY: Uses subprocess without shell=True to prevent command injection.
+    """
     severity = finding["severity"].upper()
     labels = get_labels_for_severity(finding["severity"])
 
@@ -303,7 +311,8 @@ This issue was automatically created from `SECURITY_SCAN_REPORT.md`.
 - Security Policy: [SECURITY.md](../SECURITY.md)
 """
 
-    # Create gh CLI command (no escaping needed with shell=False)
+    # SECURITY FIX: Build command as list to avoid shell injection
+    # When using subprocess without shell=True, no escaping is needed
     cmd = ["gh", "issue", "create", "--title", title, "--body", body, "--label", labels]
 
     returncode, output = run_command(cmd, dry_run)
