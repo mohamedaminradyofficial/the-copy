@@ -6,6 +6,15 @@ import {
 } from "../shared/standardAgentPattern";
 import { CHARACTER_NETWORK_AGENT_CONFIG } from "./agent";
 import { safeCountMultipleTerms } from "@/lib/security/safe-regexp";
+import {
+  buildOriginalTextSection,
+  buildCharactersSection,
+  buildFocusCharactersSection,
+  buildAnalysisOptionsSection,
+  buildConditionalInstructions,
+  getBaseInstructions,
+  getClosingInstructions,
+} from "./prompt-builder";
 
 interface CharacterNetworkContext {
   originalText?: string;
@@ -39,6 +48,7 @@ export class CharacterNetworkAgent extends BaseAgent {
     const { input: taskInput, context } = input;
     const ctx = context as CharacterNetworkContext;
 
+    // Extract context with defaults
     const originalText = ctx?.originalText || "";
     const characters = ctx?.characters || [];
     const focusCharacters = ctx?.focusCharacters || [];
@@ -54,111 +64,28 @@ export class CharacterNetworkAgent extends BaseAgent {
     const identifyGroups = ctx?.identifyGroups ?? true;
     const mapPowerDynamics = ctx?.mapPowerDynamics ?? true;
 
+    // Build prompt sections
     let prompt = `مهمة رسم وتحليل شبكة الشخصيات والعلاقات\n\n`;
-
-    if (originalText) {
-      prompt += `النص المراد تحليله:\n${originalText.substring(0, 2500)}...\n\n`;
-    }
-
-    if (characters.length > 0) {
-      prompt += `الشخصيات في الشبكة:\n`;
-      characters.slice(0, 8).forEach((char: any, idx: number) => {
-        const charName =
-          typeof char === "string" ? char : char.name || `شخصية ${idx + 1}`;
-        const charRole =
-          typeof char === "object" && char.role ? ` - ${char.role}` : "";
-        prompt += `${idx + 1}. ${charName}${charRole}\n`;
-      });
-      prompt += "\n";
-    }
-
-    if (focusCharacters.length > 0) {
-      prompt += `شخصيات للتركيز عليها: ${focusCharacters.join("، ")}\n\n`;
-    }
-
-    prompt += `أنواع العلاقات للتحليل: ${relationshipTypes.map(this.translateRelationType).join("، ")}\n`;
-    prompt += `تحليل التطور: ${analyzeEvolution ? "نعم" : "لا"}\n`;
-    prompt += `تتبع النفوذ: ${trackInfluence ? "نعم" : "لا"}\n`;
-    prompt += `تحديد المجموعات: ${identifyGroups ? "نعم" : "لا"}\n`;
-    prompt += `رسم ديناميكيات القوة: ${mapPowerDynamics ? "نعم" : "لا"}\n\n`;
-
+    prompt += buildOriginalTextSection(originalText);
+    prompt += buildCharactersSection(characters);
+    prompt += buildFocusCharactersSection(focusCharacters);
+    prompt += buildAnalysisOptionsSection(
+      relationshipTypes,
+      this.translateRelationType.bind(this),
+      analyzeEvolution,
+      trackInfluence,
+      identifyGroups,
+      mapPowerDynamics
+    );
     prompt += `المهمة المطلوبة:\n${taskInput}\n\n`;
-
-    prompt += `التعليمات:
-
-1. **نظرة عامة على الشبكة** (3-4 جمل):
-   - عدد الشخصيات الرئيسية والثانوية
-   - الطابع العام للعلاقات (متماسكة، متشابكة، معزولة)
-   - المركزية والهامشية في الشبكة
-
-2. **الشخصيات المركزية** (Hub Characters):
-   - من هم الشخصيات الأكثر ارتباطاً
-   - دورهم في ربط الشبكة
-   - تأثيرهم على الأحداث
-
-3. **العلاقات الثنائية الرئيسية**:
-   لكل علاقة مهمة، حدد:
-   - **الأطراف**: من ومن
-   - **نوع العلاقة**: عائلية، رومانسية، مهنية، صداقة، عدائية
-   - **طبيعة العلاقة**: متوازنة، سلطوية، متبادلة، أحادية الاتجاه
-   - **قوة الرابطة**: قوية، متوسطة، ضعيفة، متقلبة
-   - **الديناميكية**: ثابتة، متطورة، متدهورة، متحسنة
-   - **الأدلة النصية**: مشاهد أو لحظات تبرز هذه العلاقة
-
-${
-  analyzeEvolution
-    ? `4. **تطور العلاقات**:
-   - كيف تتغير العلاقات الرئيسية عبر النص
-   - نقاط التحول في العلاقات
-   - العوامل المؤثرة في التغيير`
-    : ""
-}
-
-${
-  identifyGroups
-    ? `5. **المجموعات والتحالفات**:
-   - المجموعات أو الفصائل الموجودة
-   - أساس التجمع (عائلة، طبقة، مصلحة، عقيدة)
-   - العلاقات بين المجموعات`
-    : ""
-}
-
-${
-  mapPowerDynamics
-    ? `6. **ديناميكيات القوة والنفوذ**:
-   - من يملك السلطة والنفوذ
-   - كيف تُمارس هذه السلطة
-   - توازنات القوى والتبعيات`
-    : ""
-}
-
-${
-  trackInfluence
-    ? `7. **خطوط التأثير**:
-   - من يؤثر على من
-   - آليات التأثير (إقناع، إجبار، إلهام، تلاعب)
-   - سلاسل التأثير غير المباشر`
-    : ""
-}
-
-8. **العزلة والاتصال**:
-   - شخصيات معزولة أو منفصلة
-   - شخصيات تربط بين مجموعات منفصلة (Bridges)
-   - الفراغات أو الفجوات في الشبكة
-
-9. **الوظيفة السردية**:
-   - كيف تخدم هذه الشبكة الحبكة
-   - ماذا تكشف عن الثيمات والرسائل
-   - التعقيد والعمق الذي تضيفه
-
-10. **الرسم البياني الوصفي**:
-    - وصف نصي لبنية الشبكة (مركزية، موزعة، هرمية، دائرية)
-    - المحاور الرئيسية للاتصال
-    - النقاط الحرجة في الشبكة
-
-اكتب بشكل نصي تحليلي واضح مع أسماء الشخصيات وأمثلة محددة.
-استخدم أسهم نصية (→ ← ↔) لتوضيح اتجاهات التأثير عند الحاجة.
-لا تستخدم JSON أو رسومات معقدة - وصف نصي مفصل فقط.`;
+    prompt += getBaseInstructions();
+    prompt += buildConditionalInstructions(
+      analyzeEvolution,
+      identifyGroups,
+      mapPowerDynamics,
+      trackInfluence
+    );
+    prompt += getClosingInstructions();
 
     return prompt;
   }
