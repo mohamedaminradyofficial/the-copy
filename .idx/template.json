@@ -1,0 +1,15 @@
+{
+  "name": "The Copy - Arabic Drama Analysis",
+  "description": "منصة شاملة لتحليل النصوص الدرامية بالذكاء الاصطناعي - Comprehensive platform for AI-powered drama text analysis",
+  "icon": "🎭",
+  "tags": ["nextjs", "express", "ai", "arabic", "drama", "analysis"],
+  "category": "Web Development",
+  "preview": {
+    "command": "./start-dev.sh",
+    "port": 9002
+  },
+  "requirements": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  }
+}
