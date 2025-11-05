@@ -30,7 +30,7 @@ import "./slider.css";
 import pagesManifest from "@/config/pages.manifest.json";
 
 const ParticleBackground = dynamic(
-  () => import("@/components/particle-background"),
+  () => import("@/components/particle-background-optimized"),
   { ssr: false }
 );
 

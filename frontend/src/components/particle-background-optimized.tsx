@@ -43,6 +43,12 @@ export default function OptimizedParticleAnimation() {
   
   const currentEffect: Effect = "spark";
 
+  // Check for reduced motion preference
+  const prefersReducedMotion = React.useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
   // Scene reference with all necessary data
   const sceneRef = useRef<{
     scene: THREE.Scene;
@@ -371,7 +377,7 @@ export default function OptimizedParticleAnimation() {
         await processBatch();
       }
 
-      console.log(`✅ تم توليد ${generatedCount} جسيم في ${attempts} محاولة`);
+      // تم توليد جسيمات بنجاح
 
       // Create final arrays
       const finalPositions = positions.slice(0, generatedCount * 3);
@@ -500,6 +506,9 @@ export default function OptimizedParticleAnimation() {
 
   useEffect(() => {
     if (!canvasRef.current || typeof window === 'undefined') return;
+    
+    // Skip animation if user prefers reduced motion
+    if (prefersReducedMotion) return;
 
     const canvas = canvasRef.current;
     
@@ -567,7 +576,7 @@ export default function OptimizedParticleAnimation() {
         sceneRef.current.particleCount = count;
         sceneRef.current.isGenerated = true;
 
-        console.log(`🎯 تم إعداد ${count} جسيم بنجاح`);
+        // تم إعداد الجسيمات بنجاح
       })
       .catch((error) => {
         console.error('❌ فشل في توليد الجسيمات:', error);
@@ -803,7 +812,7 @@ export default function OptimizedParticleAnimation() {
           sceneRef.current = null;
         }
 
-        console.log('🧹 تم تنظيف موارد الجسيمات بنجاح');
+        // تم تنظيف موارد الجسيمات بنجاح
       } catch (error) {
         console.error('خطأ في تنظيف موارد الجسيمات:', error);
       }
