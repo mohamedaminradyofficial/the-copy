@@ -10,13 +10,13 @@ Write-Output "Launching Backend and Frontend in separate PowerShell windows..." 
 # Backend window (auto-fallback from BackendPort implemented in server.ts)
 Start-Process pwsh -ArgumentList @(
   '-NoExit', '-Command',
-  "Set-Location '$BackendPath'; $env:PORT=$BackendPort; npm run dev"
+  "Set-Location '$BackendPath'; $env:PORT=$BackendPort; pnpm run dev"
 )
 
 # Frontend window (auto-fallback implemented in scripts/dev-with-fallback.js)
 Start-Process pwsh -ArgumentList @(
   '-NoExit', '-Command',
-  "Set-Location '$FrontendPath'; $env:PORT=$FrontendPort; npm run dev"
+  "Set-Location '$FrontendPath'; $env:PORT=$FrontendPort; pnpm run dev"
 )
 
 Write-Output "Backend starting from port $BackendPort; Frontend starting from port $FrontendPort" -ForegroundColor Green

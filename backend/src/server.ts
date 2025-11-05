@@ -3,7 +3,7 @@ import express, { Application } from 'express';
 import type { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import { env } from '@/config/env';
-import { setupMiddleware } from '@/middleware';
+import { setupMiddleware, errorHandler } from '@/middleware';
 import { AnalysisController } from '@/controllers/analysis.controller';
 import { authController } from '@/controllers/auth.controller';
 import { projectsController } from '@/controllers/projects.controller';
@@ -77,6 +77,9 @@ app.use('*', (req, res) => {
     error: 'المسار غير موجود',
   });
 });
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 // Start server with automatic port fallback if the selected port is in use
 let runningServer: Server | null = null;
