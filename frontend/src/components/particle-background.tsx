@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { ParticleVelocity, ParticlePosition, EffectConfig } from "./particle-effects";
 import {
@@ -123,7 +123,7 @@ function calculateParticleColor(
 
 export default function V0ParticleAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [currentEffect, setCurrentEffect] = useState<Effect>("default");
+  const currentEffect: Effect = "spark";
   const sceneRef = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -932,7 +932,7 @@ export default function V0ParticleAnimation() {
       material.dispose();
       renderer.dispose();
     };
-  }, [currentEffect]);
+  }, []);
 
   // Mouse drag handlers
   const handleMouseDown = (event: React.MouseEvent) => {
@@ -989,26 +989,7 @@ export default function V0ParticleAnimation() {
     }
   };
 
-  // Zoom handlers
-  const handleZoomIn = () => {
-    if (sceneRef.current) {
-      sceneRef.current.camera.position.z = Math.max(
-        1,
-        sceneRef.current.camera.position.z - 0.5
-      );
-      sceneRef.current.camera.updateProjectionMatrix();
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (sceneRef.current) {
-      sceneRef.current.camera.position.z = Math.min(
-        5,
-        sceneRef.current.camera.position.z + 0.5
-      );
-      sceneRef.current.camera.updateProjectionMatrix();
-    }
-  };
+  
 
   return (
     <div className="relative flex items-center justify-center min-h-screen bg-black">
@@ -1026,51 +1007,11 @@ export default function V0ParticleAnimation() {
         onTouchEnd={handleTouchEnd}
       />
 
-      {/* Zoom controls */}
-      <div className="absolute top-5 right-5 flex flex-col gap-2.5">
-        <button
-          onClick={handleZoomIn}
-          className="px-5 py-2.5 text-2xl bg-white/10 border border-white text-white cursor-pointer transition-colors hover:bg-white/30 rounded"
-          aria-label="Zoom in"
-        >
-          +
-        </button>
-        <button
-          onClick={handleZoomOut}
-          className="px-5 py-2.5 text-2xl bg-white/10 border border-white text-white cursor-pointer transition-colors hover:bg-white/30 rounded"
-          aria-label="Zoom out"
-        >
-          -
-        </button>
-      </div>
+      
 
-      {/* Effect menu */}
-      <div className="absolute top-5 left-5 flex flex-col gap-2.5">
-        <select
-          id="effect-select"
-          value={currentEffect}
-          onChange={(e) => setCurrentEffect(e.target.value as Effect)}
-          className="px-3 py-2.5 text-base bg-white/10 border border-white text-white cursor-pointer rounded backdrop-blur-sm"
-          aria-label="Select particle effect"
-        >
-          <option value="default">Default (Light Scatter)</option>
-          <option value="spark">Spark (Strong Scatter)</option>
-          <option value="wave">Wave (Ripple Effect)</option>
-          <option value="vortex">Vortex (Spiral Pull)</option>
-        </select>
-      </div>
+      
 
-      {/* Credit link */}
-      <div className="absolute bottom-5 right-5">
-        <a
-          href="https://x.com/YoheiNishitsuji/status/1976780747391500561"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white/70 text-sm hover:text-white hover:underline transition-colors"
-        >
-          @YoheiNishitsuji
-        </a>
-      </div>
+      
     </div>
   );
 }

@@ -43,16 +43,9 @@ body {
 
 /* Hover state for cards */
 .card.hover-active {
-  transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg) translateZ(100px)
-    scale(1.02);
-  z-index: 50;
-}
-
-/* Specific z-index for last card to ensure it appears on top when hovered */
-.card:nth-child(4).hover-active {
-  z-index: 100;
-  transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg) translateZ(120px)
+  transform: rotateX(20deg) rotateY(-10deg) rotateZ(130deg) translateZ(160px)
     scale(1.03);
+  z-index: 999;
 }
 
 /* Ensure images fill their cards */
