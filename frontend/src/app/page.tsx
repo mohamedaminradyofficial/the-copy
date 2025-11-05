@@ -30,7 +30,7 @@ import "./slider.css";
 import pagesManifest from "@/config/pages.manifest.json";
 
 const ParticleBackground = dynamic(
-  () => import("@/components/particle-background"),
+  () => import("@/components/particle-background-optimized"),
   { ssr: false }
 );
 
@@ -172,6 +172,7 @@ export default function Home() {
                     src={image || "/placeholder.svg"}
                     alt={`Slide ${index + 1}`}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     style={{ objectFit: "cover" }}
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-8">
