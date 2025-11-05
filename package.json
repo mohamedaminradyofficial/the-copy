@@ -8,7 +8,15 @@
     "lint": "pnpm --filter nextn lint",
     "lint:fix": "pnpm --filter nextn lint:fix",
     "test": "pnpm --filter nextn test",
-    "postinstall": "pnpm -w dedupe || true"
+    "typecheck": "pnpm --filter nextn typecheck",
+    "build": "pnpm --filter nextn build",
+    "smoke:tests": "pnpm --filter nextn test -- src/app/__smoke__",
+    "ci": "npm run check:exports && npm run lint && npm run typecheck && npm run test && npm run build",
+    "check:exports": "node scripts/check-duplicate-exports.mjs",
+    "check:exports:json": "node scripts/check-duplicate-exports.mjs --output json",
+    "check:exports:fix": "node scripts/check-duplicate-exports.mjs --fix",
+    "dev": "npm run start:dev",
+    "preview": "pnpm --filter nextn start"
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.10.0",

@@ -415,5 +415,3 @@ ${project.content}`;
     </div>
   );
 };
-
-export { CreativeWritingStudio };
