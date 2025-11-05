@@ -101,6 +101,7 @@
     "@next/eslint-plugin-next": "^15.3.3",
     "@playwright/test": "^1.49.1",
     "@sentry/cli": "^2.39.0",
+    "@tailwindcss/postcss": "^4.1.16",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -146,9 +147,6 @@
   },
   "overrides": {
     "next@<=15.4.7": "15.4.7",
-    "esbuild": "^0.25.0"
-  },
-  "resolutions": {
     "esbuild": "^0.25.0"
   }
 }

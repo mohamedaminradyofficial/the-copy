@@ -8,7 +8,7 @@
     "lint": "pnpm --filter nextn lint",
     "lint:fix": "pnpm --filter nextn lint:fix",
     "test": "pnpm --filter nextn test",
-    "postinstall": "corepack pnpm -w dedupe || PATH=\"$PNPM_HOME:$HOME/.local/share/pnpm:$PATH\" pnpm -w dedupe || true"
+    "postinstall": "pnpm -w dedupe || true"
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.10.0",

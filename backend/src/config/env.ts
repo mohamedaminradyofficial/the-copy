@@ -10,7 +10,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   DATABASE_URL: z.string().optional().default('sqlite://./dev.db'),
   JWT_SECRET: z.string().optional().default('dev-secret-change-in-production'),
-  CORS_ORIGIN: z.string().default('http://localhost:5000'),
+  CORS_ORIGIN: z.string().default('http://localhost:5000,http://localhost:9002'),
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: z.string().transform(Number).default('100'),
 });

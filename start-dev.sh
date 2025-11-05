@@ -16,10 +16,10 @@ open_terminal() {
 }
 
 # Start backend
-open_terminal "Backend" "$(pwd)/backend" "npm run dev"
+open_terminal "Backend" "$(pwd)/backend" "pnpm run dev"
 
 # Start frontend
-open_terminal "Frontend" "$(pwd)/frontend" "npm run dev"
+open_terminal "Frontend" "$(pwd)/frontend" "pnpm run dev"
 
 echo "Starting development servers..."
 echo "Backend: http://localhost:3001"

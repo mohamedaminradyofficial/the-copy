@@ -417,4 +417,3 @@ export const ActorAiArabicStudio: React.FC<{}> = () => {
   );
 };
 
-export { ActorAiArabicStudio };
