@@ -3,8 +3,10 @@ import jwt from 'jsonwebtoken';
 import { db } from '../db';
 import { users, type User, type NewUser } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import { env } from '@/config/env';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// Use validated JWT_SECRET from env configuration
+const JWT_SECRET = env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
 const SALT_ROUNDS = 10;
 

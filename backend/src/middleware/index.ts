@@ -33,10 +33,10 @@ export const setupMiddleware = (app: express.Application): void => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  // Rate limiting
-  const limiter = rateLimit({
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-    max: env.RATE_LIMIT_MAX_REQUESTS,
+  // Rate limiting - General API rate limit
+  const generalLimiter = rateLimit({
+    windowMs: env.RATE_LIMIT_WINDOW_MS, // 15 minutes by default
+    max: env.RATE_LIMIT_MAX_REQUESTS, // 100 requests per window by default
     message: {
       success: false,
       error: 'تم تجاوز الحد المسموح من الطلبات، يرجى المحاولة لاحقاً',
@@ -44,8 +44,42 @@ export const setupMiddleware = (app: express.Application): void => {
     standardHeaders: true,
     legacyHeaders: false,
   });
-  
-  app.use('/api/', limiter);
+
+  // Strict rate limiting for authentication endpoints (prevent brute force)
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 requests per window
+    skipSuccessfulRequests: false, // Count all requests
+    message: {
+      success: false,
+      error: 'تم تجاوز عدد محاولات تسجيل الدخول، يرجى المحاولة بعد 15 دقيقة',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Moderate rate limiting for AI-intensive endpoints
+  const aiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20, // 20 AI requests per hour
+    message: {
+      success: false,
+      error: 'تم تجاوز الحد المسموح من طلبات التحليل بالذكاء الاصطناعي، يرجى المحاولة لاحقاً',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Apply general rate limiting to all API routes
+  app.use('/api/', generalLimiter);
+
+  // Apply stricter rate limiting to auth endpoints
+  app.use('/api/auth/login', authLimiter);
+  app.use('/api/auth/signup', authLimiter);
+
+  // Apply AI-specific rate limiting to analysis endpoints
+  app.use('/api/analysis/', aiLimiter);
+  app.use('/api/projects/:id/analyze', aiLimiter);
 
   // Request logging
   app.use((req, res, next) => {
