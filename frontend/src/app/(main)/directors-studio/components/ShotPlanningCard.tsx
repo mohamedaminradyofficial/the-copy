@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Video, 
-  Move, 
-  Maximize2, 
+import {
+  Video,
+  Move,
+  Maximize2,
   Sun,
   Lightbulb,
   Loader2,
@@ -33,7 +33,7 @@ interface ShotPlanningCardProps {
   onDelete?: () => void;
 }
 
-export default function ShotPlanningCard({ 
+const ShotPlanningCard = memo(function ShotPlanningCard({ 
   shot, 
   shotNumber, 
   sceneNumber, 
@@ -253,4 +253,6 @@ export default function ShotPlanningCard({
       </CardContent>
     </Card>
   );
-}
+});
+
+export default ShotPlanningCard;

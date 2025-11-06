@@ -9,7 +9,7 @@ import {
   Eye,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, memo, useMemo, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
 import { toText } from "@/lib/ai/gemini-core";
@@ -174,7 +174,7 @@ function getStationFullText(id: number, data: any): string {
   return text || toText(data);
 }
 
-const StationCard = ({
+const StationCard = memo(({
   station,
   status,
   results,
@@ -184,30 +184,37 @@ const StationCard = ({
   const hasResults = status === "completed" && results[id];
   const [showModal, setShowModal] = useState(false);
 
-  const statusIcons: Record<Status, JSX.Element> = {
+  // Memoize status icons to prevent recreation on every render
+  const statusIcons: Record<Status, JSX.Element> = useMemo(() => ({
     pending: <MinusCircle className="text-muted-foreground" />,
     running: <Loader2 className="animate-spin text-primary" />,
     completed: <CheckCircle2 className="text-green-500" />,
     failed: <AlertCircle className="text-destructive" />,
-  };
+  }), []);
 
-  const handleExport = () => {
+  // Memoize export handler
+  const handleExport = useCallback(() => {
     const data = results[id];
     if (!data) return;
     const fullText = getStationFullText(id, data);
     exportStationToFile(id, fullText, name);
-  };
+  }, [results, id, name]);
 
-  const handleView = () => {
+  // Memoize view handler
+  const handleView = useCallback(() => {
     setShowModal(true);
-  };
+  }, []);
 
-  const renderSummary = () => {
+  // Memoize full text calculation
+  const fullText = useMemo(() => {
     const data = results[id];
-    if (!data) return null;
+    if (!data) return '';
+    return getStationFullText(id, data);
+  }, [results, id]);
 
-    // Get first 300 characters for summary
-    const fullText = getStationFullText(id, data);
+  const renderSummary = useCallback(() => {
+    if (!hasResults) return null;
+
     const summary = fullText.substring(0, 300);
 
     return (
@@ -218,13 +225,10 @@ const StationCard = ({
         </p>
       </div>
     );
-  };
+  }, [fullText, hasResults]);
 
-  const renderFullContent = () => {
-    const data = results[id];
-    if (!data) return null;
-
-    const fullText = getStationFullText(id, data);
+  const renderFullContent = useCallback(() => {
+    if (!hasResults) return null;
 
     return (
       <ScrollArea className="h-[60vh] w-full rounded-md border p-4">
@@ -233,7 +237,7 @@ const StationCard = ({
         </pre>
       </ScrollArea>
     );
-  };
+  }, [fullText, hasResults]);
 
   return (
     <>
@@ -302,6 +306,8 @@ const StationCard = ({
       </Dialog>
     </>
   );
-};
+});
+
+StationCard.displayName = 'StationCard';
 
 export default StationCard;
