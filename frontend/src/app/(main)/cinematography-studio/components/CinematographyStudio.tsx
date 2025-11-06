@@ -96,5 +96,3 @@ export const CinematographyStudio: React.FC = () => {
     </div>
   );
 };
-
-export { CinematographyStudio };

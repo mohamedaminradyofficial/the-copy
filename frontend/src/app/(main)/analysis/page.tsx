@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import V0Component from "@/components/v0-component";
+
+const V0Component = dynamic(() => import("@/components/v0-component"), {
+  ssr: false,
+});
 
 const SevenStations = dynamic(() => import("./seven-stations"), {
   loading: () => (

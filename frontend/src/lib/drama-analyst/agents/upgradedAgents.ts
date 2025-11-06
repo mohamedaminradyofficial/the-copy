@@ -5,7 +5,7 @@
  * إخراج نصي فقط - لا JSON
  */
 
-import { TaskType } from "../core/enums";
+import { TaskType } from "../enums";
 import { BaseAgent } from "./shared/BaseAgent";
 
 // Import upgraded agents

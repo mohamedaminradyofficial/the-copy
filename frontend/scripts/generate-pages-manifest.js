@@ -9,9 +9,12 @@ const path = require('path');
 // SECURITY FIX: Import safe path utilities to prevent path traversal
 const { safeResolve } = require('./safe-path');
 
+// Use project root as base directory for safe path resolution
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+
 // SECURITY FIX: Use safe path resolution to prevent traversal attacks
-const MAIN_PAGES_DIR = safeResolve(__dirname, '../src/app/(main)');
-const OUTPUT_FILE = safeResolve(__dirname, '../src/config/pages.manifest.json');
+const MAIN_PAGES_DIR = safeResolve(PROJECT_ROOT, 'src/app/(main)');
+const OUTPUT_FILE = safeResolve(PROJECT_ROOT, 'src/config/pages.manifest.json');
 
 // Map of slugs to Arabic titles and descriptions
 const PAGE_METADATA = {
