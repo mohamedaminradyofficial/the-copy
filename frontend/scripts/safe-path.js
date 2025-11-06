@@ -28,8 +28,9 @@ function safeResolve(basePath, ...userPaths) {
     if (typeof userPath !== 'string') {
       throw new Error('SECURITY: All path segments must be strings');
     }
-    // Check for obvious traversal attempts
-    if (userPath.includes('..') && userPath.includes('/')) {
+    // Check for obvious traversal attempts using absolute paths
+    // Allow relative paths like '../src' but block absolute traversal
+    if (userPath.startsWith('/') && userPath.includes('..')) {
       throw new Error(`SECURITY: Potential path traversal detected in "${userPath}"`);
     }
   }
@@ -49,11 +50,11 @@ function safeResolve(basePath, ...userPaths) {
   if (!normalizedResolved.startsWith(normalizedBase)) {
     throw new Error(
       `SECURITY: Path traversal attempt detected. ` +
-      `Path "${userPath}" would escape base directory "${basePath}"`
+      `Path "${joinedUserPath}" would escape base directory "${basePath}"`
     );
   }
 
-  return resolvedPath.slice(0, -1); // Remove trailing separator
+  return resolvedPath;
 }
 
 /**
@@ -70,7 +71,9 @@ function safeJoin(basePath, ...pathSegments) {
     if (typeof segment !== 'string') {
       throw new Error('SECURITY: All path segments must be strings');
     }
-    if (segment.includes('..') && segment.includes('/')) {
+    // Check for obvious traversal attempts using absolute paths
+    // Allow relative paths like '../src' but block absolute traversal
+    if (segment.startsWith('/') && segment.includes('..')) {
       throw new Error(`SECURITY: Potential path traversal in segment "${segment}"`);
     }
   }

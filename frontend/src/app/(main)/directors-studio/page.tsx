@@ -1,9 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { PageLayout } from "./components/PageLayout";
 import { LoadingSection } from "./components/LoadingSection";
-import { NoProjectSection } from "./components/NoProjectSection";
-import { ProjectContent } from "./components/ProjectContent";
 import { useProjectScenes, useProjectCharacters } from "./hooks/useProject";
 import { getCurrentProject } from "./lib/projectStore";
 import {
@@ -13,6 +12,14 @@ import {
   type ProjectCharacterInput,
   type SceneCardProps,
 } from "./helpers/projectSummary";
+
+const NoProjectSection = dynamic(() => import("./components/NoProjectSection").then((mod) => ({ default: mod.NoProjectSection })), {
+  ssr: false,
+});
+
+const ProjectContent = dynamic(() => import("./components/ProjectContent").then((mod) => ({ default: mod.ProjectContent })), {
+  ssr: false,
+});
 
 export default function DirectorsStudioPage() {
   const currentProjectId = getCurrentProject();

@@ -25,7 +25,7 @@ import {
   Palette,
   Target,
 } from "lucide-react";
-import { TaskType, TaskCategory } from "@/lib/drama-analyst/core/enums";
+import { TaskType, TaskCategory } from "@/lib/drama-analyst/enums";
 
 /**
  * Icon mapping for specific task types
