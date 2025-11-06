@@ -103,7 +103,45 @@ find todo-report.md then
 4. إعداد CDN للأصول الثابتة
 
    * الخطوات: تفعيل CDN (Cloudflare/CloudFront) لملفات `_next/static`, الصور, الخطوط؛ ضبط `assetPrefix`/`headers` و`Cache-Control`؛ تمكين `Image Optimization` من أقرب حافة.
-   * معايير القبول: زمن تنزيل الأصول الثابتة ↓ ≥ 30% للمناطق المستهدفة؛ عدم كسر المسارات.
+   * معايير القبول: زمن تنزيل الأصول الثابتة ↓ ≥ 30% للمناطق المستهدفة؛ عدم كسر المسارات
+   ت
+
+ إضافة فهارس FK (4 فهارس أساسية)
+ اختبار الأداء قبل/بعد بـ EXPLAIN ANALYZE
+ توثيق التحسين المُحقق
+ار
+
+ تثبيت BullMQ + Redis
+ إنشاء طابور التحليل (Queue)
+ إنشاء معالج المهام (Worker)
+ تحديث Controller + API
+ اختبار شامل
+ت
+
+ تطبيق Cache لنتائج Gemini
+ إضافة Cache Invalidation
+ اختبار Cache Hit Ratio
+الأدوات اللازمة:
+
+pnpm add bullmq ioredis
+pnpm add @bull-board/api @bull-board/express @bull-board/api/bullMQAdapter
+ تفعيل Sentry + مراقبة الأخطاء
+ إضافة WebSockets للتحديثات الفورية
+ تحسين Particle System (Device Detection)
+ إضافة فهارس مركّبة (3 فهارس)
+ إعداد لوحة تحكم BullMQ
+:
+
+ تحليل Bundle Size
+ تحسين Code Splitting الإضافي
+ CDN للأصول الثابتة
+ Performance Budget في CI/CD
+ا
+ Server-Sent Events للبث المباشر
+ لوحة تحكم مقاييس الأداء
+ تحسين أنماط الاستعلامات (Query Patterns)
+ Level of Detail (LOD) للجسيمات
+ توثيق شامل للأداء.
 
 **أثر C المتوقع:** نظام قابل للتوسع وموثوق.
 
