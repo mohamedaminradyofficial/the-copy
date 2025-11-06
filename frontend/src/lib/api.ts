@@ -166,13 +166,64 @@ export async function getShotSuggestion(
 
 export async function chatWithAI(
   message: string,
-  history: Array<{ role: string; content: string }>
+  history: Array<{ role: string; content: string }>,
+  onChunk?: (chunk: string) => void
 ): Promise<{ response: string }> {
   const response = await fetch("/api/ai/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, history }),
   });
+
   if (!response.ok) throw new Error("Failed to chat with AI");
+
+  // Handle streaming response
+  if (response.body) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        // Decode the chunk
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n').filter(line => line.trim());
+
+        for (const line of lines) {
+          try {
+            const data = JSON.parse(line);
+
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            if (data.chunk) {
+              fullResponse += data.chunk;
+              if (onChunk) {
+                onChunk(data.chunk);
+              }
+            }
+
+            if (data.done) {
+              return { response: fullResponse };
+            }
+          } catch (e) {
+            // Skip invalid JSON lines
+            console.warn('Failed to parse chunk:', line);
+          }
+        }
+      }
+
+      return { response: fullResponse };
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  // Fallback to non-streaming
   return response.json();
 }
