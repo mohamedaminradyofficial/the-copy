@@ -1,0 +1,107 @@
+# ==========================================
+# Docker Compose Configuration for The Copy Backend
+# ==========================================
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: the-copy-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3001}:3001"
+    environment:
+      # Runtime
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+
+      # AI Services
+      GOOGLE_GENAI_API_KEY: ${GOOGLE_GENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET}
+
+      # CORS
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5000,http://localhost:9002}
+
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - the-copy-network
+    volumes:
+      # Mount logs directory (optional)
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: the-copy-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-the_copy}
+      POSTGRES_USER: ${POSTGRES_USER:-the_copy_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      # Persist database data
+      - postgres_data:/var/lib/postgresql/data
+      # Custom initialization scripts (optional)
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - the-copy-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-the_copy_app} -d ${POSTGRES_DB:-the_copy}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache Service (optional, for future caching implementation)
+  redis:
+    image: redis:7-alpine
+    container_name: the-copy-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    networks:
+      - the-copy-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Networks
+networks:
+  the-copy-network:
+    driver: bridge
+
+# Volumes for data persistence
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

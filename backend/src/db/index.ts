@@ -1,7 +1,63 @@
-import { env } from '../config/env';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { env, isProduction } from '../config/env';
 import * as schema from './schema';
+import { logger } from '../utils/logger';
+import ws from 'ws';
 
-// Mock database for development
+// Configure Neon for WebSocket (required for serverless environments)
+if (isProduction) {
+  neonConfig.webSocketConstructor = ws;
+}
+
+/**
+ * Production Database Security Configuration
+ *
+ * IMPORTANT: For production deployment, ensure the following:
+ *
+ * 1. Database User Permissions (Least Privilege):
+ *    - Create a dedicated database user for the application
+ *    - Grant only necessary permissions (SELECT, INSERT, UPDATE, DELETE)
+ *    - DO NOT use database superuser credentials
+ *    - Example SQL:
+ *      CREATE USER the_copy_app WITH PASSWORD 'strong-password';
+ *      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO the_copy_app;
+ *      GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO the_copy_app;
+ *
+ * 2. Network Security:
+ *    - Enable SSL/TLS for database connections
+ *    - Configure firewall to allow only application server IPs
+ *    - Use VPC/private network when possible
+ *
+ * 3. Connection Pooling:
+ *    - Set max connections limit to prevent exhaustion
+ *    - Configure connection timeout
+ *    - Monitor connection pool usage
+ *
+ * 4. Backup & Recovery:
+ *    - Enable automated daily backups
+ *    - Test backup restoration regularly
+ *    - Configure point-in-time recovery (PITR)
+ *
+ * 5. Monitoring:
+ *    - Enable query logging for slow queries
+ *    - Monitor connection pool metrics
+ *    - Set up alerts for abnormal activity
+ */
+
+// Database connection pool configuration
+const poolConfig = {
+  connectionString: env.DATABASE_URL,
+  max: 20, // Maximum number of connections in the pool
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 10000, // Timeout after 10 seconds if connection cannot be established
+};
+
+// Create connection pool
+let pool: Pool | null = null;
+let db: ReturnType<typeof drizzle> | null = null;
+
+// Mock database for testing
 const mockDb = {
   select: () => ({
     from: () => ({
@@ -30,6 +86,50 @@ const mockDb = {
   }),
 };
 
-// Export mock database for now
-export const db = mockDb as any;
-export const pool = null;
+// Initialize database connection
+function initializeDatabase() {
+  if (env.NODE_ENV === 'test') {
+    logger.info('Using mock database for testing');
+    return mockDb as any;
+  }
+
+  if (!env.DATABASE_URL) {
+    logger.warn('DATABASE_URL not set, using mock database');
+    return mockDb as any;
+  }
+
+  try {
+    pool = new Pool(poolConfig);
+
+    // Test connection
+    pool.query('SELECT 1').then(() => {
+      logger.info('Database connection established successfully', {
+        maxConnections: poolConfig.max,
+        environment: env.NODE_ENV,
+      });
+    }).catch((error) => {
+      logger.error('Database connection test failed:', error);
+    });
+
+    db = drizzle(pool, { schema });
+    return db;
+  } catch (error) {
+    logger.error('Failed to initialize database:', error);
+    logger.warn('Falling back to mock database');
+    return mockDb as any;
+  }
+}
+
+// Initialize and export database instance
+const db = initializeDatabase();
+
+// Export database instance (backwards compatible)
+export { db, pool };
+
+// Graceful shutdown handler for database connections
+export async function closeDatabase() {
+  if (pool) {
+    await pool.end();
+    logger.info('Database connections closed');
+  }
+}

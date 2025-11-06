@@ -12,6 +12,7 @@ import { charactersController } from '@/controllers/characters.controller';
 import { shotsController } from '@/controllers/shots.controller';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { logger } from '@/utils/logger';
+import { closeDatabase } from '@/db';
 
 const app: Application = express();
 const analysisController = new AnalysisController();
@@ -110,6 +111,10 @@ startListening(startPort);
 // Graceful shutdown
 process.on('SIGTERM', async (): Promise<void> => {
   logger.info('SIGTERM received, shutting down gracefully');
+
+  // Close database connections first
+  await closeDatabase();
+
   if (runningServer) {
     runningServer.close(() => {
       logger.info('Server closed');
@@ -122,6 +127,10 @@ process.on('SIGTERM', async (): Promise<void> => {
 
 process.on('SIGINT', async (): Promise<void> => {
   logger.info('SIGINT received, shutting down gracefully');
+
+  // Close database connections first
+  await closeDatabase();
+
   if (runningServer) {
     runningServer.close(() => {
       logger.info('Server closed');

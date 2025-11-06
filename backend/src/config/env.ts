@@ -9,13 +9,30 @@ const envSchema = z.object({
   GOOGLE_GENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   DATABASE_URL: z.string().optional().default('sqlite://./dev.db'),
-  JWT_SECRET: z.string().optional().default('dev-secret-change-in-production'),
+  // JWT_SECRET: Required in production with minimum 32 characters
+  // In development, a default is provided but should be changed
+  JWT_SECRET: z.string().default('dev-secret-CHANGE-THIS-IN-PRODUCTION-minimum-32-chars'),
   CORS_ORIGIN: z.string().default('http://localhost:5000,http://localhost:9002'),
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: z.string().transform(Number).default('100'),
 });
 
-export const env = envSchema.parse(process.env);
+const parsedEnv = envSchema.parse(process.env);
+
+// Security validation: In production, JWT_SECRET must be strong
+if (parsedEnv.NODE_ENV === 'production') {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  if (parsedEnv.JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters in production');
+  }
+  if (parsedEnv.JWT_SECRET.includes('dev-secret') || parsedEnv.JWT_SECRET.includes('CHANGE-THIS')) {
+    throw new Error('JWT_SECRET cannot use default value in production. Please set a secure secret.');
+  }
+}
+
+export const env = parsedEnv;
 
 export const isProduction = env.NODE_ENV === 'production';
 export const isDevelopment = env.NODE_ENV === 'development';
