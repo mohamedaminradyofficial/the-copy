@@ -3,11 +3,15 @@
  *
  * Provides endpoint for running the complete seven stations pipeline
  * Uses new text-only interfaces from lib/ai/interfaces/stations.ts
+ *
+ * Enhanced with Redis caching for improved performance
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { runSevenStations } from "@/lib/ai/stations";
 import { runPipelineWithInterfaces } from "@/lib/ai/pipeline-orchestrator";
+import { getCached, invalidateCache } from "@/lib/redis";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -55,8 +59,21 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
 
-    // Use new interface-based pipeline by default
-    const result = await runSevenStations(body.text, body.metadata);
+    // Generate cache key from text content hash
+    const textHash = crypto
+      .createHash('md5')
+      .update(body.text)
+      .digest('hex');
+    const cacheKey = `seven-stations:${textHash}`;
+
+    // Use Redis cache with 1 hour TTL
+    const result = await getCached(
+      cacheKey,
+      async () => {
+        return await runSevenStations(body.text, body.metadata);
+      },
+      3600 // 1 hour
+    );
 
     const executionTime = Date.now() - startTime;
 
