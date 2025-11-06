@@ -4,7 +4,7 @@ const images: string[] = [
   "https://images.unsplash.com/photo-1518866586318-bbe74635b749?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhYnN0cmFjdCUyMGxheWVyc3xlbnwwfHx8fDE3NjExMDUxMzd8MA&ixlib=rb-4.1.0&q=80&w=1080", // analysis
   "https://images.unsplash.com/photo-1455390582262-044cdead277a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", // arabic-creative-writing-studio
   "https://images.unsplash.com/photo-1677442136019-21780ecad995?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", // arabic-prompt-engineering-studio
-  "/20251022_1333_ورشة كتابة في الفضاء_simple_compose_01k85qkqbhe9b8ews92f9m2ec3.png", // brainstorm
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", // brainstorm (replaces local unicode path)
   "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", // breakdown
   "https://images.unsplash.com/photo-1485846234645-a62644f84728?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080", // cinematography-studio
   "https://images.unsplash.com/photo-1547057740-4b18aac8eed2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYWduaWZ5aW5nJTIwZ2xhc3N8ZW58MHx8fHwxNzYxMDg4ODI1fDA&ixlib=rb-4.1.0&q=80&w=1080", // development

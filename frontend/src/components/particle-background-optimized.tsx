@@ -1,7 +1,6 @@
 "use client";
 
-import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
 import type { ParticleVelocity, ParticlePosition, EffectConfig } from "./particle-effects";
 import {
@@ -44,10 +43,7 @@ export default function OptimizedParticleAnimation() {
   const currentEffect: Effect = "spark";
 
   // Check for reduced motion preference
-  const prefersReducedMotion = React.useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }, []);
+  const prefersReducedMotion = false;
 
   // Scene reference with all necessary data
   const sceneRef = useRef<{
@@ -377,7 +373,20 @@ export default function OptimizedParticleAnimation() {
         await processBatch();
       }
 
-      // تم توليد جسيمات بنجاح
+      // If SDF sampling produced too few points, fall back to a simple starfield
+      if (generatedCount < 200) {
+        const fallbackCount = Math.min(numParticles, 3000);
+        for (let j = 0; j < fallbackCount; j++) {
+          const idx = j * 3;
+          positions[idx] = (Math.random() - 0.5) * 6;
+          positions[idx + 1] = (Math.random() - 0.5) * 3.5;
+          positions[idx + 2] = (Math.random() - 0.5) * 0.3;
+          colors[idx] = 1;
+          colors[idx + 1] = 1;
+          colors[idx + 2] = 1;
+        }
+        generatedCount = fallbackCount;
+      }
 
       // Create final arrays
       const finalPositions = positions.slice(0, generatedCount * 3);
@@ -514,10 +523,10 @@ export default function OptimizedParticleAnimation() {
     
     // Initialize Three.js scene
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 
-    renderer.setSize(canvas.width, canvas.height);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000);
 
     const raycaster = new THREE.Raycaster();
@@ -537,6 +546,16 @@ export default function OptimizedParticleAnimation() {
     const points = new THREE.Points(geometry, material);
     scene.add(points);
     camera.position.set(0, 0, 3.2);
+
+    // Handle resize
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    };
+    window.addEventListener('resize', handleResize);
 
     // Initialize scene reference
     sceneRef.current = {
@@ -798,12 +817,14 @@ export default function OptimizedParticleAnimation() {
           clearTimeout(cleanupTimeoutRef.current);
         }
 
-        canvas.removeEventListener("mousemove", handleMouseMove);
+        canvas.removeEventListener("mousemove", handleCanvasMouseMove);
         canvas.removeEventListener("mouseleave", handleMouseLeave);
 
         if (geometry) geometry.dispose();
         if (material) material.dispose();
         if (renderer) renderer.dispose();
+
+        window.removeEventListener('resize', handleResize);
 
         if (sceneRef.current) {
           sceneRef.current.originalPositions = null as any;
@@ -826,21 +847,21 @@ export default function OptimizedParticleAnimation() {
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("mouseleave", handleMouseUp);
-    canvas.addEventListener("touchstart", handleTouchStart);
-    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchstart", handleTouchStart as unknown as EventListener, { passive: true } as AddEventListenerOptions);
+    canvas.addEventListener("touchmove", handleTouchMove as unknown as EventListener, { passive: true } as AddEventListenerOptions);
     canvas.addEventListener("touchend", handleTouchEnd);
 
     return cleanup;
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-black">
+    <div className="absolute inset-0 z-0 flex items-center justify-center w-full h-full bg-black">
       <canvas
         ref={canvasRef}
         width={1400}
         height={600}
         className="block"
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'none', pointerEvents: 'none' }}
       />
     </div>
   );

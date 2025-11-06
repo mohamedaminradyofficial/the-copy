@@ -143,7 +143,7 @@ export default function Home() {
             className="relative h-screen w-full overflow-hidden transition-opacity duration-500"
             style={{
               opacity: cardsOpacity,
-              display: showCards ? "block" : "none",
+              visibility: showCards ? "visible" : "hidden",
             }}
           >
             <div ref={sliderRef} className="slider">

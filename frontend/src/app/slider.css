@@ -11,7 +11,7 @@ body {
   width: 100vw;
   height: 800vh;
   overflow: auto;
-  background: #000;
+  background: transparent;
 }
 
 /* Slider container fixed at center with 3D transforms */
