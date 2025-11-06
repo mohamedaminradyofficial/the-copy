@@ -51,6 +51,14 @@ const nextConfig = {
     ignoreDuringBuilds: process.env.NODE_ENV === "production",
   },
 
+  // Performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+
+  // Enable SWC minification for better performance
+  swcMinify: true,
+
   experimental: {
     optimizePackageImports: [
       "@radix-ui/react-accordion",
@@ -130,6 +138,26 @@ const nextConfig = {
               "payment=()",
               "usb=()",
             ].join(", "),
+          },
+        ],
+      },
+      // Cache static assets aggressively
+      {
+        source: "/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Cache API responses with stale-while-revalidate
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=120",
           },
         ],
       },

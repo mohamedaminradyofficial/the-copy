@@ -630,6 +630,23 @@ class ConflictInferenceEngine {
           );
         }
 
+        // إنشاء صراع من البيانات المستخرجة
+        const charIds = involvedChars
+          .map((name) => charNameToId.get(name))
+          .filter((id): id is string => id !== undefined);
+
+        if (charIds.length > 0) {
+          conflicts.push({
+            id: `conflict-${conflicts.length + 1}`,
+            name: conflictName,
+            description: conflictDesc,
+            involvedCharacterIds: charIds,
+            intensity: 0.7,
+          });
+        }
+      }
+    }
+
     return conflicts;
   }
 
