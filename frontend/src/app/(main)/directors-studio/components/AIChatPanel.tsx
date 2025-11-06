@@ -48,29 +48,46 @@ export default function AIChatPanel() {
     const currentInput = input;
     setInput("");
 
+    // Create a placeholder message for streaming
+    const streamingMessageId = (Date.now() + 1).toString();
+    const streamingMessage: Message = {
+      id: streamingMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: "الآن"
+    };
+    setMessages(prev => [...prev, streamingMessage]);
+
     try {
       const history = messages.map(m => ({ role: m.role, content: m.content }));
-      const result = await chatMutation.mutateAsync({ 
-        message: currentInput, 
-        history 
-      });
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: result.response,
-        timestamp: "الآن"
-      };
-      setMessages(prev => [...prev, aiMessage]);
+      // Use the mutation but with streaming callback
+      await chatMutation.mutateAsync(
+        {
+          message: currentInput,
+          history,
+          onChunk: (chunk: string) => {
+            // Update the streaming message with new chunks
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === streamingMessageId
+                  ? { ...msg, content: msg.content + chunk }
+                  : msg
+              )
+            );
+          }
+        }
+      );
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "عذراً، حدث خطأ. الرجاء المحاولة مرة أخرى.",
-        timestamp: "الآن"
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      // Update the streaming message with error
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === streamingMessageId
+            ? { ...msg, content: "عذراً، حدث خطأ. الرجاء المحاولة مرة أخرى." }
+            : msg
+        )
+      );
     }
   };
 

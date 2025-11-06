@@ -226,3 +226,103 @@ export async function callPro(
     ...opts,
   });
 }
+
+// =====================================================
+// Streaming API
+// =====================================================
+
+export type StreamCallOpts = CallOpts;
+
+/**
+ * Unified Gemini STREAMING TEXT call
+ *
+ * Returns an async generator that yields text chunks as they arrive.
+ * Use this for real-time streaming responses in chat interfaces.
+ *
+ * @returns AsyncGenerator that yields text chunks
+ *
+ * @example
+ * const stream = callGeminiStream({
+ *   model: 'gemini-2.5-flash',
+ *   prompt: 'Tell me a story...',
+ *   temperature: 0.7
+ * });
+ *
+ * for await (const chunk of stream) {
+ *   console.log(chunk); // Display each chunk as it arrives
+ * }
+ */
+export async function* callGeminiStream(
+  opts: StreamCallOpts
+): AsyncGenerator<string, void, undefined> {
+  // Enforce throttling
+  await throttle(opts.model);
+
+  // Initialize client
+  const client = initClient();
+
+  // Build full prompt
+  const fullPrompt = opts.systemInstruction
+    ? `${opts.systemInstruction}\n\n${opts.prompt}`
+    : opts.prompt;
+
+  // Call streaming API
+  const stream = await client.models.generateContentStream({
+    model: opts.model,
+    contents: fullPrompt,
+    config: {
+      temperature: opts.temperature ?? 0.3,
+      maxOutputTokens: MAX_TOKENS,
+    },
+  });
+
+  // Yield text chunks as they arrive
+  for await (const chunk of stream) {
+    const text = chunk?.text ?? "";
+    if (text) {
+      yield toText(text);
+    }
+  }
+}
+
+/**
+ * Stream with Flash model (10s throttle)
+ */
+export async function* streamFlash(
+  prompt: string,
+  opts?: { temperature?: number; systemInstruction?: string }
+): AsyncGenerator<string, void, undefined> {
+  yield* callGeminiStream({
+    model: "gemini-2.5-flash",
+    prompt,
+    ...opts,
+  });
+}
+
+/**
+ * Stream with Flash-Lite model (6s throttle)
+ */
+export async function* streamFlashLite(
+  prompt: string,
+  opts?: { temperature?: number; systemInstruction?: string }
+): AsyncGenerator<string, void, undefined> {
+  yield* callGeminiStream({
+    model: "gemini-2.5-flash-lite",
+    prompt,
+    ...opts,
+  });
+}
+
+/**
+ * Stream with Pro model (15s throttle)
+ */
+export async function* streamPro(
+  prompt: string,
+  opts?: { temperature?: number; systemInstruction?: string }
+): AsyncGenerator<string, void, undefined> {
+  yield* callGeminiStream({
+    model: "gemini-2.5-pro",
+    prompt,
+    ...opts,
+  });
+}

@@ -3,8 +3,16 @@ import * as api from "@/lib/api";
 
 export function useChatWithAI() {
   return useMutation({
-    mutationFn: ({ message, history }: { message: string; history: Array<{ role: string; content: string }> }) =>
-      api.chatWithAI(message, history),
+    mutationFn: ({
+      message,
+      history,
+      onChunk
+    }: {
+      message: string;
+      history: Array<{ role: string; content: string }>;
+      onChunk?: (chunk: string) => void;
+    }) =>
+      api.chatWithAI(message, history, onChunk),
   });
 }
 
