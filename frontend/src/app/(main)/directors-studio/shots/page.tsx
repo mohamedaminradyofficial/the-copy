@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Camera, Lightbulb } from "lucide-react";
 import ShotPlanningCard from "../components/ShotPlanningCard";
+import { VirtualizedGrid } from "@/components/ui/virtualized-grid";
 import type { Shot, Scene } from "../shared/schema";
 
 export default function ShotsPage() {
@@ -82,63 +83,127 @@ export default function ShotsPage() {
 
       {selectedSceneId ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {shots?.map((shot) => (
-              <Card key={shot.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Camera className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle>لقطة #{shot.shotNumber}</CardTitle>
-                        <CardDescription>{shot.shotType}</CardDescription>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(shot.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold w-24">زاوية الكاميرا:</span>
-                      <span className="text-muted-foreground">{shot.cameraAngle}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold w-24">الحركة:</span>
-                      <span className="text-muted-foreground">{shot.cameraMovement}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold w-24">الإضاءة:</span>
-                      <span className="text-muted-foreground">{shot.lighting}</span>
-                    </div>
-                    {shot.aiSuggestion && (
-                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-md">
-                        <div className="flex items-start gap-2">
-                          <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
-                          <div>
-                            <p className="font-semibold text-xs text-blue-600 dark:text-blue-400 mb-1">
-                              اقتراح AI
-                            </p>
-                            <p className="text-xs text-blue-800 dark:text-blue-200">
-                              {shot.aiSuggestion}
-                            </p>
-                          </div>
+          {shots && shots.length > 10 ? (
+            <VirtualizedGrid
+              items={shots}
+              renderItem={(shot) => (
+                <Card key={shot.id} className="h-full">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Camera className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle>لقطة #{shot.shotNumber}</CardTitle>
+                          <CardDescription>{shot.shotType}</CardDescription>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(shot.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">زاوية الكاميرا:</span>
+                        <span className="text-muted-foreground">{shot.cameraAngle}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">الحركة:</span>
+                        <span className="text-muted-foreground">{shot.cameraMovement}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">الإضاءة:</span>
+                        <span className="text-muted-foreground">{shot.lighting}</span>
+                      </div>
+                      {shot.aiSuggestion && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-md">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                            <div>
+                              <p className="font-semibold text-xs text-blue-600 dark:text-blue-400 mb-1">
+                                اقتراح AI
+                              </p>
+                              <p className="text-xs text-blue-800 dark:text-blue-200">
+                                {shot.aiSuggestion}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              columnCount={3}
+              itemHeight={320}
+              itemWidth={350}
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {shots?.map((shot) => (
+                <Card key={shot.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Camera className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle>لقطة #{shot.shotNumber}</CardTitle>
+                          <CardDescription>{shot.shotType}</CardDescription>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(shot.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">زاوية الكاميرا:</span>
+                        <span className="text-muted-foreground">{shot.cameraAngle}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">الحركة:</span>
+                        <span className="text-muted-foreground">{shot.cameraMovement}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold w-24">الإضاءة:</span>
+                        <span className="text-muted-foreground">{shot.lighting}</span>
+                      </div>
+                      {shot.aiSuggestion && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-md">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                            <div>
+                              <p className="font-semibold text-xs text-blue-600 dark:text-blue-400 mb-1">
+                                اقتراح AI
+                              </p>
+                              <p className="text-xs text-blue-800 dark:text-blue-200">
+                                {shot.aiSuggestion}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           {shots?.length === 0 && (
             <div className="text-center py-12">

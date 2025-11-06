@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import SceneFormDialog from "../components/SceneFormDialog";
+import { VirtualizedGrid } from "@/components/ui/virtualized-grid";
 import type { Scene } from "../shared/schema";
 
 export default function ScenesPage() {
@@ -76,76 +77,153 @@ export default function ScenesPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {scenes?.map((scene) => (
-          <Card key={scene.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>المشهد {scene.sceneNumber}</CardTitle>
-                  <CardDescription>{scene.title}</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEdit(scene)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(scene.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-semibold">الموقع:</span> {scene.location}
-                </div>
-                <div>
-                  <span className="font-semibold">الوقت:</span> {scene.timeOfDay}
-                </div>
-                <div>
-                  <span className="font-semibold">الشخصيات:</span>{" "}
-                  {scene.characters.join(", ")}
-                </div>
-                <div>
-                  <span className="font-semibold">عدد اللقطات:</span> {scene.shotCount}
-                </div>
-                <div>
-                  <span className="font-semibold">الحالة:</span>{" "}
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      scene.status === "completed"
-                        ? "bg-green-100 text-green-800"
-                        : scene.status === "in-progress"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {scene.status === "planned"
-                      ? "مخطط"
-                      : scene.status === "in-progress"
-                      ? "قيد التنفيذ"
-                      : "مكتمل"}
-                  </span>
-                </div>
-                {scene.description && (
-                  <div className="pt-2">
-                    <p className="text-muted-foreground">{scene.description}</p>
+      {scenes && scenes.length > 10 ? (
+        <VirtualizedGrid
+          items={scenes}
+          renderItem={(scene) => (
+            <Card key={scene.id} className="h-full">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>المشهد {scene.sceneNumber}</CardTitle>
+                    <CardDescription>{scene.title}</CardDescription>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(scene)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(scene.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="font-semibold">الموقع:</span> {scene.location}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الوقت:</span> {scene.timeOfDay}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الشخصيات:</span>{" "}
+                    {scene.characters.join(", ")}
+                  </div>
+                  <div>
+                    <span className="font-semibold">عدد اللقطات:</span> {scene.shotCount}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الحالة:</span>{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        scene.status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : scene.status === "in-progress"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {scene.status === "planned"
+                        ? "مخطط"
+                        : scene.status === "in-progress"
+                        ? "قيد التنفيذ"
+                        : "مكتمل"}
+                    </span>
+                  </div>
+                  {scene.description && (
+                    <div className="pt-2">
+                      <p className="text-muted-foreground">{scene.description}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          columnCount={3}
+          itemHeight={350}
+          itemWidth={350}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {scenes?.map((scene) => (
+            <Card key={scene.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>المشهد {scene.sceneNumber}</CardTitle>
+                    <CardDescription>{scene.title}</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(scene)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(scene.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="font-semibold">الموقع:</span> {scene.location}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الوقت:</span> {scene.timeOfDay}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الشخصيات:</span>{" "}
+                    {scene.characters.join(", ")}
+                  </div>
+                  <div>
+                    <span className="font-semibold">عدد اللقطات:</span> {scene.shotCount}
+                  </div>
+                  <div>
+                    <span className="font-semibold">الحالة:</span>{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        scene.status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : scene.status === "in-progress"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {scene.status === "planned"
+                        ? "مخطط"
+                        : scene.status === "in-progress"
+                        ? "قيد التنفيذ"
+                        : "مكتمل"}
+                    </span>
+                  </div>
+                  {scene.description && (
+                    <div className="pt-2">
+                      <p className="text-muted-foreground">{scene.description}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {scenes?.length === 0 && (
         <div className="text-center py-12">
