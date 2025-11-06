@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { VirtualizedGrid } from '@/components/ui/virtualized-grid';
 
 interface PromptLibraryProps {
   onPromptSelect: (prompt: CreativePrompt) => void;
@@ -337,9 +338,19 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
       </div>
 
       {/* قائمة المحفزات */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredPrompts.map(renderPromptCard)}
-      </div>
+      {filteredPrompts.length > 6 ? (
+        <VirtualizedGrid
+          items={filteredPrompts}
+          renderItem={(prompt) => renderPromptCard(prompt)}
+          columnCount={2}
+          itemHeight={450}
+          itemWidth={550}
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredPrompts.map(renderPromptCard)}
+        </div>
+      )}
 
       {filteredPrompts.length === 0 && (
         <div className="text-center py-12">

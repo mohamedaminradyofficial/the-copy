@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, User } from "lucide-react";
 import CharacterFormDialog from "../components/CharacterFormDialog";
+import { VirtualizedGrid } from "@/components/ui/virtualized-grid";
 import type { Character } from "../shared/schema";
 
 export default function CharactersPage() {
@@ -76,77 +77,155 @@ export default function CharactersPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {characters?.map((character) => (
-          <Card key={character.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-6 w-6 text-primary" />
+      {characters && characters.length > 10 ? (
+        <VirtualizedGrid
+          items={characters}
+          renderItem={(character) => (
+            <Card key={character.id} className="h-full">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle>{character.name}</CardTitle>
+                      <CardDescription>
+                        {character.appearances} ظهور
+                      </CardDescription>
+                    </div>
                   </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(character)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(character.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
                   <div>
-                    <CardTitle>{character.name}</CardTitle>
-                    <CardDescription>
-                      {character.appearances} ظهور
-                    </CardDescription>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEdit(character)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(character.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-semibold">حالة الاتساق:</span>{" "}
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      character.consistencyStatus === "good"
-                        ? "bg-green-100 text-green-800"
+                    <span className="font-semibold">حالة الاتساق:</span>{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        character.consistencyStatus === "good"
+                          ? "bg-green-100 text-green-800"
+                          : character.consistencyStatus === "warning"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {character.consistencyStatus === "good"
+                        ? "جيد"
                         : character.consistencyStatus === "warning"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {character.consistencyStatus === "good"
-                      ? "جيد"
-                      : character.consistencyStatus === "warning"
-                      ? "تحذير"
-                      : "ضعيف"}
-                  </span>
+                        ? "تحذير"
+                        : "ضعيف"}
+                    </span>
+                  </div>
+                  {character.lastSeen && (
+                    <div>
+                      <span className="font-semibold">آخر ظهور:</span>{" "}
+                      {character.lastSeen}
+                    </div>
+                  )}
+                  {character.notes && (
+                    <div className="pt-2">
+                      <span className="font-semibold">ملاحظات:</span>
+                      <p className="text-muted-foreground mt-1">{character.notes}</p>
+                    </div>
+                  )}
                 </div>
-                {character.lastSeen && (
+              </CardContent>
+            </Card>
+          )}
+          columnCount={3}
+          itemHeight={280}
+          itemWidth={350}
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {characters?.map((character) => (
+            <Card key={character.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle>{character.name}</CardTitle>
+                      <CardDescription>
+                        {character.appearances} ظهور
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(character)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(character.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
                   <div>
-                    <span className="font-semibold">آخر ظهور:</span>{" "}
-                    {character.lastSeen}
+                    <span className="font-semibold">حالة الاتساق:</span>{" "}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        character.consistencyStatus === "good"
+                          ? "bg-green-100 text-green-800"
+                          : character.consistencyStatus === "warning"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {character.consistencyStatus === "good"
+                        ? "جيد"
+                        : character.consistencyStatus === "warning"
+                        ? "تحذير"
+                        : "ضعيف"}
+                    </span>
                   </div>
-                )}
-                {character.notes && (
-                  <div className="pt-2">
-                    <span className="font-semibold">ملاحظات:</span>
-                    <p className="text-muted-foreground mt-1">{character.notes}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  {character.lastSeen && (
+                    <div>
+                      <span className="font-semibold">آخر ظهور:</span>{" "}
+                      {character.lastSeen}
+                    </div>
+                  )}
+                  {character.notes && (
+                    <div className="pt-2">
+                      <span className="font-semibold">ملاحظات:</span>
+                      <p className="text-muted-foreground mt-1">{character.notes}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {characters?.length === 0 && (
         <div className="text-center py-12">
