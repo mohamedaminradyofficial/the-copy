@@ -284,8 +284,9 @@ export function extractTemplateVariables(text: string): string[] {
   const variables: string[] = [];
 
   for (const match of matches) {
-    if (!variables.includes(match[1])) {
-      variables.push(match[1]);
+    const variable = match[1];
+    if (variable && !variables.includes(variable)) {
+      variables.push(variable);
     }
   }
 

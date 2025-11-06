@@ -1,19 +1,27 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import * as THREE from "three";
-import type { ParticleVelocity, ParticlePosition, EffectConfig } from "./particle-effects";
-import {
-  applySparkEffect,
-  applyWaveEffect,
-  applyVortexEffect,
-  applyDefaultEffect,
-  calculateWaveColor,
-  calculateVortexColor,
-} from "./particle-effects";
 
 type Effect = "default" | "spark" | "wave" | "vortex";
+
+interface ParticlePosition {
+  px: number;
+  py: number;
+  pz: number;
+}
+
+interface ParticleVelocity {
+  vx: number;
+  vy: number;
+  vz: number;
+}
+
+interface EffectConfig {
+  effectRadius: number;
+  repelStrength: number;
+}
 
 /**
  * Update camera position based on rotation
@@ -29,98 +37,6 @@ function updateCameraPosition(
   camera.lookAt(0, 0, 0);
 }
 
-/**
- * Apply particle effect using lookup strategy
- */
-function applyParticleEffect(
-  effect: Effect,
-  position: ParticlePosition,
-  intersection: THREE.Vector3,
-  velocity: ParticleVelocity,
-  config: EffectConfig,
-  time: number
-): ParticleVelocity {
-  const intersectionPoint = { x: intersection.x, y: intersection.y, z: intersection.z };
-
-  switch (effect) {
-    case "spark":
-      return applySparkEffect(position, intersectionPoint, velocity, config);
-    case "wave":
-      return applyWaveEffect(position, intersectionPoint, velocity, config, time);
-    case "vortex":
-      return applyVortexEffect(position, intersectionPoint, velocity, config);
-    case "default":
-      return applyDefaultEffect(position, intersectionPoint, velocity, config);
-  }
-}
-
-/**
- * Apply attraction to original position
- */
-function applyAttraction(
-  position: ParticlePosition,
-  target: { x: number; y: number; z: number },
-  velocity: ParticleVelocity,
-  attractStrength: number
-): ParticleVelocity {
-  return {
-    vx: velocity.vx + (target.x - position.px) * attractStrength,
-    vy: velocity.vy + (target.y - position.py) * attractStrength,
-    vz: velocity.vz + (target.z - position.pz) * attractStrength,
-  };
-}
-
-/**
- * Apply damping to velocity
- */
-function applyDamping(velocity: ParticleVelocity, damping: number): ParticleVelocity {
-  return {
-    vx: velocity.vx * damping,
-    vy: velocity.vy * damping,
-    vz: velocity.vz * damping,
-  };
-}
-
-/**
- * Update position based on velocity
- */
-function updatePosition(
-  position: ParticlePosition,
-  velocity: ParticleVelocity
-): ParticlePosition {
-  return {
-    px: position.px + velocity.vx,
-    py: position.py + velocity.vy,
-    pz: position.pz + velocity.vz,
-  };
-}
-
-/**
- * Calculate particle color based on effect
- */
-function calculateParticleColor(
-  effect: Effect,
-  position: ParticlePosition,
-  intersection: THREE.Vector3 | null,
-  effectRadius: number,
-  time: number
-): { r: number; g: number; b: number } {
-  if (!intersection) {
-    return { r: 1, g: 1, b: 1 };
-  }
-
-  const intersectionPoint = { x: intersection.x, y: intersection.y, z: intersection.z };
-
-  if (effect === "wave") {
-    return calculateWaveColor(position, intersectionPoint, effectRadius, time);
-  }
-  if (effect === "vortex") {
-    return calculateVortexColor(position, intersectionPoint, effectRadius, time);
-  }
-
-  return { r: 1, g: 1, b: 1 };
-}
-
 // تحديد عدد الجسيمات الأمثل حسب الجهاز
 const MAX_PARTICLES = {
   DESKTOP: 6000,
@@ -130,15 +46,18 @@ const MAX_PARTICLES = {
 export default function V0ParticleAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const currentEffect: Effect = "spark";
-  
+  const workerRef = useRef<Worker | null>(null);
+  const isProcessingRef = useRef<boolean>(false);
+
   // تحقق من window object
-  if (typeof window === 'undefined') return;
-  
+  if (typeof window === 'undefined') return null;
+
   // دعم prefers-reduced-motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  
+
   // إيقاف كامل للحركة إذا كان المستخدم يفضل تقليل الحركة
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion) return null;
+
   const sceneRef = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -787,6 +706,49 @@ export default function V0ParticleAnimation() {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0x000000);
 
+    // Initialize Web Worker
+    try {
+      workerRef.current = new Worker(
+        new URL('../workers/particle-physics.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+
+      // Handle messages from worker
+      workerRef.current.onmessage = (event) => {
+        const { type, positions, velocities, colors, error } = event.data;
+
+        if (type === 'error') {
+          console.error('Worker error:', error);
+          isProcessingRef.current = false;
+          return;
+        }
+
+        if (type === 'updated' && sceneRef.current) {
+          const { geometry, velocities: velocitiesArray } = sceneRef.current;
+          const positionAttribute = geometry.getAttribute("position") as THREE.BufferAttribute;
+          const colorAttribute = geometry.getAttribute("color") as THREE.BufferAttribute;
+
+          // Update geometry with new data from worker
+          positionAttribute.set(positions);
+          colorAttribute.set(colors);
+          positionAttribute.needsUpdate = true;
+          colorAttribute.needsUpdate = true;
+
+          // Update velocities
+          velocitiesArray.set(velocities);
+
+          isProcessingRef.current = false;
+        }
+      };
+
+      workerRef.current.onerror = (error) => {
+        console.error('Worker initialization error:', error);
+        isProcessingRef.current = false;
+      };
+    } catch (error) {
+      console.error('Failed to create worker:', error);
+    }
+
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
@@ -960,9 +922,9 @@ export default function V0ParticleAnimation() {
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", handleMouseLeave);
 
-    // Optimized animation loop with batch processing
+    // Optimized animation loop with Web Worker
     const animate = () => {
-      if (!sceneRef.current) return;
+      if (!sceneRef.current || !workerRef.current) return;
 
       const time = Date.now() * 0.001;
       const {
@@ -985,107 +947,52 @@ export default function V0ParticleAnimation() {
         "color"
       ) as THREE.BufferAttribute;
 
-      const config: EffectConfig = {
-        effectRadius: 0.5,
-        repelStrength: 0.08,
-      };
-      const attractStrength = 0.15;
-      const damping = 0.92;
-
       // Apply rotation
       updateCameraPosition(camera, rotationX, rotationY);
 
-      // Process particles in batches for better performance
-      const processParticlesInBatches = (batchSize: number = 1000) => {
-        let currentIndex = 0;
-        
-        const processBatch = () => {
-          const endIndex = Math.min(currentIndex + batchSize, particleCount);
-          
-          for (let j = currentIndex; j < endIndex; j++) {
-            const idx = j * 3;
-            const position: ParticlePosition = {
-              px: positionAttribute.getX(j),
-              py: positionAttribute.getY(j),
-              pz: positionAttribute.getZ(j),
-            };
+      // Skip if worker is still processing
+      if (isProcessingRef.current) {
+        renderer.render(scene, camera);
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
 
-            const target = {
-              x: originalPositions[idx] ?? 0,
-              y: originalPositions[idx + 1] ?? 0,
-              z: originalPositions[idx + 2] ?? 0,
-            };
+      // Prepare data for worker (copy arrays to avoid race conditions)
+      const positions = new Float32Array(positionAttribute.array);
+      const colors = new Float32Array(colorAttribute.array);
+      const velocitiesCopy = new Float32Array(velocities);
+      const originalPositionsCopy = new Float32Array(originalPositions);
 
-            let velocity: ParticleVelocity = {
-              vx: velocities[idx] ?? 0,
-              vy: velocities[idx + 1] ?? 0,
-              vz: velocities[idx + 2] ?? 0,
-            };
+      isProcessingRef.current = true;
 
-            // Apply effect based on mouse interaction
-            if (intersectionPoint) {
-              try {
-                velocity = applyParticleEffect(
-                  currentEffect,
-                  position,
-                  intersectionPoint,
-                  velocity,
-                  config,
-                  time
-                );
-              } catch (error) {
-                // خطأ في تأثير الجسيم
-              }
-            }
+      // Send data to worker for processing
+      workerRef.current.postMessage({
+        type: 'update',
+        positions,
+        velocities: velocitiesCopy,
+        originalPositions: originalPositionsCopy,
+        colors,
+        particleCount,
+        config: {
+          effect: currentEffect,
+          effectRadius: 0.5,
+          repelStrength: 0.08,
+          attractStrength: 0.15,
+          damping: 0.92,
+          intersectionPoint: intersectionPoint ? {
+            x: intersectionPoint.x,
+            y: intersectionPoint.y,
+            z: intersectionPoint.z
+          } : null,
+          time
+        }
+      }, [positions.buffer, velocitiesCopy.buffer, originalPositionsCopy.buffer, colors.buffer]);
 
-            // Attract back to original position
-            velocity = applyAttraction(position, target, velocity, attractStrength);
-            velocity = applyDamping(velocity, damping);
+      // Render current frame
+      renderer.render(scene, camera);
 
-            // Update position
-            const newPos = updatePosition(position, velocity);
-            positionAttribute.setXYZ(j, newPos.px, newPos.py, newPos.pz);
-
-            velocities[idx] = velocity.vx;
-            velocities[idx + 1] = velocity.vy;
-            velocities[idx + 2] = velocity.vz;
-
-            // Calculate and apply color
-            try {
-              const color = calculateParticleColor(
-                currentEffect,
-                newPos,
-                intersectionPoint,
-                config.effectRadius,
-                time
-              );
-              colorAttribute.setXYZ(j, color.r, color.g, color.b);
-            } catch (error) {
-              // خطأ في حساب لون الجسيم
-            }
-          }
-
-          currentIndex = endIndex;
-
-          if (currentIndex < particleCount) {
-            // استخدام requestAnimationFrame للدفعة التالية
-            requestAnimationFrame(processBatch);
-          } else {
-            // تحديث البيانات
-            positionAttribute.needsUpdate = true;
-            colorAttribute.needsUpdate = true;
-
-            renderer.render(scene, camera);
-            
-            // جدولة الإطار التالي
-            animationId = requestAnimationFrame(animate);
-          }
-        };
-
-        processBatch();
-      };
-
-      processParticlesInBatches();
+      // Schedule next frame
+      animationId = requestAnimationFrame(animate);
     };
 
     // Schedule periodic memory cleanup
@@ -1115,12 +1022,18 @@ export default function V0ParticleAnimation() {
         cancelAnimationFrame(animationId);
         canvas.removeEventListener("mousemove", handleMouseMove);
         canvas.removeEventListener("mouseleave", handleMouseLeave);
-        
+
+        // تنظيف Web Worker
+        if (workerRef.current) {
+          workerRef.current.terminate();
+          workerRef.current = null;
+        }
+
         // تنظيف الذاكرة
         if (geometry) geometry.dispose();
         if (material) material.dispose();
         if (renderer) renderer.dispose();
-        
+
         // تنظيف البيانات
         if (sceneRef.current) {
           sceneRef.current.originalPositions = null as any;
@@ -1128,7 +1041,7 @@ export default function V0ParticleAnimation() {
           sceneRef.current.phases = null as any;
           sceneRef.current = null;
         }
-        
+
         // تم تنظيف موارد الجسيمات بنجاح
       } catch (error) {
         // خطأ في تنظيف موارد الجسيمات

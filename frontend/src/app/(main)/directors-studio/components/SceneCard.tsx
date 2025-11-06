@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ interface SceneCardProps {
   onEdit?: () => void;
 }
 
-export default function SceneCard({
+const SceneCard = memo(function SceneCard({
   id,
   sceneNumber,
   title,
@@ -187,4 +187,6 @@ export default function SceneCard({
     </AlertDialog>
   </>
   );
-}
+});
+
+export default SceneCard;

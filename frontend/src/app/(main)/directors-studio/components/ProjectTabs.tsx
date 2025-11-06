@@ -48,13 +48,16 @@ function ScenesTabContent({ scenes }: ScenesTabContentProps) {
 
   return (
     <>
-      {scenes.map((scene) => (
-        <SceneCard
-          key={scene.id}
-          {...scene}
-          status={(scene.status ?? "planned") as SceneCardProps["status"]}
-        />
-      ))}
+      {scenes.map((scene) => {
+        const { status, ...sceneProps } = scene;
+        return (
+          <SceneCard
+            key={scene.id}
+            {...sceneProps}
+            status={status ?? "planned"}
+          />
+        );
+      })}
     </>
   );
 }

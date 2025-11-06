@@ -3,7 +3,8 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import {
   CreativePrompt,
   CreativeProject,
@@ -13,13 +14,27 @@ import {
   WritingTechnique,
 } from '../types';
 import { GeminiService } from '../lib/gemini-service';
-import { PromptLibrary } from './PromptLibrary';
-import { WritingEditor } from './WritingEditor';
-import { SettingsPanel } from './SettingsPanel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load heavy components for better performance
+const PromptLibrary = dynamic(() => import('./PromptLibrary').then(mod => ({ default: mod.PromptLibrary })), {
+  loading: () => <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+  ssr: false
+});
+
+const WritingEditor = dynamic(() => import('./WritingEditor').then(mod => ({ default: mod.WritingEditor })), {
+  loading: () => <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+  ssr: false
+});
+
+const SettingsPanel = dynamic(() => import('./SettingsPanel').then(mod => ({ default: mod.SettingsPanel })), {
+  loading: () => <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>,
+  ssr: false
+});
 
 interface CreativeWritingStudioProps {
   initialSettings?: Partial<AppSettings>;
