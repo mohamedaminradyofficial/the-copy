@@ -89,6 +89,8 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.googleapis.com https://*.sentry.io",
+              "worker-src 'self' blob:",
+              "child-src 'self' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: https://placehold.co https://images.unsplash.com https://picsum.photos https://www.gstatic.com https://*.googleapis.com",
@@ -148,6 +150,18 @@ const nextConfig = {
         net: false,
         tls: false,
       };
+
+      // Add support for Web Workers
+      config.module.rules.push({
+        test: /\.worker\.(ts|js)$/,
+        use: {
+          loader: 'worker-loader',
+          options: {
+            filename: 'static/[hash].worker.js',
+            publicPath: '/_next/',
+          },
+        },
+      });
     }
 
     return config;
