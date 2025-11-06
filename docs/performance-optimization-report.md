@@ -955,9 +955,7 @@ async function* processLargeDocument(filePath: string) {
 
 ## 4. خطة التنفيذ المُوصى بها
 
-### المرحلة 1: التحسينات السريعة (أسبوع واحد)
 
-**الأولوية العالية:**
 
 1. ✅ تحويل DashboardHero إلى استخدام next/image
 2. ✅ إزالة Google Fonts من layout.tsx
@@ -978,9 +976,7 @@ async function* processLargeDocument(filePath: string) {
 
 ---
 
-### المرحلة 2: التحسينات المتوسطة (2-3 أسابيع)
 
-**الأولوية المتوسطة:**
 
 1. ✅ تطبيق next/font/local لجميع الخطوط
 2. ✅ إضافة Database Indexes
@@ -994,9 +990,8 @@ async function* processLargeDocument(filePath: string) {
 
 ---
 
-### المرحلة 3: التحسينات طويلة المدى (شهر)
-
-**الأولوية المنخفضة:**
+###
+****
 
 1. ✅ إعداد Background Job Queue
 2. ✅ تطبيق Advanced Caching Strategy
@@ -1008,192 +1003,3 @@ async function* processLargeDocument(filePath: string) {
 - موثوقية عالية
 
 ---
-
-## 5. مقاييس الأداء المستهدفة
-
-### Before Optimization (تقديري)
-
-| Metric | Desktop | Mobile |
-|--------|---------|--------|
-| FCP (First Contentful Paint) | 1.8s | 3.2s |
-| LCP (Largest Contentful Paint) | 2.5s | 4.5s |
-| TTI (Time to Interactive) | 3.5s | 6.5s |
-| TBT (Total Blocking Time) | 300ms | 800ms |
-| CLS (Cumulative Layout Shift) | 0.15 | 0.25 |
-| Performance Score | 70 | 45 |
-
-### After Optimization (مُستهدف)
-
-| Metric | Desktop | Mobile | تحسين |
-|--------|---------|--------|-------|
-| FCP | 0.9s | 1.5s | ⬇️ 50% |
-| LCP | 1.2s | 2.2s | ⬇️ 52% |
-| TTI | 2.0s | 3.5s | ⬇️ 43% |
-| TBT | 150ms | 400ms | ⬇️ 50% |
-| CLS | 0.05 | 0.10 | ⬇️ 67% |
-| Performance Score | 90+ | 75+ | ⬆️ 30 pts |
-
----
-
-## 6. Tools للمراقبة المستمرة
-
-### 6.1 أدوات التطوير
-
-```bash
-# Bundle Analysis
-npm run analyze
-
-# Lighthouse CI
-npm install -g @lhci/cli
-lhci autorun
-
-# Chrome DevTools Coverage
-# افتح DevTools > More Tools > Coverage
-```
-
-### 6.2 Production Monitoring
-
-**إعداد Sentry Performance:**
-
-```typescript
-// frontend/sentry.client.config.ts
-
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  tracesSampleRate: 0.1,
-
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: ["localhost", /^https:\/\/yourapp\.com/],
-    }),
-  ],
-});
-```
-
-### 6.3 Real User Monitoring (RUM)
-
-```typescript
-// frontend/src/lib/web-vitals.ts
-
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
-
-export function reportWebVitals() {
-  getCLS(sendToAnalytics);
-  getFID(sendToAnalytics);
-  getFCP(sendToAnalytics);
-  getLCP(sendToAnalytics);
-  getTTFB(sendToAnalytics);
-}
-
-function sendToAnalytics(metric: any) {
-  // Send to your analytics service
-  console.log(metric);
-
-  // إرسال إلى Google Analytics
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', metric.name, {
-      value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
-      metric_id: metric.id,
-      metric_value: metric.value,
-      metric_delta: metric.delta,
-    });
-  }
-}
-```
-
----
-
-## 7. الخلاصة والتوصيات النهائية
-
-### ✅ نقاط القوة الحالية
-
-1. ✅ استخدام Web Workers للجسيمات (ممتاز)
-2. ✅ Dynamic Imports موجود في بعض الأماكن
-3. ✅ SWC Minification مُفعّل
-4. ✅ Compression & Security Headers موجودة
-5. ✅ ImageWithFallback component جاهز
-
-### ❌ المشاكل الرئيسية
-
-1. ❌ استخدام backgroundImage بدلاً من next/image
-2. ❌ تحميل خطوط من Google رغم وجودها محلياً
-3. ❌ عدم وجود Caching لـ Gemini API
-4. ❌ عدد جسيمات مرتفع على الأجهزة المحمولة
-5. ❌ صور PNG غير محسّنة
-
-### 🎯 الأولويات المُوصى بها
-
-**High Priority (ابدأ فورًا):**
-1. إضافة Redis Caching لـ Gemini API
-2. تحويل الصور إلى WebP/AVIF
-3. استبدال backgroundImage بـ next/image
-4. تقليل عدد الجسيمات
-
-**Medium Priority (خلال أسبوعين):**
-1. تطبيق next/font/local
-2. إضافة Database Indexes
-3. Battery Detection للجسيمات
-
-**Low Priority (عند التوسع):**
-1. Background Job Queue
-2. Advanced Caching
-3. CDN Setup
-
-### 📊 ROI المتوقع
-
-**الاستثمار الزمني:** 3-4 أسابيع إجمالاً
-**التحسين المتوقع:**
-- Mobile Performance: +30 نقطة
-- Desktop Performance: +20 نقطة
-- API Response Time: -70%
-- Page Load Time: -45%
-- User Satisfaction: +35%
-
----
-
-## 8. المراجع والموارد
-
-### Documentation
-- [Next.js Performance](https://nextjs.org/docs/app/building-your-application/optimizing)
-- [Web.dev Performance](https://web.dev/performance/)
-- [Google Lighthouse](https://developers.google.com/web/tools/lighthouse)
-
-### Tools
-- [Bundle Analyzer](https://www.npmjs.com/package/@next/bundle-analyzer)
-- [Sharp (Image Optimization)](https://sharp.pixelplumbing.com/)
-- [Redis](https://redis.io/)
-
----
-
-**تاريخ آخر تحديث:** 2025-11-06
-**الإصدار:** 1.0
-**المُعِد:** Claude Code Performance Analysis Team
-
----
-
-## ملحق: Code Examples Repository
-
-جميع الأمثلة البرمجية المذكورة في هذا التقرير متوفرة في:
-```
-docs/performance-examples/
-├── frontend/
-│   ├── optimized-dashboard-hero.tsx
-│   ├── font-setup.ts
-│   ├── particle-config.ts
-│   └── image-optimization.sh
-└── backend/
-    ├── cache.service.ts
-    ├── gemini-optimized.service.ts
-    └── queue.service.ts
-```
-
----
-
-**🎉 نهاية التقرير**
-
-للأسئلة أو الاستفسارات، يُرجى الرجوع إلى:
-- Repository Issues
-- Performance Documentation
-- Development Team
