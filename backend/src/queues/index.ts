@@ -6,6 +6,7 @@
 
 import { registerAIAnalysisWorker } from './jobs/ai-analysis.job';
 import { registerDocumentProcessingWorker } from './jobs/document-processing.job';
+import { registerCacheWarmingWorker } from './jobs/cache-warming.job';
 import { queueManager } from './queue.config';
 
 /**
@@ -17,6 +18,7 @@ export function initializeWorkers(): void {
   // Register all job processors
   registerAIAnalysisWorker();
   registerDocumentProcessingWorker();
+  registerCacheWarmingWorker();
 
   console.log('[QueueSystem] All workers initialized');
 }
@@ -34,6 +36,7 @@ export async function shutdownQueues(): Promise<void> {
 export { queueManager, QueueName } from './queue.config';
 export { queueAIAnalysis } from './jobs/ai-analysis.job';
 export { queueDocumentProcessing } from './jobs/document-processing.job';
+export { queueCacheWarming } from './jobs/cache-warming.job';
 
 export default {
   initializeWorkers,
