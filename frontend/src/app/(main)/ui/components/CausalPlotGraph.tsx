@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { DynamicMotionDiv } from "@/components/ui/dynamic-motion";
 import { Network, Filter, Play, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -219,10 +219,7 @@ export function CausalPlotGraph({
 
               return (
                 <g key={edge.id}>
-                  <motion.line
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.5 }}
+                  <line
                     x1={`${fromNode.x}%`}
                     y1={`${fromNode.y}%`}
                     x2={`${toNode.x}%`}
@@ -240,11 +237,9 @@ export function CausalPlotGraph({
           {/* Nodes */}
           <g>
             {nodes.map((node, index) => (
-              <motion.g
+              <g
                 key={node.id}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
+                style={{ opacity: 1 }}
               >
                 <circle
                   cx={`${node.x}%`}
@@ -271,7 +266,7 @@ export function CausalPlotGraph({
                 >
                   {node.label}
                 </text>
-              </motion.g>
+              </g>
             ))}
           </g>
         </svg>
