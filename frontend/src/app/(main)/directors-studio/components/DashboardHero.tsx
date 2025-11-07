@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Film, Upload, Sparkles } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import ProjectManager from "./ProjectManager";
 
 export default function DashboardHero() {
@@ -15,9 +16,14 @@ export default function DashboardHero() {
 
   return (
     <div className="relative h-[400px] rounded-md overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(/directors-studio/Film_production_hero_image_6b2179d4.png)` }}
+      <Image
+        src="/directors-studio/Film_production_hero_image_6b2179d4.png"
+        alt="Film production hero - خلفية الإنتاج السينمائي"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+        quality={85}
       />
       <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/60 to-black/40" />
       
