@@ -14,19 +14,17 @@ if (dsn) {
     // Debug mode
     debug: process.env.NODE_ENV === "development",
 
+    // Trace propagation targets (configured at top level)
+    tracePropagationTargets: [
+      'localhost',
+      process.env.BACKEND_URL || '',
+      'googleapis.com',
+    ],
+
     // Integrations
     integrations: [
       // HTTP integration for tracking outgoing requests
-      Sentry.httpIntegration({
-        tracing: {
-          // Track these hosts
-          targets: [
-            'localhost',
-            process.env.BACKEND_URL || '',
-            'googleapis.com',
-          ],
-        },
-      }),
+      Sentry.httpIntegration(),
 
       // Node profiling for detailed performance data
       Sentry.nodeProfilingIntegration(),
