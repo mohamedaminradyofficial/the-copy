@@ -16,7 +16,13 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "perf:setup": "bash db-performance-analysis/setup-database.sh",
+    "perf:seed": "tsx db-performance-analysis/seed-test-data.ts",
+    "perf:baseline": "tsx db-performance-analysis/run-performance-analysis.ts baseline",
+    "perf:apply-indexes": "bash db-performance-analysis/apply-indexes.sh",
+    "perf:post-optimization": "tsx db-performance-analysis/run-performance-analysis.ts post-optimization",
+    "perf:compare": "tsx db-performance-analysis/compare-results.ts"
   },
   "keywords": [
     "drama",

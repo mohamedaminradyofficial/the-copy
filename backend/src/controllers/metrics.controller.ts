@@ -8,6 +8,7 @@ import { Request, Response } from 'express';
 import { metricsAggregator } from '@/services/metrics-aggregator.service';
 import { resourceMonitor } from '@/services/resource-monitor.service';
 import { queueManager } from '@/queues/queue.config';
+import { cacheMetricsService } from '@/services/cache-metrics.service';
 import { logger } from '@/utils/logger';
 
 export class MetricsController {
@@ -436,6 +437,115 @@ export class MetricsController {
       res.status(500).json({
         success: false,
         error: 'فشل في الحصول على ملخص لوحة التحكم',
+      });
+    }
+  }
+
+  /**
+   * Get cache-specific metrics snapshot
+   * GET /api/metrics/cache/snapshot
+   */
+  async getCacheSnapshot(req: Request, res: Response): Promise<void> {
+    try {
+      const snapshot = await cacheMetricsService.takeSnapshot();
+
+      res.json({
+        success: true,
+        data: snapshot,
+      });
+    } catch (error) {
+      logger.error('Failed to get cache snapshot:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على لقطة مقاييس الكاش',
+      });
+    }
+  }
+
+  /**
+   * Get real-time cache statistics
+   * GET /api/metrics/cache/realtime
+   */
+  async getCacheRealtime(req: Request, res: Response): Promise<void> {
+    try {
+      const stats = cacheMetricsService.getRealTimeStats();
+
+      res.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      logger.error('Failed to get real-time cache stats:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على إحصائيات الكاش الفورية',
+      });
+    }
+  }
+
+  /**
+   * Get cache health status
+   * GET /api/metrics/cache/health
+   */
+  async getCacheHealth(req: Request, res: Response): Promise<void> {
+    try {
+      const health = await cacheMetricsService.getHealthStatus();
+
+      res.json({
+        success: true,
+        data: health,
+      });
+    } catch (error) {
+      logger.error('Failed to get cache health:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على حالة الكاش الصحية',
+      });
+    }
+  }
+
+  /**
+   * Generate cache performance report
+   * GET /api/metrics/cache/report?start=2024-01-01&end=2024-01-02
+   */
+  async getCacheReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { start, end } = req.query;
+
+      let startTime: Date;
+      let endTime: Date;
+
+      if (start && end) {
+        startTime = new Date(start as string);
+        endTime = new Date(end as string);
+
+        if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+          res.status(400).json({
+            success: false,
+            error: 'تنسيق التاريخ غير صالح',
+          });
+          return;
+        }
+      } else {
+        // Default to last hour
+        endTime = new Date();
+        startTime = new Date(endTime.getTime() - 60 * 60 * 1000);
+      }
+
+      const report = await cacheMetricsService.generatePerformanceReport(
+        startTime,
+        endTime
+      );
+
+      res.json({
+        success: true,
+        data: report,
+      });
+    } catch (error) {
+      logger.error('Failed to generate cache report:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في إنشاء تقرير أداء الكاش',
       });
     }
   }
