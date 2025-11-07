@@ -15,6 +15,11 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5000,http://localhost:9002'),
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'), // 15 minutes
   RATE_LIMIT_MAX_REQUESTS: z.string().transform(Number).default('100'),
+  // Redis Configuration (for caching and job queues)
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.string().transform(Number).default('6379'),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_URL: z.string().optional(), // Alternative: full Redis URL (redis://host:port or redis://:password@host:port)
 });
 
 const parsedEnv = envSchema.parse(process.env);
