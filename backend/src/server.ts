@@ -1,5 +1,6 @@
 import 'module-alias/register';
 import express, { Application } from 'express';
+import { createServer } from 'http';
 import type { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import { env } from '@/config/env';
@@ -13,17 +14,22 @@ import { projectsController } from '@/controllers/projects.controller';
 import { scenesController } from '@/controllers/scenes.controller';
 import { charactersController } from '@/controllers/characters.controller';
 import { shotsController } from '@/controllers/shots.controller';
+import { realtimeController } from '@/controllers/realtime.controller';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { logger } from '@/utils/logger';
 import { closeDatabase } from '@/db';
 import { initializeWorkers, shutdownQueues } from '@/queues';
-import { setupBullBoard } from '@/middleware/bull-board.middleware';
+import { setupBullBoard, getAuthenticatedBullBoardRouter } from '@/middleware/bull-board.middleware';
 import { queueController } from '@/controllers/queue.controller';
+import { websocketService } from '@/services/websocket.service';
+import { sseService } from '@/services/sse.service';
 
 // Initialize Sentry monitoring (must be first)
 initializeSentry();
 
 const app: Application = express();
+// Create HTTP server for WebSocket integration
+const httpServer: Server = createServer(app);
 const analysisController = new AnalysisController();
 
 // Sentry request handling (must be first middleware)
@@ -39,6 +45,14 @@ app.use(metricsMiddleware);
 setupMiddleware(app);
 app.use(cookieParser());
 
+// Initialize WebSocket service
+try {
+  websocketService.initialize(httpServer);
+  logger.info('WebSocket service initialized');
+} catch (error) {
+  logger.error('Failed to initialize WebSocket service:', error);
+}
+
 // Initialize background job workers (BullMQ)
 try {
   initializeWorkers();
@@ -48,12 +62,13 @@ try {
   // Continue without workers - app can still function
 }
 
-// Setup Bull Board dashboard for queue monitoring
-// Access at: http://localhost:5000/admin/queues
+// Setup Bull Board dashboard for queue monitoring (with authentication)
+// Access at: http://localhost:3000/admin/queues
 try {
-  const bullBoardAdapter = setupBullBoard();
-  app.use('/admin/queues', bullBoardAdapter.getRouter());
-  logger.info('Bull Board dashboard available at /admin/queues');
+  setupBullBoard();
+  const authenticatedBullBoardRouter = getAuthenticatedBullBoardRouter();
+  app.use('/admin/queues', authenticatedBullBoardRouter);
+  logger.info('Bull Board dashboard available at /admin/queues (authenticated)');
 } catch (error) {
   logger.error('Failed to setup Bull Board:', error);
 }
@@ -118,6 +133,14 @@ app.get('/api/queue/:queueName/stats', authMiddleware, queueController.getSpecif
 app.post('/api/queue/jobs/:jobId/retry', authMiddleware, queueController.retryJob.bind(queueController));
 app.post('/api/queue/:queueName/clean', authMiddleware, queueController.cleanQueue.bind(queueController));
 
+// Real-time Communication endpoints (SSE & WebSocket)
+app.get('/api/realtime/events', authMiddleware, realtimeController.connectSSE.bind(realtimeController));
+app.get('/api/realtime/stats', authMiddleware, realtimeController.getStats.bind(realtimeController));
+app.get('/api/realtime/health', realtimeController.healthCheck.bind(realtimeController));
+app.post('/api/realtime/test', authMiddleware, realtimeController.sendTestEvent.bind(realtimeController));
+app.get('/api/realtime/analysis/:analysisId/stream', authMiddleware, realtimeController.streamAnalysisLogs.bind(realtimeController));
+app.get('/api/realtime/jobs/:jobId/stream', authMiddleware, realtimeController.streamJobProgress.bind(realtimeController));
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -137,15 +160,18 @@ let runningServer: Server | null = null;
 const startPort = Number(process.env.PORT) || env.PORT;
 
 function startListening(port: number): void {
-  const server = app.listen(port, () => {
-    runningServer = server;
+  // Use httpServer instead of app.listen to support WebSocket
+  httpServer.listen(port, () => {
+    runningServer = httpServer;
     logger.info(`Server running on port ${port}`, {
       environment: env.NODE_ENV,
       port,
+      websocket: 'enabled',
+      sse: 'enabled',
     });
   });
 
-  server.on('error', (error: any) => {
+  httpServer.on('error', (error: any) => {
     if (error && error.code === 'EADDRINUSE') {
       const nextPort = port + 1;
       logger.warn(`Port ${port} is in use. Trying ${nextPort}...`);
@@ -162,7 +188,16 @@ startListening(startPort);
 process.on('SIGTERM', async (): Promise<void> => {
   logger.info('SIGTERM received, shutting down gracefully');
 
-  // Close queues first
+  // Shutdown real-time services
+  try {
+    sseService.shutdown();
+    await websocketService.shutdown();
+    logger.info('Real-time services shut down');
+  } catch (error) {
+    logger.error('Error shutting down real-time services:', error);
+  }
+
+  // Close queues
   try {
     await shutdownQueues();
   } catch (error) {
@@ -185,7 +220,16 @@ process.on('SIGTERM', async (): Promise<void> => {
 process.on('SIGINT', async (): Promise<void> => {
   logger.info('SIGINT received, shutting down gracefully');
 
-  // Close queues first
+  // Shutdown real-time services
+  try {
+    sseService.shutdown();
+    await websocketService.shutdown();
+    logger.info('Real-time services shut down');
+  } catch (error) {
+    logger.error('Error shutting down real-time services:', error);
+  }
+
+  // Close queues
   try {
     await shutdownQueues();
   } catch (error) {
