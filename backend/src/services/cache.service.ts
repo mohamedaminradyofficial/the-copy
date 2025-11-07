@@ -38,9 +38,18 @@ export class CacheService {
    */
   private initializeRedis(): void {
     try {
-      // Prefer REDIS_URL if provided, otherwise construct from individual vars
-      const redisUrl = process.env.REDIS_URL || 
-        `redis://${process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : ''}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || '6379'}`;
+      // Support both REDIS_URL and REDIS_HOST/REDIS_PORT/REDIS_PASSWORD formats
+      let redisUrl: string;
+      if (process.env.REDIS_URL) {
+        redisUrl = process.env.REDIS_URL;
+      } else {
+        const host = process.env.REDIS_HOST || 'localhost';
+        const port = process.env.REDIS_PORT || '6379';
+        const password = process.env.REDIS_PASSWORD;
+        redisUrl = password 
+          ? `redis://:${password}@${host}:${port}`
+          : `redis://${host}:${port}`;
+      }
 
       this.redis = new Redis(redisUrl, {
         retryStrategy: (times: number) => {
