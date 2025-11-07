@@ -1,17 +1,22 @@
 import { Request, Response } from 'express';
 import { logger } from '@/utils/logger';
+import { queueAIAnalysis } from '@/queues/jobs/ai-analysis.job';
 
 // تم إيقاف استيراد كود من الواجهة الأمامية لتجنب أخطاء rootDir في TypeScript
 
 export class AnalysisController {
   constructor() {}
 
+  /**
+   * Run Seven Stations Pipeline (asynchronous via queue)
+   * Returns a job ID that can be used to check the status
+   */
   async runSevenStationsPipeline(req: Request, res: Response): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
-      const { text } = req.body;
-      
+      const { text, async } = req.body;
+
       if (!text || typeof text !== 'string' || text.trim().length === 0) {
         res.status(400).json({
           error: 'النص مطلوب ولا يمكن أن يكون فارغاً',
@@ -20,19 +25,43 @@ export class AnalysisController {
         return;
       }
 
-      logger.info('بدء تشغيل نظام المحطات السبع', { 
+      logger.info('بدء تشغيل نظام المحطات السبع', {
         textLength: text.length,
+        async: async === true,
         timestamp: new Date().toISOString()
       });
 
+      // If async flag is true, queue the job
+      if (async === true) {
+        const jobId = await queueAIAnalysis({
+          type: 'project',
+          entityId: `text_${Date.now()}`, // Generate unique ID for text analysis
+          userId: (req as any).user?.id || 'anonymous',
+          analysisType: 'full',
+          options: { text }
+        });
+
+        logger.info('تم إضافة مهمة التحليل إلى قائمة الانتظار', { jobId });
+
+        res.json({
+          success: true,
+          jobId,
+          message: 'تم إضافة التحليل إلى قائمة الانتظار',
+          checkStatus: `/api/queue/jobs/${jobId}`,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // Synchronous execution (for backward compatibility)
       // تنفيذ مبسّط مؤقتًا حتى نقل منطق المحطات إلى حزمة مشتركة
       const result = {
         finalReport: `تم استلام النص بطول ${text.length} حرفًا. (وضع التطوير المؤقت)`,
         totalConfidence: 0.0
       };
-      
+
       const endTime = Date.now();
-      
+
       // إرجاع النتيجة بتنسيق نصي عربي فقط
       res.json({
         success: true,
@@ -42,15 +71,15 @@ export class AnalysisController {
         timestamp: new Date().toISOString(),
         stationsCount: 7
       });
-      
+
       logger.info('تم إكمال معالجة مبسّطة بنجاح', {
         executionTime: endTime - startTime,
         confidence: result.totalConfidence
       });
-      
+
     } catch (error) {
       logger.error('فشل في تنفيذ نظام المحطات السبع:', error);
-      
+
       res.status(500).json({
         error: 'حدث خطأ أثناء تحليل النص',
         message: error instanceof Error ? error.message : 'خطأ غير معروف',

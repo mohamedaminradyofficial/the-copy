@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DynamicMotionDiv, DynamicMotionLine } from "@/components/ui/dynamic-motion";
+import { DynamicMotionDiv } from "@/components/ui/dynamic-motion";
 import { UniverseNode } from "./UniverseNode";
 import { ZoomIn, ZoomOut, Grid3x3, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

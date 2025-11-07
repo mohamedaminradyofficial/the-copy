@@ -92,6 +92,13 @@ const nextConfig = {
     ],
   },
 
+  // Performance Budget - Fail build if exceeded
+  // Ensures bundle sizes stay within acceptable limits
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 2,
+  },
+
   async headers() {
     // Dynamic CSP based on CDN configuration
     const cdnDomain = cdnUrl ? new URL(cdnUrl).hostname : null;

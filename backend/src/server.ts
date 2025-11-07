@@ -23,6 +23,8 @@ import { initializeWorkers, shutdownQueues } from '@/queues';
 import { setupBullBoard, getAuthenticatedBullBoardRouter } from '@/middleware/bull-board.middleware';
 import { queueController } from '@/controllers/queue.controller';
 import { metricsController } from '@/controllers/metrics.controller';
+import { websocketService } from '@/services/websocket.service';
+import { sseService } from '@/services/sse.service';
 
 // Initialize Sentry monitoring (must be first)
 initializeSentry();
@@ -150,6 +152,12 @@ app.get('/api/metrics/gemini', authMiddleware, metricsController.getGeminiMetric
 app.get('/api/metrics/report', authMiddleware, metricsController.generateReport.bind(metricsController));
 app.get('/api/metrics/health', authMiddleware, metricsController.getHealth.bind(metricsController));
 app.get('/api/metrics/dashboard', authMiddleware, metricsController.getDashboardSummary.bind(metricsController));
+
+// Cache-specific Metrics endpoints (protected)
+app.get('/api/metrics/cache/snapshot', authMiddleware, metricsController.getCacheSnapshot.bind(metricsController));
+app.get('/api/metrics/cache/realtime', authMiddleware, metricsController.getCacheRealtime.bind(metricsController));
+app.get('/api/metrics/cache/health', authMiddleware, metricsController.getCacheHealth.bind(metricsController));
+app.get('/api/metrics/cache/report', authMiddleware, metricsController.getCacheReport.bind(metricsController));
 
 // 404 handler
 app.use('*', (req, res) => {
