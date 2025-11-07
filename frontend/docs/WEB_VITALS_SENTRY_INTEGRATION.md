@@ -117,7 +117,16 @@ export default function RootLayout({ children }) {
 | Time to Interactive | 3800 |
 | Cumulative Layout Shift | 0.1 |
 
-These budgets are enforced in:
+### Lighthouse Quality Standards
+
+| Category | Minimum Score |
+|----------|---------------|
+| Performance | 90% |
+| Accessibility | 95% |
+| Best Practices | 95% |
+| SEO | 95% |
+
+These budgets and standards are enforced in:
 - **Lighthouse CI**: `lighthouserc.json`
 - **CI/CD Pipeline**: `.github/workflows/ci.yml`
 
