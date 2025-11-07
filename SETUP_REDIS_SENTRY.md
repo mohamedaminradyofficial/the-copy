@@ -9,7 +9,6 @@ This guide will help you configure Redis for caching and job queues, and set up 
 3. [Verification Steps](#verification-steps)
 4. [Bundle Analysis](#bundle-analysis)
 5. [Troubleshooting](#troubleshooting)
-4. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -129,7 +128,6 @@ REDIS_PASSWORD=your_redis_password
 ```bash
 REDIS_HOST=localhost
 REDIS_PORT=6379
-REDIS_PASSWORD=your_redis_password
 REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
 
 # Alternative: Use REDIS_URL (if your Redis provider gives you a connection string)
@@ -139,7 +137,6 @@ REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
 **Note**: The backend supports both formats:
 - `REDIS_HOST` + `REDIS_PORT` + `REDIS_PASSWORD` (used by BullMQ queues)
 - `REDIS_URL` (used by cache service, can also be constructed from individual variables)
-- `REDIS_URL` (used by cache service)
 
 ### Setting a Redis Password (Optional but Recommended)
 
@@ -285,16 +282,10 @@ SENTRY_AUTH_TOKEN=your-auth-token
 
 **Backend `.env`:**
 ```bash
-# Sentry Configuration (if using Sentry SDK in backend)
-SENTRY_DSN=https://your-dsn@sentry.io/project-id
-```bash
 # Sentry Configuration
 # Get these from https://sentry.io/settings/
 
-# Public DSN (exposed to browser - safe to expose)
-NEXT_PUBLIC_SENTRY_DSN=https://your-public-key@o0.ingest.sentry.io/your-project-id
-
-# Server-side DSN (optional, same as public DSN usually)
+# Server-side DSN (for backend error tracking)
 SENTRY_DSN=https://your-public-key@o0.ingest.sentry.io/your-project-id
 
 # Organization slug (for sourcemaps upload)
@@ -317,7 +308,8 @@ The Sentry configuration files are already set up:
 - `frontend/sentry.edge.config.ts` - Edge runtime tracking
 
 Sentry will automatically initialize when `NEXT_PUBLIC_SENTRY_DSN` is set.
-### Step 5: Verify Sentry Integration
+
+### Step 6: Verify Sentry Integration
 
 1. **Check browser console** (when running frontend):
    ```bash
@@ -342,7 +334,7 @@ Sentry will automatically initialize when `NEXT_PUBLIC_SENTRY_DSN` is set.
    Sentry.captureException(new Error('Test error'));
    ```
 
-### Step 6: Upload Source Maps (Production Only)
+### Step 7: Upload Source Maps (Production Only)
 
 Source maps help Sentry show you the original source code instead of minified code.
 
@@ -437,17 +429,15 @@ Or manually check:
 3. **Test cache service**:
    ```bash
    curl http://localhost:3001/api/health
-   # Check logs for cache service initialization
-   ```
    # Look for: "Redis cache connected successfully"
    ```
 
-3. **Test cache**:
+4. **Test cache**:
    - Make an API request that uses caching
    - Check logs for cache hits/misses
    - Cache stats should show Redis status as "ready"
 
-4. **Verify Queue Workers**:
+5. **Verify Queue Workers**:
    Check backend logs for:
    ```
    [QueueSystem] Initializing workers...
@@ -458,22 +448,6 @@ Or manually check:
 
 ### Sentry Verification
 
-1. **Check Console Logs**:
-   - Development: Should see `[Sentry] Client initialized with performance monitoring`
-   - If DSN missing: `[Sentry] DSN not configured, monitoring disabled`
-
-2. **Test Error Capture**:
-   - Add a test error in your code
-   - Check Sentry dashboard for the error
-
-3. **Check Build**:
-   ```bash
-   cd frontend
-   npm run build
-   # Should see Sentry webpack plugin output if configured
-   ```
-
-4. **Send test event**:
 1. **Check initialization**:
    - Open browser console
    - Look for Sentry initialization message
@@ -485,7 +459,6 @@ Or manually check:
    Sentry.captureMessage('Test from setup guide');
    ```
 
-5. **Check Sentry dashboard**:
 3. **Check Sentry dashboard**:
    - Go to: https://sentry.io/
    - Navigate to your project
