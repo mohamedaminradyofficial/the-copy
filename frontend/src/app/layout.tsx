@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { reportWebVitals } from "@/lib/web-vitals";
+import WebVitalsReporter from "@/components/WebVitalsReporter";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,10 +24,6 @@ export const metadata: Metadata = {
   },
 };
 
-if (typeof window !== "undefined") {
-  reportWebVitals();
-}
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,6 +40,9 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
+        {/* Web Vitals tracking with Sentry integration */}
+        <WebVitalsReporter />
+
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
