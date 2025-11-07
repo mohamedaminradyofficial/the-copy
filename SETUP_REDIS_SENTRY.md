@@ -61,6 +61,31 @@ The project includes a Redis service in `backend/docker-compose.yml`.
    - Download from: https://github.com/microsoftarchive/redis/releases
    - Or use WSL2 with Ubuntu installation above
 
+### Option 3: Standalone Docker Container
+
+```bash
+# Start Redis container
+docker run -d \
+  --name redis-dev \
+  -p 6379:6379 \
+  redis:7-alpine
+```
+
+### Production
+
+For production, use a managed Redis service:
+
+- **Redis Cloud**: https://redis.com/cloud/
+- **AWS ElastiCache**: https://aws.amazon.com/elasticache/
+- **Azure Cache for Redis**: https://azure.microsoft.com/services/cache/
+- **Google Cloud Memorystore**: https://cloud.google.com/memorystore
+
+### Configuration
+
+The application will gracefully degrade if Redis is unavailable:
+- Caching will fall back to in-memory cache only
+- Job queues will not function (but API endpoints will still work)
+
 ### Environment Variables
 
 Add these to your `.env` file (root directory) or `backend/.env`:
@@ -189,6 +214,8 @@ SENTRY_PROJECT=your-project-slug
 SENTRY_AUTH_TOKEN=your-auth-token-here
 ```
 
+**Note**: `NEXT_PUBLIC_*` variables are exposed to the browser. Only use `NEXT_PUBLIC_SENTRY_DSN` for client-side tracking. Server-side Sentry uses `SENTRY_DSN` (without `NEXT_PUBLIC_`).
+
 ### Step 5: Verify Sentry Integration
 
 1. **Check browser console** (when running frontend):
@@ -235,6 +262,8 @@ This command:
 2. Uploads them to Sentry
 3. Associates them with your release
 
+Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.yml`).
+
 ---
 
 ## Verification Steps
@@ -262,6 +291,15 @@ This command:
    - Make an API request that uses caching
    - Check logs for cache hits/misses
    - Cache stats should show Redis status as "ready"
+
+4. **Verify Queue Workers**:
+   Check backend logs for:
+   ```
+   [QueueSystem] Initializing workers...
+   [QueueSystem] All workers initialized
+   [Worker:ai-analysis] Worker registered
+   [Worker:document-processing] Worker registered
+   ```
 
 ### Sentry Verification
 
@@ -323,12 +361,26 @@ This command:
    lsof -i :6379
    ```
 
+6. For Docker: Ensure container is running:
+   ```bash
+   docker ps | grep redis
+   ```
+
 **Problem**: Cache service falls back to memory-only
 
 **Solutions**:
 - Check backend logs for Redis connection errors
 - Verify `REDIS_URL` or `REDIS_HOST`/`REDIS_PORT` are set
 - Ensure Redis is accessible from backend container/host
+- This is expected if Redis is not configured - the app will work with in-memory cache only
+
+**Problem**: Queue workers not starting
+
+**Solutions**:
+1. Check Redis connection (workers require Redis)
+2. Verify `REDIS_HOST`, `REDIS_PORT` are correct
+3. Check backend logs for Redis connection errors
+4. Ensure Redis is accessible from backend server
 
 ### Sentry Issues
 
@@ -346,6 +398,7 @@ This command:
 2. Check `SENTRY_ORG` and `SENTRY_PROJECT` are correct
 3. Ensure you've built the app first: `npm run build`
 4. Check token hasn't expired (create a new one if needed)
+5. Run manually: `npm run sentry:sourcemaps`
 
 **Problem**: No events appearing in Sentry
 
@@ -355,6 +408,7 @@ This command:
 3. Check Sentry project settings → Client Keys (DSN)
 4. Ensure you're looking at the correct project in Sentry dashboard
 5. Check if there are any ad blockers interfering
+6. Check Sentry project settings → Inbound Filters (might be filtering)
 
 **Problem**: Performance monitoring not working
 
@@ -378,6 +432,7 @@ After completing setup:
    - Set up alerts for critical errors
    - Review performance metrics
    - Configure release tracking
+   - Monitor Performance tab for slow transactions
 
 3. **Review Performance Guide**:
    - See `PERFORMANCE_OPTIMIZATION_GUIDE.md` for detailed usage
