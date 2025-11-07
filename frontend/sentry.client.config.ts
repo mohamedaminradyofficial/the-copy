@@ -11,6 +11,13 @@ if (dsn) {
     // Performance Monitoring
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
+    // Trace propagation targets (configured at top level)
+    tracePropagationTargets: [
+      'localhost',
+      /^\//,
+      process.env.NEXT_PUBLIC_API_URL || '',
+    ],
+
     // Session Replay
     replaysOnErrorSampleRate: 1.0,
     replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
@@ -28,11 +35,6 @@ if (dsn) {
 
       // Browser tracing for performance monitoring
       Sentry.browserTracingIntegration({
-        tracePropagationTargets: [
-          'localhost',
-          /^\//,
-          process.env.NEXT_PUBLIC_API_URL || '',
-        ],
         enableInp: true,
       }),
 

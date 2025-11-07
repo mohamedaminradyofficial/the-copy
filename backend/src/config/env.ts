@@ -18,8 +18,13 @@ const envSchema = z.object({
   // Redis Configuration (for caching and job queues)
   REDIS_URL: z.string().optional(),
   REDIS_HOST: z.string().optional().default('localhost'),
-  REDIS_PORT: z.string().transform(Number).optional().default(6379),
+  REDIS_PORT: z.string().transform(Number).optional().default('6379'),
   REDIS_PASSWORD: z.string().optional(),
+  // Sentry Configuration (for error tracking and performance monitoring)
+  SENTRY_DSN: z.string().optional(),
+  SENTRY_ORG: z.string().optional(),
+  SENTRY_PROJECT: z.string().optional(),
+  SENTRY_AUTH_TOKEN: z.string().optional(),
 });
 
 const parsedEnv = envSchema.parse(process.env);
