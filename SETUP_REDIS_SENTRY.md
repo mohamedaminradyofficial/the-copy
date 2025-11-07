@@ -9,6 +9,7 @@ This guide will help you configure Redis for caching and job queues, and set up 
 3. [Verification Steps](#verification-steps)
 4. [Bundle Analysis](#bundle-analysis)
 5. [Troubleshooting](#troubleshooting)
+4. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -129,11 +130,16 @@ REDIS_PASSWORD=your_redis_password
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=your_redis_password
+REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
+
+# Alternative: Use REDIS_URL (if your Redis provider gives you a connection string)
+# REDIS_URL=redis://:password@host:port
 ```
 
 **Note**: The backend supports both formats:
 - `REDIS_HOST` + `REDIS_PORT` + `REDIS_PASSWORD` (used by BullMQ queues)
 - `REDIS_URL` (used by cache service, can also be constructed from individual variables)
+- `REDIS_URL` (used by cache service)
 
 ### Setting a Redis Password (Optional but Recommended)
 
@@ -178,6 +184,29 @@ Check queue statistics:
 ```bash
 curl http://localhost:3001/api/queue/stats
 ```
+### Verify Redis Configuration
+
+1. **Check backend logs** when starting:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+   Look for:
+   - `✅ Redis cache connected successfully` (cache service)
+   - `[QueueManager] Queue initialized` (job queues)
+
+2. **Test cache service**:
+   ```bash
+   # In backend, you can check cache stats via API
+   curl http://localhost:3001/api/health
+   ```
+
+3. **Test job queue**:
+   ```bash
+   # Check queue stats (if queue controller is set up)
+   curl http://localhost:3001/api/queue/stats
+   ```
 
 ---
 
@@ -213,6 +242,7 @@ curl http://localhost:3001/api/queue/stats
      - `project:read`
      - `project:releases`
      - `project:write`
+     - `org:read`
    - Click "Create Token"
 
 3. **Copy the Token**:
@@ -257,6 +287,24 @@ SENTRY_AUTH_TOKEN=your-auth-token
 ```bash
 # Sentry Configuration (if using Sentry SDK in backend)
 SENTRY_DSN=https://your-dsn@sentry.io/project-id
+```bash
+# Sentry Configuration
+# Get these from https://sentry.io/settings/
+
+# Public DSN (exposed to browser - safe to expose)
+NEXT_PUBLIC_SENTRY_DSN=https://your-public-key@o0.ingest.sentry.io/your-project-id
+
+# Server-side DSN (optional, same as public DSN usually)
+SENTRY_DSN=https://your-public-key@o0.ingest.sentry.io/your-project-id
+
+# Organization slug (for sourcemaps upload)
+SENTRY_ORG=your-org-slug
+
+# Project name/slug (for sourcemaps upload)
+SENTRY_PROJECT=your-project-slug
+
+# Auth token (for uploading sourcemaps - keep secret!)
+SENTRY_AUTH_TOKEN=your-auth-token-here
 ```
 
 **Note**: `NEXT_PUBLIC_*` variables are exposed to the browser. Only use `NEXT_PUBLIC_SENTRY_DSN` for client-side tracking. Server-side Sentry uses `SENTRY_DSN` (without `NEXT_PUBLIC_`).
@@ -269,6 +317,30 @@ The Sentry configuration files are already set up:
 - `frontend/sentry.edge.config.ts` - Edge runtime tracking
 
 Sentry will automatically initialize when `NEXT_PUBLIC_SENTRY_DSN` is set.
+### Step 5: Verify Sentry Integration
+
+1. **Check browser console** (when running frontend):
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+   Look for:
+   - `[Sentry] Client initialized with performance monitoring` ✅
+   - Or: `[Sentry] DSN not configured, monitoring disabled` ⚠️
+
+2. **Test error tracking**:
+   - Open browser console
+   - Run: `Sentry.captureMessage('Test message from console')`
+   - Check your Sentry dashboard - you should see the message appear
+
+3. **Test in code**:
+   ```typescript
+   import * as Sentry from '@sentry/nextjs';
+   
+   // In your component or API route
+   Sentry.captureException(new Error('Test error'));
+   ```
 
 ### Step 6: Upload Source Maps (Production Only)
 
@@ -285,6 +357,12 @@ Or manually:
 ```bash
 npx @sentry/cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next
 npx @sentry/cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next
+
+# Build the application first
+npm run build
+
+# Upload source maps
+npm run sentry:sourcemaps
 ```
 
 This command:
@@ -361,6 +439,13 @@ Or manually check:
    curl http://localhost:3001/api/health
    # Check logs for cache service initialization
    ```
+   # Look for: "Redis cache connected successfully"
+   ```
+
+3. **Test cache**:
+   - Make an API request that uses caching
+   - Check logs for cache hits/misses
+   - Cache stats should show Redis status as "ready"
 
 4. **Verify Queue Workers**:
    Check backend logs for:
@@ -389,12 +474,19 @@ Or manually check:
    ```
 
 4. **Send test event**:
+1. **Check initialization**:
+   - Open browser console
+   - Look for Sentry initialization message
+   - No errors related to Sentry
+
+2. **Send test event**:
    ```javascript
    // In browser console
    Sentry.captureMessage('Test from setup guide');
    ```
 
 5. **Check Sentry dashboard**:
+3. **Check Sentry dashboard**:
    - Go to: https://sentry.io/
    - Navigate to your project
    - You should see the test message in "Issues" or "Performance"
@@ -440,6 +532,10 @@ Target bundle sizes:
 - **Framework**: ~500KB
 - **Vendor Bundles**: ~300KB each
 - **Page Chunks**: ~50-100KB each
+4. **Verify performance monitoring**:
+   - Navigate through your app
+   - Check Sentry → Performance tab
+   - You should see transactions being recorded
 
 ---
 
@@ -562,6 +658,21 @@ After completing setup:
 - See `PERFORMANCE_OPTIMIZATION_GUIDE.md` for detailed usage
 - Learn about cache strategies
 - Understand job queue patterns
+1. **Monitor Redis**:
+   - Check cache hit rates
+   - Monitor queue health
+   - Review Redis memory usage
+
+2. **Monitor Sentry**:
+   - Set up alerts for critical errors
+   - Review performance metrics
+   - Configure release tracking
+   - Monitor Performance tab for slow transactions
+
+3. **Review Performance Guide**:
+   - See `PERFORMANCE_OPTIMIZATION_GUIDE.md` for detailed usage
+   - Learn about cache strategies
+   - Understand job queue patterns
 
 ---
 
