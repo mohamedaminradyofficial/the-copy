@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { DynamicMotionDiv, DynamicMotionLine } from "@/components/ui/dynamic-motion";
 import { UniverseNode } from "./UniverseNode";
 import { ZoomIn, ZoomOut, Grid3x3, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -201,7 +201,7 @@ export function UniverseMap({
 
       {/* Canvas */}
       <div className="w-full h-full flex items-center justify-center">
-        <motion.div
+        <DynamicMotionDiv
           className="relative"
           style={{
             width: "800px",
@@ -264,7 +264,7 @@ export function UniverseMap({
                 const y2 = (toNode.y / 100) * 600;
 
                 return (
-                  <motion.line
+                  <line
                     key={idx}
                     x1={x1}
                     y1={y1}
@@ -274,9 +274,6 @@ export function UniverseMap({
                     strokeWidth={getLineWidth(conn.weight)}
                     strokeOpacity={getLineOpacity(conn.weight)}
                     markerEnd="url(#arrowhead-map)"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: idx * 0.1 }}
                   />
                 );
               }
@@ -286,7 +283,7 @@ export function UniverseMap({
 
           {/* Nodes */}
           {nodes.map((node, idx) => (
-            <motion.div
+            <DynamicMotionDiv
               key={node.id}
               className="absolute"
               style={{
@@ -311,9 +308,9 @@ export function UniverseMap({
                 isActive={activeView === node.view}
                 onClick={() => onNavigate?.(node.view)}
               />
-            </motion.div>
+            </DynamicMotionDiv>
           ))}
-        </motion.div>
+        </DynamicMotionDiv>
       </div>
 
       {/* Legend */}

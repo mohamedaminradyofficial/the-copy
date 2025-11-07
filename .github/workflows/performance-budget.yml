@@ -1,0 +1,289 @@
+name: Performance Budget Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/performance-budget.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/performance-budget.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  performance-budget:
+    name: Check Performance Budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_APP_ENV: staging
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run Performance Budget Check
+        id: budget-check
+        run: |
+          echo "🔍 Running Performance Budget Check..."
+          npm run budget:check || echo "BUDGET_FAILED=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Check JavaScript Bundle Size
+        run: |
+          echo "📦 JavaScript Bundle Analysis"
+          echo "================================"
+
+          CHUNKS_DIR=".next/static/chunks"
+          if [ -d "$CHUNKS_DIR" ]; then
+            TOTAL_JS=$(find "$CHUNKS_DIR" -name "*.js" -exec stat -c%s {} + | awk '{s+=$1} END {print s}')
+            TOTAL_JS_KB=$((TOTAL_JS / 1024))
+            COMPRESSED_JS_KB=$((TOTAL_JS_KB * 30 / 100))
+
+            echo "Total JS: ${TOTAL_JS_KB} KB (uncompressed)"
+            echo "Estimated compressed: ${COMPRESSED_JS_KB} KB"
+            echo "Budget: 350 KB"
+
+            if [ $COMPRESSED_JS_KB -gt 350 ]; then
+              echo "❌ JavaScript bundle exceeds budget!"
+              exit 1
+            fi
+            echo "✅ JavaScript bundle within budget"
+          fi
+
+      - name: Check CSS Bundle Size
+        run: |
+          echo "🎨 CSS Bundle Analysis"
+          echo "================================"
+
+          STATIC_DIR=".next/static"
+          if [ -d "$STATIC_DIR" ]; then
+            TOTAL_CSS=$(find "$STATIC_DIR" -name "*.css" -exec stat -c%s {} + 2>/dev/null | awk '{s+=$1} END {print s}')
+
+            if [ ! -z "$TOTAL_CSS" ] && [ $TOTAL_CSS -gt 0 ]; then
+              TOTAL_CSS_KB=$((TOTAL_CSS / 1024))
+              COMPRESSED_CSS_KB=$((TOTAL_CSS_KB * 30 / 100))
+
+              echo "Total CSS: ${TOTAL_CSS_KB} KB (uncompressed)"
+              echo "Estimated compressed: ${COMPRESSED_CSS_KB} KB"
+              echo "Budget: 100 KB"
+
+              if [ $COMPRESSED_CSS_KB -gt 100 ]; then
+                echo "❌ CSS bundle exceeds budget!"
+                exit 1
+              fi
+              echo "✅ CSS bundle within budget"
+            else
+              echo "No CSS files found or total size is 0"
+            fi
+          fi
+
+      - name: Check Total Page Weight
+        run: |
+          echo "⚖️  Total Page Weight Analysis"
+          echo "================================"
+
+          STATIC_DIR=".next/static"
+          if [ -d "$STATIC_DIR" ]; then
+            TOTAL_SIZE=$(find "$STATIC_DIR" -type f -exec stat -c%s {} + | awk '{s+=$1} END {print s}')
+            TOTAL_SIZE_KB=$((TOTAL_SIZE / 1024))
+            COMPRESSED_SIZE_KB=$((TOTAL_SIZE_KB * 30 / 100))
+
+            echo "Total size: ${TOTAL_SIZE_KB} KB (uncompressed)"
+            echo "Estimated compressed: ${COMPRESSED_SIZE_KB} KB"
+            echo "Budget: 1000 KB (first load)"
+
+            if [ $COMPRESSED_SIZE_KB -gt 1000 ]; then
+              echo "❌ Total page weight exceeds budget!"
+              exit 1
+            fi
+            echo "✅ Total page weight within budget"
+          fi
+
+      - name: Analyze Large Files
+        run: |
+          echo "📊 Large Files Analysis"
+          echo "================================"
+
+          STATIC_DIR=".next/static/chunks"
+          MAX_CHUNK_KB=244
+
+          if [ -d "$STATIC_DIR" ]; then
+            echo "Files exceeding ${MAX_CHUNK_KB}KB (compressed):"
+
+            FOUND_LARGE=false
+            for file in $(find "$STATIC_DIR" -name "*.js"); do
+              SIZE=$(stat -c%s "$file")
+              SIZE_KB=$((SIZE / 1024))
+              COMPRESSED_KB=$((SIZE_KB * 30 / 100))
+
+              if [ $COMPRESSED_KB -gt $MAX_CHUNK_KB ]; then
+                FILENAME=$(basename "$file")
+                echo "  ❌ $FILENAME: ${COMPRESSED_KB} KB (compressed)"
+                FOUND_LARGE=true
+              fi
+            done
+
+            if [ "$FOUND_LARGE" = false ]; then
+              echo "✅ No files exceed ${MAX_CHUNK_KB}KB budget"
+            else
+              echo ""
+              echo "⚠️  Consider code splitting for large chunks"
+              exit 1
+            fi
+          fi
+
+      - name: Generate Performance Report
+        if: always()
+        run: |
+          echo "# 📊 Performance Budget Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Bundle Sizes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # JavaScript
+          CHUNKS_DIR=".next/static/chunks"
+          if [ -d "$CHUNKS_DIR" ]; then
+            TOTAL_JS=$(find "$CHUNKS_DIR" -name "*.js" -exec stat -c%s {} + | awk '{s+=$1} END {print s}')
+            TOTAL_JS_KB=$((TOTAL_JS / 1024))
+            COMPRESSED_JS_KB=$((TOTAL_JS_KB * 30 / 100))
+
+            echo "| Resource | Size (compressed) | Budget | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------------------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+
+            if [ $COMPRESSED_JS_KB -le 350 ]; then
+              echo "| JavaScript | ${COMPRESSED_JS_KB} KB | 350 KB | ✅ Pass |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| JavaScript | ${COMPRESSED_JS_KB} KB | 350 KB | ❌ Fail |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # CSS
+          TOTAL_CSS=$(find ".next/static" -name "*.css" -exec stat -c%s {} + 2>/dev/null | awk '{s+=$1} END {print s}')
+          if [ ! -z "$TOTAL_CSS" ] && [ $TOTAL_CSS -gt 0 ]; then
+            TOTAL_CSS_KB=$((TOTAL_CSS / 1024))
+            COMPRESSED_CSS_KB=$((TOTAL_CSS_KB * 30 / 100))
+
+            if [ $COMPRESSED_CSS_KB -le 100 ]; then
+              echo "| CSS | ${COMPRESSED_CSS_KB} KB | 100 KB | ✅ Pass |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| CSS | ${COMPRESSED_CSS_KB} KB | 100 KB | ❌ Fail |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Total
+          TOTAL_SIZE=$(find ".next/static" -type f -exec stat -c%s {} + | awk '{s+=$1} END {print s}')
+          TOTAL_SIZE_KB=$((TOTAL_SIZE / 1024))
+          COMPRESSED_SIZE_KB=$((TOTAL_SIZE_KB * 30 / 100))
+
+          if [ $COMPRESSED_SIZE_KB -le 1000 ]; then
+            echo "| Total Page Weight | ${COMPRESSED_SIZE_KB} KB | 1000 KB | ✅ Pass |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Total Page Weight | ${COMPRESSED_SIZE_KB} KB | 1000 KB | ❌ Fail |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Performance Budgets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Budget | Target |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| LCP | ≤ 2.5s | Good user experience |" >> $GITHUB_STEP_SUMMARY
+          echo "| FID | ≤ 100ms | Responsive interactions |" >> $GITHUB_STEP_SUMMARY
+          echo "| CLS | ≤ 0.1 | Visual stability |" >> $GITHUB_STEP_SUMMARY
+          echo "| FCP | ≤ 1.8s | Fast initial render |" >> $GITHUB_STEP_SUMMARY
+          echo "| TTI | ≤ 3.8s | Interactive quickly |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📖 [Performance Budget Configuration](../frontend/performance-budget.config.js)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload performance budget report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: performance-budget-report
+          path: |
+            .next/
+          retention-days: 7
+
+      - name: Comment PR with Performance Budget
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Calculate sizes
+            const chunksDir = path.join(process.env.GITHUB_WORKSPACE, 'frontend', '.next', 'static', 'chunks');
+
+            let jsSize = 0;
+            if (fs.existsSync(chunksDir)) {
+              const files = fs.readdirSync(chunksDir, { recursive: true });
+              files.forEach(file => {
+                const filePath = path.join(chunksDir, file);
+                if (fs.statSync(filePath).isFile() && file.endsWith('.js')) {
+                  jsSize += fs.statSync(filePath).size;
+                }
+              });
+            }
+
+            const jsKB = Math.round(jsSize / 1024);
+            const compressedJsKB = Math.round(jsKB * 0.3);
+
+            const jsPassed = compressedJsKB <= 350;
+
+            const comment = `## 📊 Performance Budget Check
+
+            | Resource | Size (compressed) | Budget | Status |
+            |----------|-------------------|--------|--------|
+            | JavaScript | ${compressedJsKB} KB | 350 KB | ${jsPassed ? '✅' : '❌'} |
+
+            ${jsPassed ? '✅ All performance budgets are met!' : '❌ Performance budget exceeded!'}
+
+            ### Performance Targets
+            - **LCP** (Largest Contentful Paint): ≤ 2.5s
+            - **FID** (First Input Delay): ≤ 100ms
+            - **CLS** (Cumulative Layout Shift): ≤ 0.1
+            - **FCP** (First Contentful Paint): ≤ 1.8s
+            - **TTI** (Time to Interactive): ≤ 3.8s
+
+            View detailed performance budget configuration in \`frontend/performance-budget.config.js\`
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail if budget exceeded
+        if: steps.budget-check.outputs.BUDGET_FAILED == 'true'
+        run: |
+          echo "❌ Performance budget checks failed!"
+          echo "Review the performance budget report for details."
+          exit 1

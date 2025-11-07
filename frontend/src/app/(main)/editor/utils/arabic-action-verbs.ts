@@ -134,7 +134,7 @@ export const ARABIC_ACTION_VERBS = [
 /**
  * Set of action verbs for fast lookup
  */
-export const ACTION_VERBS_SET = new Set(ARABIC_ACTION_VERBS);
+export const ACTION_VERBS_SET = new Set(ARABIC_ACTION_VERBS) as Set<string>;
 
 /**
  * Check if a word is an action verb
