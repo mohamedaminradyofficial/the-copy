@@ -1,7 +1,14 @@
 /**
- * Particle effect helper functions
+ * Particle effect helper functions with LOD support
  * Extracted from particle-background.tsx to reduce complexity
+ *
+ * Features:
+ * - Device detection and performance adaptation
+ * - Level of Detail (LOD) system
+ * - Dynamic quality adjustment
  */
+
+import { getDeviceCapabilities, getParticleLODConfig, PerformanceMonitor } from './device-detection';
 
 /**
  * Enhanced requestIdleCallback with fallback
@@ -314,3 +321,23 @@ export function calculateVortexColor(
     return { r: 1, g: 1, b: 1 };
   }
 }
+
+/**
+ * Get optimized particle configuration based on device capabilities
+ */
+export function getOptimizedParticleConfig() {
+  const capabilities = getDeviceCapabilities();
+  const lodConfig = getParticleLODConfig(capabilities);
+
+  return {
+    capabilities,
+    lodConfig,
+    shouldUseSimplifiedPhysics: capabilities.performanceTier === 'low',
+    shouldSkipFrames: capabilities.isLowPowerMode,
+  };
+}
+
+/**
+ * Export performance monitor instance
+ */
+export const performanceMonitor = new PerformanceMonitor();
