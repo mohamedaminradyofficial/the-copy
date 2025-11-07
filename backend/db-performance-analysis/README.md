@@ -4,6 +4,41 @@
 
 This directory contains comprehensive database performance analysis and optimization work for The Copy application. The analysis focuses on critical query paths for Projects, Scenes, Characters, and Shots entities.
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+```bash
+# 1. Make sure PostgreSQL is running (via Docker)
+cd /home/user/the-copy/backend
+docker-compose up -d postgres
+
+# 2. Set DATABASE_URL environment variable
+export DATABASE_URL="postgresql://the_copy_app:your_password@localhost:5432/the_copy"
+
+# 3. Install dependencies
+npm install
+```
+
+### Running the Full Analysis
+
+```bash
+# Step 1: Setup database and seed test data
+npm run perf:setup
+
+# Step 2: Run baseline performance tests (BEFORE indexes)
+npm run perf:baseline
+
+# Step 3: Apply optimized indexes
+npm run perf:apply-indexes
+
+# Step 4: Run post-optimization tests (AFTER indexes)
+npm run perf:post-optimization
+
+# Step 5: Compare and generate report
+npm run perf:compare
+```
+
 ## 📁 Files in this Directory
 
 ### 1. `baseline-queries.sql`
