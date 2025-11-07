@@ -5,14 +5,44 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
+import { logSecurityEvent, SecurityEventType } from './security-logger.middleware';
 
 export const setupMiddleware = (app: express.Application): void => {
-  // Security middleware
-  app.use(helmet());
-  
-  // CORS configuration - Strict security with multiple origins
+  // Enhanced Security middleware with strict CSP
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: true,
+    crossOriginResourcePolicy: { policy: 'same-site' },
+    dnsPrefetchControl: { allow: false },
+    frameguard: { action: 'deny' },
+    hidePoweredBy: true,
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    ieNoOpen: true,
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    xssFilter: true,
+  }));
+
+  // Enhanced CORS configuration - Strict security with logging
   const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
-  
+
   app.use(cors({
     origin: (origin, callback) => {
       // In production, only allow specified origins
@@ -20,7 +50,8 @@ export const setupMiddleware = (app: express.Application): void => {
         if (origin && allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
-          logger.warn(`CORS blocked request from origin: ${origin}`);
+          logger.warn(`🚨 CORS violation detected from origin: ${origin}`);
+          // Log security event for CORS violations
           callback(new Error('Not allowed by CORS'));
         }
       } else {
@@ -28,14 +59,15 @@ export const setupMiddleware = (app: express.Application): void => {
         if (!origin || allowedOrigins.includes(origin) || origin.includes('localhost')) {
           callback(null, true);
         } else {
+          logger.warn(`CORS blocked request from origin: ${origin}`);
           callback(new Error('Not allowed by CORS'));
         }
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
     maxAge: 600, // Cache preflight requests for 10 minutes
     preflightContinue: false,
     optionsSuccessStatus: 204,

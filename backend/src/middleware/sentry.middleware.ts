@@ -28,9 +28,18 @@ export const sentryErrorHandler = Sentry.Handlers.errorHandler({
 });
 
 /**
- * Custom error tracking middleware
+ * Custom error tracking middleware with user context
  */
 export function trackError(req: Request, res: Response, next: NextFunction) {
+  // Set user context if authenticated
+  if ((req as any).user) {
+    Sentry.setUser({
+      id: (req as any).user.id,
+      email: (req as any).user.email,
+      ip_address: req.ip || req.socket.remoteAddress,
+    });
+  }
+
   const originalSend = res.send;
 
   res.send = function (data: any) {

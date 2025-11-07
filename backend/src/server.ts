@@ -6,6 +6,7 @@ import { env } from '@/config/env';
 import { initializeSentry } from '@/config/sentry';
 import { setupMiddleware, errorHandler } from '@/middleware';
 import { sentryRequestHandler, sentryTracingHandler, sentryErrorHandler, trackError, trackPerformance } from '@/middleware/sentry.middleware';
+import { logAuthAttempts, logRateLimitViolations } from '@/middleware/security-logger.middleware';
 import { metricsMiddleware, metricsEndpoint } from '@/middleware/metrics.middleware';
 import { AnalysisController } from '@/controllers/analysis.controller';
 import { authController } from '@/controllers/auth.controller';
@@ -34,6 +35,10 @@ app.use(trackPerformance);
 
 // Prometheus metrics tracking
 app.use(metricsMiddleware);
+
+// Security logging middleware
+app.use(logAuthAttempts);
+app.use(logRateLimitViolations);
 
 // Setup middleware
 setupMiddleware(app);
