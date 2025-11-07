@@ -153,6 +153,65 @@ export const queueSize = new Gauge({
   registers: [register],
 });
 
+// ===== Redis Cache Metrics =====
+
+/**
+ * Redis connection status
+ */
+export const redisConnectionStatus = new Gauge({
+  name: 'the_copy_redis_connection_status',
+  help: 'Redis connection status (1 = connected, 0 = disconnected)',
+  registers: [register],
+});
+
+/**
+ * Redis cache operations counter
+ */
+export const redisCacheOpsTotal = new Counter({
+  name: 'the_copy_redis_cache_ops_total',
+  help: 'Total number of Redis cache operations',
+  labelNames: ['operation', 'layer'],
+  registers: [register],
+});
+
+/**
+ * Redis cache hit rate
+ */
+export const redisCacheHitRate = new Gauge({
+  name: 'the_copy_redis_cache_hit_rate',
+  help: 'Redis cache hit rate percentage',
+  registers: [register],
+});
+
+/**
+ * Redis operation latency
+ */
+export const redisOperationLatencyMs = new Histogram({
+  name: 'the_copy_redis_operation_latency_ms',
+  help: 'Redis operation latency in milliseconds',
+  labelNames: ['operation'],
+  buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000],
+  registers: [register],
+});
+
+/**
+ * Redis memory usage (if available)
+ */
+export const redisMemoryUsageBytes = new Gauge({
+  name: 'the_copy_redis_memory_usage_bytes',
+  help: 'Redis memory usage in bytes',
+  registers: [register],
+});
+
+/**
+ * Cache size (L1 memory cache)
+ */
+export const cacheMemorySize = new Gauge({
+  name: 'the_copy_cache_memory_size',
+  help: 'Number of items in L1 memory cache',
+  registers: [register],
+});
+
 // ===== Application Metrics =====
 
 /**
@@ -319,6 +378,54 @@ export function updateQueueSize(queue: string, state: string, size: number) {
   }, size);
 }
 
+/**
+ * Track Redis cache operation
+ */
+export function trackRedisCacheOp(
+  operation: 'get' | 'set' | 'delete' | 'clear',
+  layer: 'l1' | 'l2',
+  latency?: number
+) {
+  redisCacheOpsTotal.inc({
+    operation,
+    layer,
+  });
+
+  if (latency !== undefined) {
+    redisOperationLatencyMs.observe({
+      operation,
+    }, latency);
+  }
+}
+
+/**
+ * Update Redis connection status
+ */
+export function updateRedisConnectionStatus(connected: boolean) {
+  redisConnectionStatus.set(connected ? 1 : 0);
+}
+
+/**
+ * Update Redis cache hit rate
+ */
+export function updateRedisCacheHitRate(hitRate: number) {
+  redisCacheHitRate.set(hitRate);
+}
+
+/**
+ * Update cache memory size
+ */
+export function updateCacheMemorySize(size: number) {
+  cacheMemorySize.set(size);
+}
+
+/**
+ * Update Redis memory usage (if available from INFO command)
+ */
+export function updateRedisMemoryUsage(bytes: number) {
+  redisMemoryUsageBytes.set(bytes);
+}
+
 export default {
   register,
   metricsMiddleware,
@@ -328,5 +435,10 @@ export default {
   trackDbQuery,
   trackQueueJob,
   updateQueueSize,
+  trackRedisCacheOp,
+  updateRedisConnectionStatus,
+  updateRedisCacheHitRate,
+  updateCacheMemorySize,
+  updateRedisMemoryUsage,
 };
 
