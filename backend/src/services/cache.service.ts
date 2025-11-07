@@ -27,6 +27,9 @@ export class CacheService {
   private memoryCache: Map<string, CacheEntry<any>> = new Map();
   private readonly MAX_MEMORY_CACHE_SIZE = 100; // Maximum items in L1 cache
   private readonly DEFAULT_TTL = 1800; // 30 minutes in seconds
+  private readonly MAX_TTL = 86400; // 24 hours maximum
+  private readonly MAX_VALUE_SIZE = 1024 * 1024; // 1MB maximum value size
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.initializeRedis();
@@ -50,17 +53,6 @@ export class CacheService {
           port: parseInt(process.env.REDIS_PORT || '6379'),
           password: process.env.REDIS_PASSWORD,
         };
-      // Support both REDIS_URL and REDIS_HOST/REDIS_PORT/REDIS_PASSWORD formats
-      let redisUrl: string;
-      if (process.env.REDIS_URL) {
-        redisUrl = process.env.REDIS_URL;
-      } else {
-        const host = process.env.REDIS_HOST || 'localhost';
-        const port = process.env.REDIS_PORT || '6379';
-        const password = process.env.REDIS_PASSWORD;
-        redisUrl = password 
-          ? `redis://:${password}@${host}:${port}`
-          : `redis://${host}:${port}`;
       }
 
       this.redis = new Redis(redisConfig, {
@@ -153,12 +145,25 @@ export class CacheService {
    */
   async set(key: string, value: any, ttl: number = this.DEFAULT_TTL): Promise<void> {
     try {
+      // Validate TTL
+      if (ttl <= 0 || ttl > this.MAX_TTL) {
+        logger.warn(`Invalid TTL ${ttl}, using default: ${this.DEFAULT_TTL}`);
+        ttl = this.DEFAULT_TTL;
+      }
+
+      // Validate value size
+      const serialized = JSON.stringify(value);
+      if (serialized.length > this.MAX_VALUE_SIZE) {
+        logger.warn(`Value too large (${serialized.length} bytes), skipping cache`);
+        return;
+      }
+
       // Set in L1 (memory)
       this.setMemoryCache(key, value, ttl);
 
       // Set in L2 (Redis)
       if (this.redis && this.redis.status === 'ready') {
-        await this.redis.setex(key, ttl, JSON.stringify(value));
+        await this.redis.setex(key, ttl, serialized);
         logger.debug(`Cache set (L1+L2): ${key}, TTL: ${ttl}s`);
       } else {
         logger.debug(`Cache set (L1 only): ${key}, TTL: ${ttl}s`);
@@ -250,7 +255,7 @@ export class CacheService {
    * Start periodic cleanup of expired memory cache entries
    */
   private startMemoryCacheCleanup(): void {
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       const now = Date.now();
       const keysToDelete: string[] = [];
 
@@ -282,13 +287,25 @@ export class CacheService {
   }
 
   /**
-   * Disconnect Redis
+   * Disconnect Redis and cleanup resources
    */
   async disconnect(): Promise<void> {
+    // Clear cleanup interval
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
+    // Disconnect Redis
     if (this.redis) {
       await this.redis.quit();
       this.redis = null;
     }
+
+    // Clear memory cache
+    this.memoryCache.clear();
+    
+    logger.info('Cache service disconnected and cleaned up');
   }
 }
 
