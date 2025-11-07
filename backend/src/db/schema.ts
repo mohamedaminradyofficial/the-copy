@@ -45,6 +45,9 @@ export const projects = pgTable(
     index('idx_projects_created_at').on(table.createdAt),
     // Composite index for user's projects ordered by date (most common query)
     index('idx_projects_user_created').on(table.userId, table.createdAt),
+    // NEW: Composite index for ownership verification (id + userId)
+    // Optimizes queries: WHERE id = ? AND user_id = ?
+    index('idx_projects_id_user').on(table.id, table.userId),
   ]
 );
 
@@ -71,6 +74,11 @@ export const scenes = pgTable(
     index('idx_scenes_project_id').on(table.projectId),
     // Composite index for project's scenes ordered by scene number
     index('idx_scenes_project_number').on(table.projectId, table.sceneNumber),
+    // NEW: Composite index for scene ownership verification via project
+    // Optimizes JOIN queries: scenes JOIN projects ON scenes.project_id = projects.id WHERE scenes.id = ?
+    index('idx_scenes_id_project').on(table.id, table.projectId),
+    // NEW: Index for filtering scenes by status within a project
+    index('idx_scenes_project_status').on(table.projectId, table.status),
   ]
 );
 
@@ -92,6 +100,13 @@ export const characters = pgTable(
   (table) => [
     // Index for fetching project's characters
     index('idx_characters_project_id').on(table.projectId),
+    // NEW: Composite index for character ownership verification
+    // Optimizes JOIN queries: characters JOIN projects WHERE characters.id = ?
+    index('idx_characters_id_project').on(table.id, table.projectId),
+    // NEW: Index for searching characters by name within a project
+    index('idx_characters_project_name').on(table.projectId, table.name),
+    // NEW: Index for filtering characters by consistency status
+    index('idx_characters_project_consistency').on(table.projectId, table.consistencyStatus),
   ]
 );
 
@@ -116,6 +131,11 @@ export const shots = pgTable(
     index('idx_shots_scene_id').on(table.sceneId),
     // Composite index for scene's shots ordered by shot number
     index('idx_shots_scene_number').on(table.sceneId, table.shotNumber),
+    // NEW: Composite index for shot ownership verification via scene
+    // Optimizes multi-table JOIN: shots JOIN scenes JOIN projects WHERE shots.id = ?
+    index('idx_shots_id_scene').on(table.id, table.sceneId),
+    // NEW: Index for filtering shots by type within a scene
+    index('idx_shots_scene_type').on(table.sceneId, table.shotType),
   ]
 );
 
