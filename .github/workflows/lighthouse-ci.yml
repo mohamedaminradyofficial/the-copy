@@ -1,0 +1,135 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/lighthouse-ci.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/lighthouse-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          SKIP_ENV_VALIDATION: true
+
+      - name: Run Lighthouse CI
+        run: |
+          pnpm lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-results
+          path: ./frontend/.lighthouseci
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read the manifest
+            const manifestPath = path.join(process.env.GITHUB_WORKSPACE, 'frontend', '.lighthouseci', 'manifest.json');
+            if (!fs.existsSync(manifestPath)) {
+              console.log('No manifest found');
+              return;
+            }
+
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const reports = manifest.map(entry => {
+              const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'frontend', '.lighthouseci', entry.jsonPath);
+              return JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            });
+
+            // Calculate average scores
+            const avgScores = {
+              performance: 0,
+              accessibility: 0,
+              bestPractices: 0,
+              seo: 0
+            };
+
+            reports.forEach(report => {
+              avgScores.performance += report.categories.performance.score;
+              avgScores.accessibility += report.categories.accessibility.score;
+              avgScores.bestPractices += report.categories['best-practices'].score;
+              avgScores.seo += report.categories.seo.score;
+            });
+
+            Object.keys(avgScores).forEach(key => {
+              avgScores[key] = Math.round((avgScores[key] / reports.length) * 100);
+            });
+
+            // Create comment
+            const comment = `## 🔦 Lighthouse CI Results
+
+            | Category | Score |
+            |----------|-------|
+            | ⚡ Performance | ${avgScores.performance}/100 |
+            | ♿ Accessibility | ${avgScores.accessibility}/100 |
+            | ✅ Best Practices | ${avgScores.bestPractices}/100 |
+            | 🔍 SEO | ${avgScores.seo}/100 |
+
+            ${avgScores.performance >= 90 ? '✅' : avgScores.performance >= 70 ? '⚠️' : '❌'} Performance is ${avgScores.performance >= 90 ? 'excellent!' : avgScores.performance >= 70 ? 'acceptable but could be improved' : 'below target'}
+
+            View detailed reports in the artifacts.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

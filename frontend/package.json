@@ -34,6 +34,10 @@
     "performance:report": "node scripts/performance-report.js",
     "a11y:ci": "playwright test --grep @a11y",
     "perf:ci": "playwright test --grep @performance",
+    "lighthouse": "lhci autorun",
+    "lighthouse:collect": "lhci collect",
+    "lighthouse:assert": "lhci assert",
+    "lighthouse:upload": "lhci upload",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next",
     "prepush": "npm run lint && npm run typecheck && npm run test",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run e2e"
@@ -100,6 +104,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@fullhuman/postcss-purgecss": "^5.0.0",
+    "@lhci/cli": "^0.15.1",
     "@next/bundle-analyzer": "^16.0.0",
     "@next/eslint-plugin-next": "^15.3.3",
     "@playwright/test": "^1.49.1",

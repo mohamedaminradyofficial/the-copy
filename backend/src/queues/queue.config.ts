@@ -1,0 +1,248 @@
+/**
+ * BullMQ Queue Configuration
+ *
+ * Background job processing for long-running tasks
+ */
+
+import { Queue, Worker, QueueOptions, WorkerOptions, ConnectionOptions } from 'bullmq';
+import Redis from 'ioredis';
+
+// Redis connection configuration for BullMQ
+const redisConnection: ConnectionOptions = {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+  password: process.env.REDIS_PASSWORD,
+  maxRetriesPerRequest: null, // Required for BullMQ
+  enableReadyCheck: false,
+  retryStrategy(times: number) {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+};
+
+// Queue names
+export enum QueueName {
+  AI_ANALYSIS = 'ai-analysis',
+  DOCUMENT_PROCESSING = 'document-processing',
+  NOTIFICATIONS = 'notifications',
+  EXPORT = 'export',
+  CACHE_WARMING = 'cache-warming',
+}
+
+// Default queue options
+const defaultQueueOptions: QueueOptions = {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+    removeOnComplete: {
+      age: 24 * 3600, // Keep completed jobs for 24 hours
+      count: 1000,
+    },
+    removeOnFail: {
+      age: 7 * 24 * 3600, // Keep failed jobs for 7 days
+      count: 5000,
+    },
+  },
+};
+
+// Default worker options
+const defaultWorkerOptions: Omit<WorkerOptions, 'connection'> = {
+  concurrency: 5,
+  limiter: {
+    max: 10,
+    duration: 1000,
+  },
+  autorun: true,
+};
+
+/**
+ * Queue manager singleton
+ */
+class QueueManager {
+  private queues: Map<QueueName, Queue> = new Map();
+  private workers: Map<QueueName, Worker> = new Map();
+
+  /**
+   * Get or create a queue
+   */
+  getQueue(name: QueueName, options?: Partial<QueueOptions>): Queue {
+    if (!this.queues.has(name)) {
+      const queue = new Queue(name, {
+        ...defaultQueueOptions,
+        ...options,
+      });
+
+      // Queue event handlers
+      queue.on('error', (error) => {
+        console.error(`[Queue:${name}] Error:`, error);
+      });
+
+      queue.on('waiting', (job) => {
+        console.log(`[Queue:${name}] Job ${job.id} is waiting`);
+      });
+
+      queue.on('active', (job) => {
+        console.log(`[Queue:${name}] Job ${job.id} is active`);
+      });
+
+      queue.on('completed', (job) => {
+        console.log(`[Queue:${name}] Job ${job.id} completed`);
+      });
+
+      queue.on('failed', (job, error) => {
+        console.error(`[Queue:${name}] Job ${job?.id} failed:`, error);
+      });
+
+      this.queues.set(name, queue);
+    }
+
+    return this.queues.get(name)!;
+  }
+
+  /**
+   * Register a worker for a queue
+   */
+  registerWorker(
+    name: QueueName,
+    processor: (job: any) => Promise<any>,
+    options?: Partial<WorkerOptions>
+  ): Worker {
+    if (this.workers.has(name)) {
+      console.warn(`[QueueManager] Worker for ${name} already registered`);
+      return this.workers.get(name)!;
+    }
+
+    const worker = new Worker(name, processor, {
+      connection: redisConnection,
+      ...defaultWorkerOptions,
+      ...options,
+    });
+
+    // Worker event handlers
+    worker.on('completed', (job) => {
+      console.log(`[Worker:${name}] Job ${job.id} completed successfully`);
+    });
+
+    worker.on('failed', (job, error) => {
+      console.error(`[Worker:${name}] Job ${job?.id} failed:`, error);
+    });
+
+    worker.on('error', (error) => {
+      console.error(`[Worker:${name}] Error:`, error);
+    });
+
+    worker.on('stalled', (jobId) => {
+      console.warn(`[Worker:${name}] Job ${jobId} stalled`);
+    });
+
+    this.workers.set(name, worker);
+    return worker;
+  }
+
+  /**
+   * Close all queues and workers
+   */
+  async close(): Promise<void> {
+    console.log('[QueueManager] Closing all queues and workers...');
+
+    // Close all workers
+    for (const [name, worker] of this.workers) {
+      await worker.close();
+      console.log(`[QueueManager] Worker ${name} closed`);
+    }
+
+    // Close all queues
+    for (const [name, queue] of this.queues) {
+      await queue.close();
+      console.log(`[QueueManager] Queue ${name} closed`);
+    }
+
+    this.workers.clear();
+    this.queues.clear();
+  }
+
+  /**
+   * Get queue statistics
+   */
+  async getQueueStats(name: QueueName) {
+    const queue = this.getQueue(name);
+
+    const [waiting, active, completed, failed, delayed] = await Promise.all([
+      queue.getWaitingCount(),
+      queue.getActiveCount(),
+      queue.getCompletedCount(),
+      queue.getFailedCount(),
+      queue.getDelayedCount(),
+    ]);
+
+    return {
+      name,
+      waiting,
+      active,
+      completed,
+      failed,
+      delayed,
+      total: waiting + active + completed + failed + delayed,
+    };
+  }
+
+  /**
+   * Get all queue statistics
+   */
+  async getAllStats() {
+    const stats = await Promise.all(
+      Array.from(this.queues.keys()).map((name) => this.getQueueStats(name))
+    );
+    return stats;
+  }
+
+  /**
+   * Pause a queue
+   */
+  async pauseQueue(name: QueueName): Promise<void> {
+    const queue = this.getQueue(name);
+    await queue.pause();
+    console.log(`[QueueManager] Queue ${name} paused`);
+  }
+
+  /**
+   * Resume a queue
+   */
+  async resumeQueue(name: QueueName): Promise<void> {
+    const queue = this.getQueue(name);
+    await queue.resume();
+    console.log(`[QueueManager] Queue ${name} resumed`);
+  }
+
+  /**
+   * Clean old jobs
+   */
+  async cleanQueue(name: QueueName, grace: number = 24 * 3600 * 1000): Promise<void> {
+    const queue = this.getQueue(name);
+    await queue.clean(grace, 1000, 'completed');
+    await queue.clean(grace * 7, 1000, 'failed');
+    console.log(`[QueueManager] Queue ${name} cleaned`);
+  }
+}
+
+// Export singleton instance
+export const queueManager = new QueueManager();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, closing queues...');
+  await queueManager.close();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, closing queues...');
+  await queueManager.close();
+  process.exit(0);
+});
+
+export default queueManager;
