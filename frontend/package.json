@@ -38,6 +38,8 @@
     "lighthouse:collect": "lhci collect",
     "lighthouse:assert": "lhci assert",
     "lighthouse:upload": "lhci upload",
+    "budget:check": "node scripts/check-performance-budget.js",
+    "budget:report": "npm run build && npm run budget:check",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next && sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next",
     "prepush": "npm run lint && npm run typecheck && npm run test",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run e2e"
