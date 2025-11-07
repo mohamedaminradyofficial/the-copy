@@ -40,10 +40,18 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+// CDN Configuration
+const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+const enableCdn = process.env.NEXT_PUBLIC_ENABLE_CDN === "true";
+const assetPrefix = enableCdn && cdnUrl ? cdnUrl : undefined;
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+
+  // CDN support for static assets
+  assetPrefix,
 
   allowedDevOrigins: ["*.replit.dev", "replit.dev"],
 
@@ -88,6 +96,10 @@ const nextConfig = {
   },
 
   async headers() {
+    // Dynamic CSP based on CDN configuration
+    const cdnDomain = cdnUrl ? new URL(cdnUrl).hostname : null;
+    const cdnCsp = cdnDomain ? ` ${cdnUrl}` : '';
+
     return [
       {
         source: "/(.*)",
@@ -96,12 +108,12 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.googleapis.com https://*.sentry.io",
+              `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.googleapis.com https://*.sentry.io${cdnCsp}`,
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https: https://placehold.co https://images.unsplash.com https://picsum.photos https://www.gstatic.com https://*.googleapis.com",
+              `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com${cdnCsp}`,
+              `font-src 'self' https://fonts.gstatic.com${cdnCsp}`,
+              `img-src 'self' data: blob: https: https://placehold.co https://images.unsplash.com https://picsum.photos https://www.gstatic.com https://*.googleapis.com${cdnCsp}`,
               "connect-src 'self' https://apis.google.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://*.sentry.io wss: ws:",
               "frame-src 'self' https://apis.google.com https://*.googleapis.com",
               "object-src 'none'",
