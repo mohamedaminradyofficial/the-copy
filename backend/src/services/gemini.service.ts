@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
 import { cacheService } from './cache.service';
+import { trackGeminiRequest, trackGeminiCache } from '@/middleware/metrics.middleware';
 
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
@@ -19,6 +20,8 @@ export class GeminiService {
   }
 
   async analyzeText(text: string, analysisType: string): Promise<string> {
+    const startTime = Date.now();
+
     // Generate cache key
     const cacheKey = cacheService.generateKey('gemini:analysis', { text, analysisType });
 
@@ -26,8 +29,11 @@ export class GeminiService {
     const cached = await cacheService.get<string>(cacheKey);
     if (cached) {
       logger.info('Cache hit for Gemini analysis');
+      trackGeminiCache(true);
       return cached;
     }
+
+    trackGeminiCache(false);
 
     try {
       const prompt = this.buildPrompt(text, analysisType);
@@ -45,8 +51,16 @@ export class GeminiService {
       // Cache the result
       await cacheService.set(cacheKey, response, this.CACHE_TTL);
 
+      // Track metrics
+      const duration = Date.now() - startTime;
+      trackGeminiRequest(analysisType, duration, true);
+
       return response;
     } catch (error) {
+      // Track failed request
+      const duration = Date.now() - startTime;
+      trackGeminiRequest(analysisType, duration, false);
+
       logger.error('Gemini analysis failed:', error);
       throw new Error('فشل في تحليل النص باستخدام الذكاء الاصطناعي');
     }

@@ -10,20 +10,35 @@ export const setupMiddleware = (app: express.Application): void => {
   // Security middleware
   app.use(helmet());
   
-  // CORS configuration - support multiple origins (comma-separated)
+  // CORS configuration - Strict security with multiple origins
   const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+  
   app.use(cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+      // In production, only allow specified origins
+      if (process.env.NODE_ENV === 'production') {
+        if (origin && allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          logger.warn(`CORS blocked request from origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'));
+        }
       } else {
-        callback(new Error('Not allowed by CORS'));
+        // In development, allow localhost and specified origins
+        if (!origin || allowedOrigins.includes(origin) || origin.includes('localhost')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
+    maxAge: 600, // Cache preflight requests for 10 minutes
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   }));
 
   // Compression
@@ -92,6 +107,9 @@ export const setupMiddleware = (app: express.Application): void => {
     next();
   });
 };
+
+// Export validation utilities
+export { validateBody, validateQuery, validateParams, commonSchemas, detectAttacks } from './validation.middleware';
 
 // Error handling middleware - must be registered separately in server.ts after all routes
 export const errorHandler = (
