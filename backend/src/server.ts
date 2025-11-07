@@ -3,7 +3,10 @@ import express, { Application } from 'express';
 import type { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import { env } from '@/config/env';
+import { initializeSentry } from '@/config/sentry';
 import { setupMiddleware, errorHandler } from '@/middleware';
+import { sentryRequestHandler, sentryTracingHandler, sentryErrorHandler, trackError, trackPerformance } from '@/middleware/sentry.middleware';
+import { metricsMiddleware, metricsEndpoint } from '@/middleware/metrics.middleware';
 import { AnalysisController } from '@/controllers/analysis.controller';
 import { authController } from '@/controllers/auth.controller';
 import { projectsController } from '@/controllers/projects.controller';
@@ -14,9 +17,23 @@ import { authMiddleware } from '@/middleware/auth.middleware';
 import { logger } from '@/utils/logger';
 import { closeDatabase } from '@/db';
 import { initializeWorkers, shutdownQueues } from '@/queues';
+import { setupBullBoard } from '@/middleware/bull-board.middleware';
+import { queueController } from '@/controllers/queue.controller';
+
+// Initialize Sentry monitoring (must be first)
+initializeSentry();
 
 const app: Application = express();
 const analysisController = new AnalysisController();
+
+// Sentry request handling (must be first middleware)
+app.use(sentryRequestHandler);
+app.use(sentryTracingHandler);
+app.use(trackError);
+app.use(trackPerformance);
+
+// Prometheus metrics tracking
+app.use(metricsMiddleware);
 
 // Setup middleware
 setupMiddleware(app);
@@ -31,6 +48,16 @@ try {
   // Continue without workers - app can still function
 }
 
+// Setup Bull Board dashboard for queue monitoring
+// Access at: http://localhost:5000/admin/queues
+try {
+  const bullBoardAdapter = setupBullBoard();
+  app.use('/admin/queues', bullBoardAdapter.getRouter());
+  logger.info('Bull Board dashboard available at /admin/queues');
+} catch (error) {
+  logger.error('Failed to setup Bull Board:', error);
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
@@ -41,6 +68,9 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
+// Prometheus metrics endpoint
+app.get('/metrics', metricsEndpoint);
 
 // Auth endpoints (public)
 app.post('/api/auth/signup', authController.signup.bind(authController));
@@ -81,6 +111,13 @@ app.post('/api/shots', authMiddleware, shotsController.createShot.bind(shotsCont
 app.put('/api/shots/:id', authMiddleware, shotsController.updateShot.bind(shotsController));
 app.delete('/api/shots/:id', authMiddleware, shotsController.deleteShot.bind(shotsController));
 
+// Queue Management endpoints (protected)
+app.get('/api/queue/jobs/:jobId', authMiddleware, queueController.getJobStatus.bind(queueController));
+app.get('/api/queue/stats', authMiddleware, queueController.getQueueStats.bind(queueController));
+app.get('/api/queue/:queueName/stats', authMiddleware, queueController.getSpecificQueueStats.bind(queueController));
+app.post('/api/queue/jobs/:jobId/retry', authMiddleware, queueController.retryJob.bind(queueController));
+app.post('/api/queue/:queueName/clean', authMiddleware, queueController.cleanQueue.bind(queueController));
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -88,6 +125,9 @@ app.use('*', (req, res) => {
     error: 'المسار غير موجود',
   });
 });
+
+// Sentry error handler (must be before other error handlers)
+app.use(sentryErrorHandler);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

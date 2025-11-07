@@ -1,231 +1,195 @@
 /**
- * Queue Controller
- *
- * API endpoints for job queue management and monitoring
+ * Queue Status Controller
+ * 
+ * Provides endpoints to check job status and queue statistics
  */
 
 import { Request, Response } from 'express';
-import { queueManager, QueueName } from '../queues/queue.config';
-import { queueAIAnalysis } from '../queues/jobs/ai-analysis.job';
-import { queueDocumentProcessing } from '../queues/jobs/document-processing.job';
+import { queueManager, QueueName } from '@/queues/queue.config';
+import { logger } from '@/utils/logger';
 
-/**
- * Get queue statistics
- */
-export async function getQueueStats(req: Request, res: Response): Promise<void> {
-  try {
-    const stats = await queueManager.getAllStats();
-    res.json({ success: true, stats });
-  } catch (error) {
-    console.error('[QueueController] Error getting stats:', error);
-    res.status(500).json({ success: false, error: 'Failed to get queue stats' });
+export class QueueController {
+  /**
+   * Get status of a specific job
+   * GET /api/queue/jobs/:jobId
+   */
+  async getJobStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { jobId } = req.params;
+      const queueName = (req.query.queue as string) || QueueName.AI_ANALYSIS;
+
+      const queue = queueManager.getQueue(queueName as QueueName);
+      const job = await queue.getJob(jobId);
+
+      if (!job) {
+        res.status(404).json({
+          success: false,
+          error: 'المهمة غير موجودة',
+        });
+        return;
+      }
+
+      const state = await job.getState();
+      const progress = job.progress;
+
+      // Get result if completed
+      let result = null;
+      if (state === 'completed') {
+        result = job.returnvalue;
+      }
+
+      // Get error if failed
+      let error = null;
+      if (state === 'failed') {
+        error = job.failedReason;
+      }
+
+      res.json({
+        success: true,
+        job: {
+          id: job.id,
+          name: job.name,
+          state,
+          progress,
+          result,
+          error,
+          data: job.data,
+          timestamp: job.timestamp,
+          processedOn: job.processedOn,
+          finishedOn: job.finishedOn,
+          attemptsMade: job.attemptsMade,
+        },
+      });
+    } catch (error) {
+      logger.error('Failed to get job status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على حالة المهمة',
+      });
+    }
+  }
+
+  /**
+   * Get statistics for all queues
+   * GET /api/queue/stats
+   */
+  async getQueueStats(req: Request, res: Response): Promise<void> {
+    try {
+      const stats = await queueManager.getAllStats();
+
+      res.json({
+        success: true,
+        stats,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('Failed to get queue stats:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على إحصائيات الطوابير',
+      });
+    }
+  }
+
+  /**
+   * Get statistics for a specific queue
+   * GET /api/queue/:queueName/stats
+   */
+  async getSpecificQueueStats(req: Request, res: Response): Promise<void> {
+    try {
+      const { queueName } = req.params;
+
+      if (!Object.values(QueueName).includes(queueName as QueueName)) {
+        res.status(400).json({
+          success: false,
+          error: 'اسم الطابور غير صالح',
+        });
+        return;
+      }
+
+      const stats = await queueManager.getQueueStats(queueName as QueueName);
+
+      res.json({
+        success: true,
+        stats,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error('Failed to get queue stats:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في الحصول على إحصائيات الطابور',
+      });
+    }
+  }
+
+  /**
+   * Retry a failed job
+   * POST /api/queue/jobs/:jobId/retry
+   */
+  async retryJob(req: Request, res: Response): Promise<void> {
+    try {
+      const { jobId } = req.params;
+      const queueName = (req.query.queue as string) || QueueName.AI_ANALYSIS;
+
+      const queue = queueManager.getQueue(queueName as QueueName);
+      const job = await queue.getJob(jobId);
+
+      if (!job) {
+        res.status(404).json({
+          success: false,
+          error: 'المهمة غير موجودة',
+        });
+        return;
+      }
+
+      await job.retry();
+
+      res.json({
+        success: true,
+        message: 'تم إعادة محاولة المهمة',
+        jobId: job.id,
+      });
+    } catch (error) {
+      logger.error('Failed to retry job:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في إعادة محاولة المهمة',
+      });
+    }
+  }
+
+  /**
+   * Clean old completed/failed jobs
+   * POST /api/queue/:queueName/clean
+   */
+  async cleanQueue(req: Request, res: Response): Promise<void> {
+    try {
+      const { queueName } = req.params;
+      const grace = parseInt(req.query.grace as string) || 24 * 3600 * 1000; // Default 24 hours
+
+      if (!Object.values(QueueName).includes(queueName as QueueName)) {
+        res.status(400).json({
+          success: false,
+          error: 'اسم الطابور غير صالح',
+        });
+        return;
+      }
+
+      await queueManager.cleanQueue(queueName as QueueName, grace);
+
+      res.json({
+        success: true,
+        message: 'تم تنظيف الطابور',
+      });
+    } catch (error) {
+      logger.error('Failed to clean queue:', error);
+      res.status(500).json({
+        success: false,
+        error: 'فشل في تنظيف الطابور',
+      });
+    }
   }
 }
 
-/**
- * Get specific queue statistics
- */
-export async function getQueueStatsById(req: Request, res: Response): Promise<void> {
-  try {
-    const { queueName } = req.params;
-
-    if (!Object.values(QueueName).includes(queueName as QueueName)) {
-      res.status(400).json({ success: false, error: 'Invalid queue name' });
-      return;
-    }
-
-    const stats = await queueManager.getQueueStats(queueName as QueueName);
-    res.json({ success: true, stats });
-  } catch (error) {
-    console.error('[QueueController] Error getting queue stats:', error);
-    res.status(500).json({ success: false, error: 'Failed to get queue stats' });
-  }
-}
-
-/**
- * Get job status
- */
-export async function getJobStatus(req: Request, res: Response): Promise<void> {
-  try {
-    const { queueName, jobId } = req.params;
-
-    if (!Object.values(QueueName).includes(queueName as QueueName)) {
-      res.status(400).json({ success: false, error: 'Invalid queue name' });
-      return;
-    }
-
-    const queue = queueManager.getQueue(queueName as QueueName);
-    const job = await queue.getJob(jobId);
-
-    if (!job) {
-      res.status(404).json({ success: false, error: 'Job not found' });
-      return;
-    }
-
-    const state = await job.getState();
-    const progress = job.progress;
-    const returnValue = job.returnvalue;
-    const failedReason = job.failedReason;
-
-    res.json({
-      success: true,
-      job: {
-        id: job.id,
-        name: job.name,
-        data: job.data,
-        state,
-        progress,
-        result: returnValue,
-        error: failedReason,
-        timestamp: job.timestamp,
-        processedOn: job.processedOn,
-        finishedOn: job.finishedOn,
-        attemptsMade: job.attemptsMade,
-      },
-    });
-  } catch (error) {
-    console.error('[QueueController] Error getting job status:', error);
-    res.status(500).json({ success: false, error: 'Failed to get job status' });
-  }
-}
-
-/**
- * Queue AI analysis job
- */
-export async function createAIAnalysisJob(req: Request, res: Response): Promise<void> {
-  try {
-    const { type, entityId, analysisType, options } = req.body;
-    const userId = req.user?.id || 'system';
-
-    if (!type || !entityId) {
-      res.status(400).json({ success: false, error: 'Missing required fields' });
-      return;
-    }
-
-    const jobId = await queueAIAnalysis({
-      type,
-      entityId,
-      userId,
-      analysisType: analysisType || 'full',
-      options,
-    });
-
-    res.status(202).json({
-      success: true,
-      message: 'Job queued successfully',
-      jobId,
-      queue: QueueName.AI_ANALYSIS,
-      statusUrl: `/api/queue/${QueueName.AI_ANALYSIS}/jobs/${jobId}`,
-    });
-  } catch (error) {
-    console.error('[QueueController] Error creating AI analysis job:', error);
-    res.status(500).json({ success: false, error: 'Failed to queue job' });
-  }
-}
-
-/**
- * Queue document processing job
- */
-export async function createDocumentProcessingJob(req: Request, res: Response): Promise<void> {
-  try {
-    const { documentId, filePath, fileType, projectId, options } = req.body;
-    const userId = req.user?.id || 'system';
-
-    if (!documentId || !filePath || !fileType) {
-      res.status(400).json({ success: false, error: 'Missing required fields' });
-      return;
-    }
-
-    const jobId = await queueDocumentProcessing({
-      documentId,
-      filePath,
-      fileType,
-      userId,
-      projectId,
-      options,
-    });
-
-    res.status(202).json({
-      success: true,
-      message: 'Job queued successfully',
-      jobId,
-      queue: QueueName.DOCUMENT_PROCESSING,
-      statusUrl: `/api/queue/${QueueName.DOCUMENT_PROCESSING}/jobs/${jobId}`,
-    });
-  } catch (error) {
-    console.error('[QueueController] Error creating document processing job:', error);
-    res.status(500).json({ success: false, error: 'Failed to queue job' });
-  }
-}
-
-/**
- * Pause a queue
- */
-export async function pauseQueue(req: Request, res: Response): Promise<void> {
-  try {
-    const { queueName } = req.params;
-
-    if (!Object.values(QueueName).includes(queueName as QueueName)) {
-      res.status(400).json({ success: false, error: 'Invalid queue name' });
-      return;
-    }
-
-    await queueManager.pauseQueue(queueName as QueueName);
-    res.json({ success: true, message: `Queue ${queueName} paused` });
-  } catch (error) {
-    console.error('[QueueController] Error pausing queue:', error);
-    res.status(500).json({ success: false, error: 'Failed to pause queue' });
-  }
-}
-
-/**
- * Resume a queue
- */
-export async function resumeQueue(req: Request, res: Response): Promise<void> {
-  try {
-    const { queueName } = req.params;
-
-    if (!Object.values(QueueName).includes(queueName as QueueName)) {
-      res.status(400).json({ success: false, error: 'Invalid queue name' });
-      return;
-    }
-
-    await queueManager.resumeQueue(queueName as QueueName);
-    res.json({ success: true, message: `Queue ${queueName} resumed` });
-  } catch (error) {
-    console.error('[QueueController] Error resuming queue:', error);
-    res.status(500).json({ success: false, error: 'Failed to resume queue' });
-  }
-}
-
-/**
- * Clean old jobs from queue
- */
-export async function cleanQueue(req: Request, res: Response): Promise<void> {
-  try {
-    const { queueName } = req.params;
-    const { grace = 24 * 3600 * 1000 } = req.body; // Default 24 hours
-
-    if (!Object.values(QueueName).includes(queueName as QueueName)) {
-      res.status(400).json({ success: false, error: 'Invalid queue name' });
-      return;
-    }
-
-    await queueManager.cleanQueue(queueName as QueueName, grace);
-    res.json({ success: true, message: `Queue ${queueName} cleaned` });
-  } catch (error) {
-    console.error('[QueueController] Error cleaning queue:', error);
-    res.status(500).json({ success: false, error: 'Failed to clean queue' });
-  }
-}
-
-export default {
-  getQueueStats,
-  getQueueStatsById,
-  getJobStatus,
-  createAIAnalysisJob,
-  createDocumentProcessingJob,
-  pauseQueue,
-  resumeQueue,
-  cleanQueue,
-};
+export const queueController = new QueueController();
