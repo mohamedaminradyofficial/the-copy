@@ -10,55 +10,48 @@ import {
   applyDefaultEffect,
   calculateWaveColor,
   calculateVortexColor,
+  performanceMonitor,
 } from "./particle-effects";
+import {
+  getDeviceCapabilities,
+  getParticleLODConfig,
+  logDeviceCapabilities,
+} from "./device-detection";
 
 type Effect = "default" | "spark" | "wave" | "vortex";
 
 /**
- * Detect device capabilities and return optimal particle count
+ * Get optimal particle configuration using device detection
  */
-function getOptimalParticleCount(): { count: number; batchSize: number } {
+function getOptimalParticleCount(): { count: number; batchSize: number; config: any } {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    return { count: 3000, batchSize: 400 };
+    return { count: 3000, batchSize: 400, config: null };
   }
 
   // Check for reduced motion preference
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) {
-    return { count: 0, batchSize: 0 }; // No particles if user prefers reduced motion
+    return { count: 0, batchSize: 0, config: null };
   }
 
-  // Get device capabilities
-  const cores = navigator.hardwareConcurrency || 4;
-  const memory = (navigator as any).deviceMemory || 4; // GB
-  const width = window.innerWidth;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // Use device detection system
+  const capabilities = getDeviceCapabilities();
+  const lodConfig = getParticleLODConfig(capabilities);
 
-  // High-end desktop (8+ cores, 8+ GB RAM)
-  if (cores >= 8 && memory >= 8 && width > 1600 && !isMobile) {
-    return { count: 8000, batchSize: 600 };
+  // Calculate batch size based on particle count (20-25% of total)
+  const batchSize = Math.floor(lodConfig.particleCount * 0.22);
+
+  // Log device capabilities in development
+  if (process.env.NODE_ENV === 'development') {
+    logDeviceCapabilities();
   }
 
-  // Mid-range desktop (4+ cores, 4+ GB RAM)
-  if (cores >= 4 && memory >= 4 && width > 1024 && !isMobile) {
-    return { count: 5000, batchSize: 500 };
-  }
-
-  // Tablet or smaller desktop
-  if (width > 768 && width <= 1024) {
-    return { count: 4000, batchSize: 450 };
-  }
-
-  // Mobile devices - very conservative
-  return { count: 2000, batchSize: 300 };
+  return {
+    count: lodConfig.particleCount,
+    batchSize: batchSize,
+    config: lodConfig,
+  };
 }
-
-// Particle count based on device capabilities
-const PARTICLE_CONFIG = {
-  DESKTOP: { count: 8000, batchSize: 600 },
-  MOBILE: { count: 3000, batchSize: 400 },
-  TABLET: { count: 5000, batchSize: 500 }
-};
 
 /**
  * Enhanced requestIdleCallback with fallback
@@ -337,13 +330,14 @@ export default function OptimizedParticleAnimation() {
     originalPositions: Float32Array;
     phases: Float32Array;
     velocities: Float32Array;
+    lodConfig: any;
   }> => {
     try {
       // Get optimal particle count based on device capabilities
-      const config = getOptimalParticleCount();
+      const particleConfig = getOptimalParticleCount();
 
       // If no particles should be rendered (reduced motion preference)
-      if (config.count === 0) {
+      if (particleConfig.count === 0) {
         return {
           positions: new Float32Array(0),
           colors: new Float32Array(0),
@@ -351,11 +345,12 @@ export default function OptimizedParticleAnimation() {
           originalPositions: new Float32Array(0),
           phases: new Float32Array(0),
           velocities: new Float32Array(0),
+          lodConfig: null,
         };
       }
 
-      const numParticles = config.count;
-      const batchSize = config.batchSize;
+      const numParticles = particleConfig.count;
+      const batchSize = particleConfig.batchSize;
       const thickness = 0.15;
 
       const positions = new Float32Array(numParticles * 3);
@@ -452,7 +447,8 @@ export default function OptimizedParticleAnimation() {
         count: generatedCount,
         originalPositions,
         phases,
-        velocities
+        velocities,
+        lodConfig: particleConfig.config,
       };
 
     } catch (error) {
@@ -632,12 +628,12 @@ export default function OptimizedParticleAnimation() {
       .then((result) => {
         if (!sceneRef.current) return;
 
-        const { positions, colors, count, originalPositions, phases, velocities } = result;
-        
+        const { positions, colors, count, originalPositions, phases, velocities, lodConfig } = result;
+
         // Update geometry
         sceneRef.current.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
         sceneRef.current.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-        
+
         // Update scene reference
         sceneRef.current.originalPositions = originalPositions;
         sceneRef.current.phases = phases;
@@ -645,7 +641,15 @@ export default function OptimizedParticleAnimation() {
         sceneRef.current.particleCount = count;
         sceneRef.current.isGenerated = true;
 
-        // تم إعداد الجسيمات بنجاح
+        // Log LOD configuration for debugging
+        if (process.env.NODE_ENV === 'development' && lodConfig) {
+          console.log('🎨 Particle LOD Applied:', {
+            particles: count,
+            effectRadius: lodConfig.effectRadius,
+            updateFrequency: `${1000 / lodConfig.updateFrequency}fps`,
+            advancedEffects: lodConfig.enableAdvancedEffects,
+          });
+        }
       })
       .catch((error) => {
         console.error('❌ فشل في توليد الجسيمات:', error);
@@ -681,7 +685,12 @@ export default function OptimizedParticleAnimation() {
         return;
       }
 
-      const time = Date.now() * 0.001;
+      const currentTime = performance.now();
+      const time = currentTime * 0.001;
+
+      // Record frame for performance monitoring
+      performanceMonitor.recordFrame(currentTime);
+
       const {
         scene,
         camera,
@@ -788,7 +797,16 @@ export default function OptimizedParticleAnimation() {
             colorAttribute.needsUpdate = true;
 
             renderer.render(scene, camera);
-            
+
+            // Performance monitoring (log FPS every 60 frames in development)
+            if (process.env.NODE_ENV === 'development') {
+              const frameCount = performanceMonitor['frameTimeHistory']?.length || 0;
+              if (frameCount > 0 && frameCount % 60 === 0) {
+                const avgFPS = performanceMonitor.getAverageFPS();
+                console.log(`⚡ Particle Performance: ${avgFPS.toFixed(1)} FPS`);
+              }
+            }
+
             // Schedule next frame
             animationRef.current = requestAnimationFrame(animate);
           }
@@ -875,6 +893,9 @@ export default function OptimizedParticleAnimation() {
         if (renderer) renderer.dispose();
 
         window.removeEventListener('resize', handleResize);
+
+        // Reset performance monitor
+        performanceMonitor.reset();
 
         if (sceneRef.current) {
           sceneRef.current.originalPositions = null as any;
