@@ -9,32 +9,43 @@ import Redis from 'ioredis';
 let redis: Redis | null = null;
 
 // Redis configuration with fallback
-const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
-  retryStrategy(times: number) {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
-  maxRetriesPerRequest: 3,
-  enableReadyCheck: true,
-  lazyConnect: true,
-};
+// Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
+function getRedisConfig() {
+  // If REDIS_URL is provided, return it as string (ioredis will parse it)
+  if (process.env.REDIS_URL) {
+    return process.env.REDIS_URL;
+  }
+
+  // Otherwise use individual variables
+  return {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    password: process.env.REDIS_PASSWORD,
+    retryStrategy(times: number) {
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+    maxRetriesPerRequest: 3,
+    enableReadyCheck: true,
+    lazyConnect: true,
+  };
+}
+
+const REDIS_CONFIG = getRedisConfig();
 
 /**
  * Get or create Redis client instance
  */
 export function getRedisClient(): Redis | null {
   // In development, allow graceful degradation if Redis is not available
-  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_HOST) {
+  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_HOST && !process.env.REDIS_URL) {
     console.warn('[Redis] Not configured, caching disabled');
     return null;
   }
 
   if (!redis) {
     try {
-      redis = new Redis(REDIS_CONFIG);
+      redis = new Redis(REDIS_CONFIG as any);
 
       redis.on('error', (err) => {
         console.error('[Redis] Connection error:', err);
