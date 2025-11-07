@@ -80,6 +80,7 @@ export default function MetricsDashboardPage() {
       const interval = setInterval(fetchMetrics, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [autoRefresh]);
 
   const formatBytes = (bytes: number): string => {
