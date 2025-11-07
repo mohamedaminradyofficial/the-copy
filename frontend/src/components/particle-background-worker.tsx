@@ -5,12 +5,54 @@ import * as THREE from "three";
 import { ParticleWorkerManager } from "@/workers/worker-manager";
 import type { Effect } from "@/workers/types";
 
-// Particle count based on device capabilities
+// Particle count based on device capabilities and battery status
 const PARTICLE_CONFIG = {
-  DESKTOP: { count: 8000, batchSize: 600 },
-  MOBILE: { count: 3000, batchSize: 400 },
-  TABLET: { count: 5000, batchSize: 500 }
+  DESKTOP: { count: 6000, batchSize: 600 },     // Reduced from 8000
+  MOBILE: { count: 2000, batchSize: 300 },      // Reduced from 3000
+  TABLET: { count: 2500, batchSize: 400 },      // Reduced from 5000
+  LOW_POWER: { count: 1000, batchSize: 200 }    // New: for low battery/weak devices
 };
+
+/**
+ * Detect device capabilities including battery level and CPU cores
+ */
+async function detectDeviceCapabilities() {
+  const width = window.innerWidth;
+
+  // Base config based on screen size
+  let baseConfig;
+  if (width <= 768) {
+    baseConfig = PARTICLE_CONFIG.MOBILE;
+  } else if (width <= 1024) {
+    baseConfig = PARTICLE_CONFIG.TABLET;
+  } else {
+    baseConfig = PARTICLE_CONFIG.DESKTOP;
+  }
+
+  // Check for low battery or weak device
+  try {
+    // Battery API check
+    if ('getBattery' in navigator) {
+      const battery = await (navigator as any).getBattery();
+      const isLowBattery = battery && !battery.charging && battery.level < 0.3;
+      if (isLowBattery) {
+        return PARTICLE_CONFIG.LOW_POWER;
+      }
+    }
+
+    // CPU cores check
+    const cores = navigator.hardwareConcurrency || 4;
+    const isLowEndDevice = cores <= 2;
+    if (isLowEndDevice && width <= 768) {
+      return PARTICLE_CONFIG.LOW_POWER;
+    }
+  } catch (error) {
+    // Battery API not supported or failed, use base config
+    console.debug('Device capability detection unavailable, using base config');
+  }
+
+  return baseConfig;
+}
 
 export default function WorkerParticleAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -127,17 +169,8 @@ export default function WorkerParticleAnimation() {
       try {
         await workerManager.initializeWorkers();
 
-        // Determine device type and particle count
-        const width = window.innerWidth;
-        let config;
-        if (width <= 768) {
-          config = PARTICLE_CONFIG.MOBILE;
-        } else if (width <= 1024) {
-          config = PARTICLE_CONFIG.TABLET;
-        } else {
-          config = PARTICLE_CONFIG.DESKTOP;
-        }
-
+        // Determine device capabilities and particle count
+        const config = await detectDeviceCapabilities();
         const numParticles = config.count;
         const thickness = 0.15;
 
@@ -187,7 +220,24 @@ export default function WorkerParticleAnimation() {
       }
     };
 
-    initializeAndGenerate();
+    // Use requestIdleCallback for initialization to avoid blocking main thread
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => initializeAndGenerate(), { timeout: 2000 });
+    } else {
+      setTimeout(initializeAndGenerate, 100);
+    }
+
+    // Pause animation when tab is hidden (save battery and CPU)
+    const handleVisibilityChange = () => {
+      if (document.hidden && animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      } else if (!document.hidden && sceneRef.current && !animationRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Mouse interaction handlers
     const handleCanvasMouseMove = (event: MouseEvent) => {
@@ -364,6 +414,8 @@ export default function WorkerParticleAnimation() {
         canvas.removeEventListener("touchstart", handleTouchStart);
         canvas.removeEventListener("touchmove", handleTouchMove);
         canvas.removeEventListener("touchend", handleTouchEnd);
+
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
 
         if (geometry) geometry.dispose();
         if (material) material.dispose();
