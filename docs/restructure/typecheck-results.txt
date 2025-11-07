@@ -1,0 +1,5 @@
+
+> the-copy-monorepo@ typecheck /home/user/the-copy
+> pnpm --filter frontend typecheck
+
+No projects matched the filters in "/home/user/the-copy"

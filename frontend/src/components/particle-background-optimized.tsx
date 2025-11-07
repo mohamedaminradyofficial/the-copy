@@ -14,6 +14,45 @@ import {
 
 type Effect = "default" | "spark" | "wave" | "vortex";
 
+/**
+ * Detect device capabilities and return optimal particle count
+ */
+function getOptimalParticleCount(): { count: number; batchSize: number } {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return { count: 3000, batchSize: 400 };
+  }
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    return { count: 0, batchSize: 0 }; // No particles if user prefers reduced motion
+  }
+
+  // Get device capabilities
+  const cores = navigator.hardwareConcurrency || 4;
+  const memory = (navigator as any).deviceMemory || 4; // GB
+  const width = window.innerWidth;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // High-end desktop (8+ cores, 8+ GB RAM)
+  if (cores >= 8 && memory >= 8 && width > 1600 && !isMobile) {
+    return { count: 8000, batchSize: 600 };
+  }
+
+  // Mid-range desktop (4+ cores, 4+ GB RAM)
+  if (cores >= 4 && memory >= 4 && width > 1024 && !isMobile) {
+    return { count: 5000, batchSize: 500 };
+  }
+
+  // Tablet or smaller desktop
+  if (width > 768 && width <= 1024) {
+    return { count: 4000, batchSize: 450 };
+  }
+
+  // Mobile devices - very conservative
+  return { count: 2000, batchSize: 300 };
+}
+
 // Particle count based on device capabilities
 const PARTICLE_CONFIG = {
   DESKTOP: { count: 8000, batchSize: 600 },
@@ -43,7 +82,11 @@ export default function OptimizedParticleAnimation() {
   const currentEffect: Effect = "spark";
 
   // Check for reduced motion preference
-  const prefersReducedMotion = false;
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    return mediaQuery.matches;
+  }, []);
 
   // Scene reference with all necessary data
   const sceneRef = useRef<{
@@ -296,15 +339,19 @@ export default function OptimizedParticleAnimation() {
     velocities: Float32Array;
   }> => {
     try {
-      // Determine device type and particle count
-      const width = window.innerWidth;
-      let config;
-      if (width <= 768) {
-        config = PARTICLE_CONFIG.MOBILE;
-      } else if (width <= 1024) {
-        config = PARTICLE_CONFIG.TABLET;
-      } else {
-        config = PARTICLE_CONFIG.DESKTOP;
+      // Get optimal particle count based on device capabilities
+      const config = getOptimalParticleCount();
+
+      // If no particles should be rendered (reduced motion preference)
+      if (config.count === 0) {
+        return {
+          positions: new Float32Array(0),
+          colors: new Float32Array(0),
+          count: 0,
+          originalPositions: new Float32Array(0),
+          phases: new Float32Array(0),
+          velocities: new Float32Array(0),
+        };
       }
 
       const numParticles = config.count;
@@ -517,7 +564,10 @@ export default function OptimizedParticleAnimation() {
     if (!canvasRef.current || typeof window === 'undefined') return;
     
     // Skip animation if user prefers reduced motion
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion) {
+      console.log('[ParticleAnimation] Skipping animation - user prefers reduced motion');
+      return;
+    }
 
     const canvas = canvasRef.current;
     

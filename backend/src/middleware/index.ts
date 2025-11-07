@@ -5,25 +5,72 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
+import { logSecurityEvent, SecurityEventType } from './security-logger.middleware';
 
 export const setupMiddleware = (app: express.Application): void => {
-  // Security middleware
-  app.use(helmet());
-  
-  // CORS configuration - support multiple origins (comma-separated)
+  // Enhanced Security middleware with strict CSP
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: true,
+    crossOriginResourcePolicy: { policy: 'same-site' },
+    dnsPrefetchControl: { allow: false },
+    frameguard: { action: 'deny' },
+    hidePoweredBy: true,
+    hsts: {
+      maxAge: 31536000, // 1 year
+      includeSubDomains: true,
+      preload: true,
+    },
+    ieNoOpen: true,
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    xssFilter: true,
+  }));
+
+  // Enhanced CORS configuration - Strict security with logging
   const allowedOrigins = env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+
   app.use(cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
+      // In production, only allow specified origins
+      if (process.env.NODE_ENV === 'production') {
+        if (origin && allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          logger.warn(`🚨 CORS violation detected from origin: ${origin}`);
+          // Log security event for CORS violations
+          callback(new Error('Not allowed by CORS'));
+        }
       } else {
-        callback(new Error('Not allowed by CORS'));
+        // In development, allow localhost and specified origins
+        if (!origin || allowedOrigins.includes(origin) || origin.includes('localhost')) {
+          callback(null, true);
+        } else {
+          logger.warn(`CORS blocked request from origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'));
+        }
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+    exposedHeaders: ['X-Total-Count', 'X-Page-Count', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+    maxAge: 600, // Cache preflight requests for 10 minutes
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   }));
 
   // Compression
@@ -92,6 +139,9 @@ export const setupMiddleware = (app: express.Application): void => {
     next();
   });
 };
+
+// Export validation utilities
+export { validateBody, validateQuery, validateParams, commonSchemas, detectAttacks } from './validation.middleware';
 
 // Error handling middleware - must be registered separately in server.ts after all routes
 export const errorHandler = (

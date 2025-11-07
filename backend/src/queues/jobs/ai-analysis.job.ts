@@ -77,6 +77,14 @@ async function processAIAnalysis(job: Job<AIAnalysisJobData>): Promise<AIAnalysi
 }
 
 /**
+ * Get Gemini service instance (lazy load to avoid circular dependencies)
+ */
+async function getGeminiService() {
+  const { GeminiService } = await import('@/services/gemini.service');
+  return new GeminiService();
+}
+
+/**
  * Analyze a scene
  */
 async function analyzeScene(
@@ -84,21 +92,20 @@ async function analyzeScene(
   analysisType: string,
   options?: Record<string, any>
 ): Promise<any> {
-  // Import AI service (avoid circular dependencies)
-  // This would use your existing Gemini AI service
-  // For now, returning a placeholder
+  const gemini = await getGeminiService();
 
-  // Simulate AI processing time
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // Fetch scene data (placeholder - replace with actual DB query)
+  const sceneText = options?.text || `Scene ${sceneId} content`;
+
+  // Use Gemini to analyze the scene
+  const analysis = await gemini.analyzeText(sceneText, 'structure');
 
   return {
     sceneId,
     analysis: {
-      pacing: 'moderate',
-      tension: 'high',
-      emotionalTone: 'dramatic',
-      keyMoments: [],
-      suggestions: [],
+      raw: analysis,
+      analyzedAt: new Date().toISOString(),
+      analysisType,
     },
   };
 }
@@ -111,16 +118,20 @@ async function analyzeCharacter(
   analysisType: string,
   options?: Record<string, any>
 ): Promise<any> {
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const gemini = await getGeminiService();
+
+  // Fetch character data (placeholder - replace with actual DB query)
+  const characterText = options?.text || `Character ${characterId} information`;
+
+  // Use Gemini to analyze the character
+  const analysis = await gemini.analyzeText(characterText, 'characters');
 
   return {
     characterId,
     analysis: {
-      arcDevelopment: 'strong',
-      motivations: [],
-      relationships: [],
-      consistency: 'high',
-      suggestions: [],
+      raw: analysis,
+      analyzedAt: new Date().toISOString(),
+      analysisType,
     },
   };
 }
@@ -133,16 +144,20 @@ async function analyzeShot(
   analysisType: string,
   options?: Record<string, any>
 ): Promise<any> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const gemini = await getGeminiService();
+
+  // Fetch shot data (placeholder - replace with actual DB query)
+  const shotText = options?.text || `Shot ${shotId} details`;
+
+  // Use Gemini to analyze the shot
+  const analysis = await gemini.analyzeText(shotText, analysisType);
 
   return {
     shotId,
     analysis: {
-      composition: 'balanced',
-      framing: 'close-up',
-      movement: 'static',
-      lighting: 'natural',
-      suggestions: [],
+      raw: analysis,
+      analyzedAt: new Date().toISOString(),
+      analysisType,
     },
   };
 }
@@ -155,17 +170,20 @@ async function analyzeProject(
   analysisType: string,
   options?: Record<string, any>
 ): Promise<any> {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  const gemini = await getGeminiService();
+
+  // Fetch project data (placeholder - replace with actual DB query)
+  const projectText = options?.text || `Project ${projectId} overview`;
+
+  // Use Gemini to analyze the entire project
+  const analysis = await gemini.analyzeText(projectText, 'structure');
 
   return {
     projectId,
     analysis: {
-      overallStructure: 'three-act',
-      pacing: 'good',
-      characterDevelopment: 'strong',
-      thematicConsistency: 'high',
-      suggestions: [],
-      scenes: [],
+      raw: analysis,
+      analyzedAt: new Date().toISOString(),
+      analysisType,
     },
   };
 }

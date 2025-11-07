@@ -100,6 +100,12 @@ jobs:
           GEMINI_API_KEY_STAGING: ${{ secrets.GEMINI_API_KEY_STAGING }}
           GEMINI_API_KEY_PROD: ${{ secrets.GEMINI_API_KEY_PROD }}
 
+      - name: Check Performance Budget
+        run: |
+          echo "📊 Checking Performance Budget..."
+          npm run budget:check
+        continue-on-error: false
+
       - name: Check first page bundle size (<250KB compressed)
         run: |
           echo "📦 Checking first page bundle size..."
@@ -111,13 +117,13 @@ jobs:
             # Get uncompressed size
             SIZE=$(stat -f%z "$MAIN_CHUNK" 2>/dev/null || stat -c%s "$MAIN_CHUNK")
             SIZE_KB=$((SIZE / 1024))
-            
+
             # Estimate compressed size (typical gzip ratio ~30%)
             COMPRESSED_KB=$((SIZE_KB * 30 / 100))
-            
+
             echo "First page size: ${SIZE_KB}KB (uncompressed)"
             echo "Estimated compressed: ${COMPRESSED_KB}KB"
-            
+
             if [ $COMPRESSED_KB -gt 250 ]; then
               echo "❌ First page exceeds 250KB compressed limit"
               exit 1
