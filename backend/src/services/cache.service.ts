@@ -35,9 +35,21 @@ export class CacheService {
 
   /**
    * Initialize Redis connection with retry strategy
+   * Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
    */
   private initializeRedis(): void {
     try {
+      // Prefer REDIS_URL if provided, otherwise construct from individual variables
+      let redisConfig: string | object;
+      
+      if (process.env.REDIS_URL) {
+        redisConfig = process.env.REDIS_URL;
+      } else {
+        redisConfig = {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379'),
+          password: process.env.REDIS_PASSWORD,
+        };
       // Support both REDIS_URL and REDIS_HOST/REDIS_PORT/REDIS_PASSWORD formats
       let redisUrl: string;
       if (process.env.REDIS_URL) {
@@ -51,7 +63,7 @@ export class CacheService {
           : `redis://${host}:${port}`;
       }
 
-      this.redis = new Redis(redisUrl, {
+      this.redis = new Redis(redisConfig, {
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
           logger.debug(`Redis retry attempt ${times}, delay: ${delay}ms`);

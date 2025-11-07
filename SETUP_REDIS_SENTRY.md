@@ -7,6 +7,8 @@ This guide will help you configure Redis for caching and job queues, and set up 
 1. [Redis Configuration](#redis-configuration)
 2. [Sentry Configuration](#sentry-configuration)
 3. [Verification Steps](#verification-steps)
+4. [Bundle Analysis](#bundle-analysis)
+5. [Troubleshooting](#troubleshooting)
 4. [Troubleshooting](#troubleshooting)
 
 ---
@@ -86,14 +88,48 @@ The application will gracefully degrade if Redis is unavailable:
 - Caching will fall back to in-memory cache only
 - Job queues will not function (but API endpoints will still work)
 
+Redis can be configured using either:
+
+**Option A: Individual variables** (recommended for Docker/local)
+```bash
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
+```
+
+**Option B: Redis URL** (recommended for cloud providers)
+```bash
+REDIS_URL=redis://:password@host:6379
+# Or without password:
+REDIS_URL=redis://localhost:6379
+```
+
 ### Environment Variables
 
 Add these to your `.env` file (root directory) or `backend/.env`:
 
+**Root `.env`:**
 ```bash
 # Redis Configuration
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
+# OR use REDIS_URL instead:
+# REDIS_URL=redis://localhost:6379
+```
+
+**Backend `.env`:**
+```bash
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
+```
+
+**Frontend `.env.local`:**
+```bash
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
 REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
 
 # Alternative: Use REDIS_URL (if your Redis provider gives you a connection string)
@@ -102,6 +138,7 @@ REDIS_PASSWORD=your_redis_password  # Optional, leave empty if no password
 
 **Note**: The backend supports both formats:
 - `REDIS_HOST` + `REDIS_PORT` + `REDIS_PASSWORD` (used by BullMQ queues)
+- `REDIS_URL` (used by cache service, can also be constructed from individual variables)
 - `REDIS_URL` (used by cache service)
 
 ### Setting a Redis Password (Optional but Recommended)
@@ -114,6 +151,39 @@ REDIS_PASSWORD=your_secure_password_here
 
 The docker-compose.yml will automatically configure Redis with this password.
 
+### Testing Redis Connection
+
+```bash
+# Using redis-cli
+redis-cli ping
+# Should return: PONG
+
+# With password
+redis-cli -a your_password ping
+
+# Test from Node.js
+node -e "const Redis = require('ioredis'); const r = new Redis({host: 'localhost', port: 6379}); r.ping().then(console.log).then(() => r.quit());"
+```
+
+### Redis Features
+
+#### Caching
+- **L1 Cache**: In-memory LRU cache (100 items max, 60s TTL)
+- **L2 Cache**: Redis distributed cache (configurable TTL)
+- **Automatic Fallback**: Falls back to memory-only if Redis unavailable
+
+#### Job Queues
+- **AI Analysis Queue**: Processes AI-powered analysis tasks
+- **Document Processing Queue**: Handles document parsing
+- **Automatic Retries**: 3 attempts with exponential backoff
+- **Job Retention**: 24h completed, 7d failed
+
+### Monitoring
+
+Check queue statistics:
+```bash
+curl http://localhost:3001/api/queue/stats
+```
 ### Verify Redis Configuration
 
 1. **Check backend logs** when starting:
@@ -171,6 +241,7 @@ The docker-compose.yml will automatically configure Redis with this password.
    - **Scopes**: Select:
      - `project:read`
      - `project:releases`
+     - `project:write`
      - `org:read`
    - Click "Create Token"
 
@@ -194,6 +265,28 @@ The docker-compose.yml will automatically configure Redis with this password.
 
 Add these to your `.env` file (root directory) or `frontend/.env.local`:
 
+**Root `.env`:**
+```bash
+# Sentry Configuration
+NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_ORG=your-sentry-org-slug
+SENTRY_PROJECT=your-sentry-project-name
+SENTRY_AUTH_TOKEN=your-auth-token
+```
+
+**Frontend `.env.local`:**
+```bash
+# Sentry Configuration
+NEXT_PUBLIC_SENTRY_DSN=https://your-dsn@sentry.io/project-id
+SENTRY_ORG=your-sentry-org-slug
+SENTRY_PROJECT=your-sentry-project-name
+SENTRY_AUTH_TOKEN=your-auth-token
+```
+
+**Backend `.env`:**
+```bash
+# Sentry Configuration (if using Sentry SDK in backend)
+SENTRY_DSN=https://your-dsn@sentry.io/project-id
 ```bash
 # Sentry Configuration
 # Get these from https://sentry.io/settings/
@@ -216,6 +309,14 @@ SENTRY_AUTH_TOKEN=your-auth-token-here
 
 **Note**: `NEXT_PUBLIC_*` variables are exposed to the browser. Only use `NEXT_PUBLIC_SENTRY_DSN` for client-side tracking. Server-side Sentry uses `SENTRY_DSN` (without `NEXT_PUBLIC_`).
 
+### Step 5: Verify Configuration
+
+The Sentry configuration files are already set up:
+- `frontend/sentry.client.config.ts` - Client-side tracking
+- `frontend/sentry.server.config.ts` - Server-side tracking
+- `frontend/sentry.edge.config.ts` - Edge runtime tracking
+
+Sentry will automatically initialize when `NEXT_PUBLIC_SENTRY_DSN` is set.
 ### Step 5: Verify Sentry Integration
 
 1. **Check browser console** (when running frontend):
@@ -249,6 +350,13 @@ Source maps help Sentry show you the original source code instead of minified co
 
 ```bash
 cd frontend
+npm run sentry:sourcemaps
+```
+
+Or manually:
+```bash
+npx @sentry/cli sourcemaps inject --org $SENTRY_ORG --project $SENTRY_PROJECT .next
+npx @sentry/cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT .next
 
 # Build the application first
 npm run build
@@ -264,11 +372,50 @@ This command:
 
 Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.yml`).
 
+### Sentry Features
+
+#### Client-Side
+- **Traces Sample Rate**: 10% production, 100% development
+- **Replay Sample Rate**: 10% production, 100% development
+- **Profiling**: Enabled with 10% sampling
+- **Important Routes**: 100% sampling for `/api/*` and `/directors-studio`
+
+#### Server-Side
+- **Traces Sample Rate**: 20% production, 100% development
+- **Profiling**: Enabled with 20% sampling
+- **Always Sampled**: API routes and Genkit operations
+
+### Testing Sentry
+
+Test error tracking:
+```typescript
+import * as Sentry from '@sentry/nextjs';
+
+// Test error capture
+Sentry.captureMessage('Test message from The Copy', 'info');
+
+// Test exception capture
+try {
+  throw new Error('Test error');
+} catch (error) {
+  Sentry.captureException(error);
+}
+```
+
+Check your Sentry dashboard to see the events.
+
 ---
 
 ## Verification Steps
 
 ### Redis Verification
+
+Run the verification script:
+```bash
+node scripts/verify-redis-sentry.js
+```
+
+Or manually check:
 
 1. **Check Redis connection**:
    ```bash
@@ -284,6 +431,14 @@ Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.
    ```bash
    cd backend
    npm run dev
+   # Look for: "[Redis] Connected successfully" or "[Redis] Ready to accept commands"
+   ```
+
+3. **Test cache service**:
+   ```bash
+   curl http://localhost:3001/api/health
+   # Check logs for cache service initialization
+   ```
    # Look for: "Redis cache connected successfully"
    ```
 
@@ -303,6 +458,22 @@ Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.
 
 ### Sentry Verification
 
+1. **Check Console Logs**:
+   - Development: Should see `[Sentry] Client initialized with performance monitoring`
+   - If DSN missing: `[Sentry] DSN not configured, monitoring disabled`
+
+2. **Test Error Capture**:
+   - Add a test error in your code
+   - Check Sentry dashboard for the error
+
+3. **Check Build**:
+   ```bash
+   cd frontend
+   npm run build
+   # Should see Sentry webpack plugin output if configured
+   ```
+
+4. **Send test event**:
 1. **Check initialization**:
    - Open browser console
    - Look for Sentry initialization message
@@ -314,11 +485,53 @@ Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.
    Sentry.captureMessage('Test from setup guide');
    ```
 
+5. **Check Sentry dashboard**:
 3. **Check Sentry dashboard**:
    - Go to: https://sentry.io/
    - Navigate to your project
    - You should see the test message in "Issues" or "Performance"
 
+---
+
+## Bundle Analysis
+
+### Run Bundle Analyzer
+
+Visualize your bundle sizes:
+
+```bash
+cd frontend
+npm run analyze
+```
+
+This will:
+1. Build the application with bundle analysis enabled
+2. Generate an interactive HTML report
+3. Open it in your browser automatically
+
+### Understanding the Report
+
+The bundle analyzer shows:
+- **Framework Bundle**: React, Next.js (~500KB target)
+- **Vendor Bundles**: Third-party libraries (~300KB each target)
+- **Page Chunks**: Individual route bundles (~50-100KB each target)
+- **Total Bundle Size**: Should be optimized for performance
+
+### Optimization Tips
+
+Based on the report:
+1. **Large Dependencies**: Consider code splitting or alternatives
+2. **Duplicate Code**: Check for duplicate dependencies
+3. **Unused Code**: Remove unused imports and dependencies
+4. **Dynamic Imports**: Use dynamic imports for heavy components
+
+### Performance Budgets
+
+Target bundle sizes:
+- **Initial Load**: < 200KB gzipped
+- **Framework**: ~500KB
+- **Vendor Bundles**: ~300KB each
+- **Page Chunks**: ~50-100KB each
 4. **Verify performance monitoring**:
    - Navigate through your app
    - Check Sentry → Performance tab
@@ -423,6 +636,28 @@ Or it's automatically done in CI/CD if configured (see `.github/workflows/ci-cd.
 
 After completing setup:
 
+1. ✅ Configure Redis environment variables
+2. ✅ Set up Sentry account and add DSN
+3. ✅ Run bundle analyzer: `npm run analyze`
+4. ✅ Verify Redis connection
+5. ✅ Test Sentry error tracking
+6. ✅ Monitor performance metrics
+
+**Monitor Redis**:
+- Check cache hit rates
+- Monitor queue health
+- Review Redis memory usage
+
+**Monitor Sentry**:
+- Set up alerts for critical errors
+- Review performance metrics
+- Configure release tracking
+- Monitor Performance tab for slow transactions
+
+**Review Performance Guide**:
+- See `PERFORMANCE_OPTIMIZATION_GUIDE.md` for detailed usage
+- Learn about cache strategies
+- Understand job queue patterns
 1. **Monitor Redis**:
    - Check cache hit rates
    - Monitor queue health
