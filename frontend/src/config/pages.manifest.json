@@ -51,6 +51,11 @@
       "title": "كتابة"
     },
     {
+      "slug": "metrics-dashboard",
+      "path": "/metrics-dashboard",
+      "title": "metrics-dashboard"
+    },
+    {
       "slug": "new",
       "path": "/new",
       "title": "جديد"

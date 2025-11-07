@@ -124,8 +124,11 @@ export function handleKeyboardShortcut(
   };
 
   if (action in formatMap) {
-    handlers.applyFormatToCurrentLine(formatMap[action]);
-    return true;
+    const format = formatMap[action];
+    if (format) {
+      handlers.applyFormatToCurrentLine(format);
+      return true;
+    }
   }
 
   return false;
