@@ -92,7 +92,6 @@ export function processActionLine(line: string): LineProcessingResult {
   const cleanedLine = line.replace(/^\s*[-–—]\s*/, "");
   return {
     html: `<div class="action" style="direction: rtl; text-align: right; margin: 12px 0;">${cleanedLine}</div>`,
-    currentCharacter: undefined,
     updateContext: {
       lastFormat: "action",
       isInDialogueBlock: false,

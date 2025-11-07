@@ -28,12 +28,14 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const insertProjectSchema = createInsertSchema(projects, {
-  title: z.string().min(1, "Title is required"),
-  scriptContent: z.string().optional(),
+const baseInsertProjectSchema = createInsertSchema(projects, {
+  title: (schema) => schema.min(1, "Title is required"),
+  scriptContent: (schema) => schema.optional(),
 });
 
-export type InsertProject = z.infer<typeof insertProjectSchema>;
+export const insertProjectSchema = baseInsertProjectSchema as unknown as z.ZodType<any>;
+
+export type InsertProject = typeof projects.$inferInsert;
 export type Project = typeof projects.$inferSelect;
 
 export const scenes = pgTable("scenes", {
@@ -49,17 +51,19 @@ export const scenes = pgTable("scenes", {
   status: text("status").notNull().default("planned"),
 });
 
-export const insertSceneSchema = createInsertSchema(scenes, {
-  projectId: z.string(),
-  sceneNumber: z.number(),
-  title: z.string(),
-  location: z.string(),
-  timeOfDay: z.string(),
-  characters: z.array(z.string()),
-  description: z.string().optional(),
+const baseInsertSceneSchema = createInsertSchema(scenes, {
+  projectId: (schema) => schema,
+  sceneNumber: (schema) => schema,
+  title: (schema) => schema,
+  location: (schema) => schema,
+  timeOfDay: (schema) => schema,
+  characters: (schema) => schema,
+  description: (schema) => schema.optional(),
 });
 
-export type InsertScene = z.infer<typeof insertSceneSchema>;
+export const insertSceneSchema = baseInsertSceneSchema as unknown as z.ZodType<any>;
+
+export type InsertScene = typeof scenes.$inferInsert;
 export type Scene = typeof scenes.$inferSelect;
 
 export const characters = pgTable("characters", {
@@ -72,13 +76,15 @@ export const characters = pgTable("characters", {
   notes: text("notes"),
 });
 
-export const insertCharacterSchema = createInsertSchema(characters, {
-  projectId: z.string(),
-  name: z.string(),
-  notes: z.string().optional(),
+const baseInsertCharacterSchema = createInsertSchema(characters, {
+  projectId: (schema) => schema,
+  name: (schema) => schema,
+  notes: (schema) => schema.optional(),
 });
 
-export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
+export const insertCharacterSchema = baseInsertCharacterSchema as unknown as z.ZodType<any>;
+
+export type InsertCharacter = typeof characters.$inferInsert;
 export type Character = typeof characters.$inferSelect;
 
 export const shots = pgTable("shots", {
@@ -92,15 +98,17 @@ export const shots = pgTable("shots", {
   aiSuggestion: text("ai_suggestion"),
 });
 
-export const insertShotSchema = createInsertSchema(shots, {
-  sceneId: z.string(),
-  shotNumber: z.number(),
-  shotType: z.string(),
-  cameraAngle: z.string(),
-  cameraMovement: z.string(),
-  lighting: z.string(),
-  aiSuggestion: z.string().optional(),
+const baseInsertShotSchema = createInsertSchema(shots, {
+  sceneId: (schema) => schema,
+  shotNumber: (schema) => schema,
+  shotType: (schema) => schema,
+  cameraAngle: (schema) => schema,
+  cameraMovement: (schema) => schema,
+  lighting: (schema) => schema,
+  aiSuggestion: (schema) => schema.optional(),
 });
 
-export type InsertShot = z.infer<typeof insertShotSchema>;
+export const insertShotSchema = baseInsertShotSchema as unknown as z.ZodType<any>;
+
+export type InsertShot = typeof shots.$inferInsert;
 export type Shot = typeof shots.$inferSelect;
