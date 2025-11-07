@@ -214,7 +214,7 @@ const nextConfig = {
     ];
   },
 
-  webpack: (config: any, { isServer }: any) => {
+  webpack: (config: any, { isServer, dev }: any) => {
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;
 
@@ -238,6 +238,96 @@ const nextConfig = {
           },
         },
       });
+
+      // Advanced bundle splitting for better caching
+      if (!dev) {
+        config.optimization = {
+          ...config.optimization,
+          moduleIds: 'deterministic',
+          runtimeChunk: {
+            name: 'runtime',
+          },
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              // Framework bundle (React, Next.js)
+              framework: {
+                test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
+                name: 'framework',
+                priority: 40,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // UI Library bundle (Radix UI)
+              radixui: {
+                test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+                name: 'radix-ui',
+                priority: 35,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // AI/ML libraries bundle
+              ai: {
+                test: /[\\/]node_modules[\\/](@genkit-ai|@google\/genai|genkit|firebase)[\\/]/,
+                name: 'ai-libs',
+                priority: 30,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // Data visualization bundle
+              charts: {
+                test: /[\\/]node_modules[\\/](recharts|d3-.*)[\\/]/,
+                name: 'charts',
+                priority: 25,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // 3D/Animation libraries
+              three: {
+                test: /[\\/]node_modules[\\/](three|framer-motion)[\\/]/,
+                name: 'graphics',
+                priority: 25,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // Form libraries
+              forms: {
+                test: /[\\/]node_modules[\\/](react-hook-form|@hookform|zod)[\\/]/,
+                name: 'forms',
+                priority: 20,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // Database/ORM libraries
+              database: {
+                test: /[\\/]node_modules[\\/](drizzle-orm|drizzle-zod|ioredis)[\\/]/,
+                name: 'database',
+                priority: 20,
+                enforce: true,
+                reuseExistingChunk: true,
+              },
+              // Other vendor libraries
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendor',
+                priority: 10,
+                minChunks: 2,
+                reuseExistingChunk: true,
+              },
+              // Common code shared across routes
+              common: {
+                minChunks: 2,
+                priority: 5,
+                reuseExistingChunk: true,
+                enforce: true,
+              },
+            },
+            maxInitialRequests: 25,
+            minSize: 20000,
+            maxSize: 244000,
+          },
+        };
+      }
     }
 
     return config;
@@ -248,26 +338,30 @@ const nextConfig = {
   },
 };
 
-// Sentry configuration temporarily disabled
-// Uncomment when SENTRY credentials are available
-/*
-const shouldUseSentry = process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
+// Sentry configuration
+const { withSentryConfig } = require("@sentry/nextjs");
 
-const sentryConfig = {
+const shouldUseSentry = !!(process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && process.env.NEXT_PUBLIC_SENTRY_DSN);
+
+const sentryConfig = shouldUseSentry ? {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  silent: true,
+  silent: !process.env.CI,
   widenClientFileUpload: true,
   reactComponentAnnotation: {
     enabled: true,
   },
-  hideSourceMaps: true,
+  hideSourceMaps: process.env.NODE_ENV === 'production',
   disableLogger: true,
   automaticVercelMonitors: true,
+  tunnelRoute: "/monitoring",
   sourcemaps: {
-    disable: true,
+    disable: false,
   },
-};
-*/
+} : null;
 
-export default withBundleAnalyzer(nextConfig);
+// Export config with Sentry wrapper if configured
+const configWithAnalyzer = withBundleAnalyzer(nextConfig);
+export default sentryConfig
+  ? withSentryConfig(configWithAnalyzer, sentryConfig)
+  : configWithAnalyzer;
