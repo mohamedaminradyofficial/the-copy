@@ -153,6 +153,54 @@ const nextConfig = {
           },
         ],
       },
+      // Cache Next.js static files (JS, CSS, etc.)
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Cache fonts with long TTL
+      {
+        source: "/fonts/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "cross-origin",
+          },
+        ],
+      },
+      // Cache directors-studio images
+      {
+        source: "/directors-studio/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Cache optimized images
+      {
+        source: "/directors-studio/optimized/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Vary",
+            value: "Accept",
+          },
+        ],
+      },
       // Cache API responses with stale-while-revalidate
       {
         source: "/api/:path*",
