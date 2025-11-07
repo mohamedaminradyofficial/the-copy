@@ -4,6 +4,9 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import WebVitalsReporter from "@/components/WebVitalsReporter";
 import "./globals.css";
 
+// Enable Sentry monitoring in production
+import "../sentry.client.config";
+
 export const metadata: Metadata = {
   title: "النسخة - The Copy",
   description: "منصة للكتابة الإبداعية والتحليل الدرامي باللغة العربية",
