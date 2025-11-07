@@ -7,6 +7,7 @@ import { env } from '@/config/env';
 import { initializeSentry } from '@/config/sentry';
 import { setupMiddleware, errorHandler } from '@/middleware';
 import { sentryRequestHandler, sentryTracingHandler, sentryErrorHandler, trackError, trackPerformance } from '@/middleware/sentry.middleware';
+import { logAuthAttempts, logRateLimitViolations } from '@/middleware/security-logger.middleware';
 import { metricsMiddleware, metricsEndpoint } from '@/middleware/metrics.middleware';
 import { AnalysisController } from '@/controllers/analysis.controller';
 import { authController } from '@/controllers/auth.controller';
@@ -21,8 +22,7 @@ import { closeDatabase } from '@/db';
 import { initializeWorkers, shutdownQueues } from '@/queues';
 import { setupBullBoard, getAuthenticatedBullBoardRouter } from '@/middleware/bull-board.middleware';
 import { queueController } from '@/controllers/queue.controller';
-import { websocketService } from '@/services/websocket.service';
-import { sseService } from '@/services/sse.service';
+import { metricsController } from '@/controllers/metrics.controller';
 
 // Initialize Sentry monitoring (must be first)
 initializeSentry();
@@ -40,6 +40,10 @@ app.use(trackPerformance);
 
 // Prometheus metrics tracking
 app.use(metricsMiddleware);
+
+// Security logging middleware
+app.use(logAuthAttempts);
+app.use(logRateLimitViolations);
 
 // Setup middleware
 setupMiddleware(app);
@@ -133,13 +137,19 @@ app.get('/api/queue/:queueName/stats', authMiddleware, queueController.getSpecif
 app.post('/api/queue/jobs/:jobId/retry', authMiddleware, queueController.retryJob.bind(queueController));
 app.post('/api/queue/:queueName/clean', authMiddleware, queueController.cleanQueue.bind(queueController));
 
-// Real-time Communication endpoints (SSE & WebSocket)
-app.get('/api/realtime/events', authMiddleware, realtimeController.connectSSE.bind(realtimeController));
-app.get('/api/realtime/stats', authMiddleware, realtimeController.getStats.bind(realtimeController));
-app.get('/api/realtime/health', realtimeController.healthCheck.bind(realtimeController));
-app.post('/api/realtime/test', authMiddleware, realtimeController.sendTestEvent.bind(realtimeController));
-app.get('/api/realtime/analysis/:analysisId/stream', authMiddleware, realtimeController.streamAnalysisLogs.bind(realtimeController));
-app.get('/api/realtime/jobs/:jobId/stream', authMiddleware, realtimeController.streamJobProgress.bind(realtimeController));
+// Metrics Dashboard endpoints (protected)
+app.get('/api/metrics/snapshot', authMiddleware, metricsController.getSnapshot.bind(metricsController));
+app.get('/api/metrics/latest', authMiddleware, metricsController.getLatest.bind(metricsController));
+app.get('/api/metrics/range', authMiddleware, metricsController.getRange.bind(metricsController));
+app.get('/api/metrics/database', authMiddleware, metricsController.getDatabaseMetrics.bind(metricsController));
+app.get('/api/metrics/redis', authMiddleware, metricsController.getRedisMetrics.bind(metricsController));
+app.get('/api/metrics/queue', authMiddleware, metricsController.getQueueMetrics.bind(metricsController));
+app.get('/api/metrics/api', authMiddleware, metricsController.getApiMetrics.bind(metricsController));
+app.get('/api/metrics/resources', authMiddleware, metricsController.getResourceMetrics.bind(metricsController));
+app.get('/api/metrics/gemini', authMiddleware, metricsController.getGeminiMetrics.bind(metricsController));
+app.get('/api/metrics/report', authMiddleware, metricsController.generateReport.bind(metricsController));
+app.get('/api/metrics/health', authMiddleware, metricsController.getHealth.bind(metricsController));
+app.get('/api/metrics/dashboard', authMiddleware, metricsController.getDashboardSummary.bind(metricsController));
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -152,19 +152,28 @@ export const commonSchemas = {
 /**
  * Security validation middleware - detect potential attacks
  */
+import { logSecurityEvent, SecurityEventType } from './security-logger.middleware';
+
 const suspiciousPatterns = [
-  /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,  // SQL Injection
-  /(<script[^>]*>.*?<\/script>)/gi,  // XSS
-  /(javascript:|data:text\/html|onerror=|onload=)/gi,  // XSS
-  /(\.\.)|(\/etc\/passwd)|(\.\.\/)/gi,  // Path traversal
+  { regex: /(\%27)|(\')|(\-\-)|(\%23)|(#)/i, type: SecurityEventType.SQL_INJECTION_ATTEMPT },
+  { regex: /(<script[^>]*>.*?<\/script>)|(<iframe)|(<object)/gi, type: SecurityEventType.XSS_ATTEMPT },
+  { regex: /(javascript:|data:text\/html|onerror=|onload=|onclick=)/gi, type: SecurityEventType.XSS_ATTEMPT },
+  { regex: /(\.\.)|(\/etc\/passwd)|(\.\.\/)|(\.\.\%2F)/gi, type: SecurityEventType.PATH_TRAVERSAL_ATTEMPT },
 ];
 
 export function detectAttacks(req: Request, res: Response, next: NextFunction) {
   const allInputs = JSON.stringify(req.body) + JSON.stringify(req.query);
 
   for (const pattern of suspiciousPatterns) {
-    if (pattern.test(allInputs)) {
+    if (pattern.regex.test(allInputs)) {
+      // Log security event with full context
+      logSecurityEvent(pattern.type, req, {
+        input: allInputs.substring(0, 200),
+        detectedPattern: pattern.regex.toString(),
+      });
+
       logger.warn('🚨 Potential attack detected', {
+        type: pattern.type,
         ip: req.ip,
         path: req.path,
         userAgent: req.get('User-Agent'),

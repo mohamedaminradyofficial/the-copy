@@ -27,16 +27,31 @@ export function initializeSentry() {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV || 'development',
-    
+
+    // Release tracking for version monitoring
+    release: process.env.SENTRY_RELEASE || `the-copy-backend@${process.env.npm_package_version || '1.0.0'}`,
+
+    // Server name for multi-instance deployments
+    serverName: process.env.HOSTNAME || process.env.SENTRY_SERVER_NAME || 'backend-server',
+
     // Performance Monitoring
-    tracesSampleRate: 0.1, // 10% of requests in production
-    profilesSampleRate: 0.1, // 10% profiling
-    
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+
     // Integrations
     integrations: [
       // Performance profiling
       nodeProfilingIntegration(),
     ],
+
+    // Tags for filtering and searching
+    initialScope: {
+      tags: {
+        'app.name': 'the-copy',
+        'app.component': 'backend',
+        'node.version': process.version,
+      },
+    },
 
     // Before sending events
     beforeSend(event, hint) {
