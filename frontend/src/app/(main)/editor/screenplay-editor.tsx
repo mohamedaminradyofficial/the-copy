@@ -443,7 +443,7 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   };
 
   // Get next format on Tab
-  const getNextFormatOnTab = (currentFormat: string, shiftKey: boolean) => {
+  const getNextFormatOnTab = (currentFormat: string, shiftKey: boolean): KeyboardScreenplayFormat | null => {
     const mainSequence = [
       "scene-header-top-line",
       "action",
@@ -470,11 +470,11 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
         const currentIndex = mainSequence.indexOf(currentFormat);
         if (currentIndex !== -1) {
           if (shiftKey) {
-            return mainSequence[Math.max(0, currentIndex - 1)];
+            return mainSequence[Math.max(0, currentIndex - 1)] as KeyboardScreenplayFormat;
           } else {
             return mainSequence[
               Math.min(mainSequence.length - 1, currentIndex + 1)
-            ];
+            ] as KeyboardScreenplayFormat;
           }
         }
         return "action";
@@ -482,7 +482,7 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
   };
 
   // Get next format on Enter
-  const getNextFormatOnEnter = (currentFormat: string) => {
+  const getNextFormatOnEnter = (currentFormat: string): KeyboardScreenplayFormat | null => {
     const transitions: { [key: string]: string } = {
       "scene-header-top-line": "scene-header-3",
       "scene-header-3": "action",
@@ -490,7 +490,8 @@ export default function ScreenplayEditor({ onBack }: ScreenplayEditorProps) {
       "scene-header-2": "scene-header-3",
     };
 
-    return transitions[currentFormat] || "action";
+    const result = transitions[currentFormat] || "action";
+    return result as KeyboardScreenplayFormat;
   };
 
   // Apply format to current line

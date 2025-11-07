@@ -61,21 +61,11 @@ export default function AIChatPanel() {
     try {
       const history = messages.map(m => ({ role: m.role, content: m.content }));
 
-      // Use the mutation but with streaming callback
+      // Use the mutation
       await chatMutation.mutateAsync(
         {
           message: currentInput,
           history,
-          onChunk: (chunk: string) => {
-            // Update the streaming message with new chunks
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === streamingMessageId
-                  ? { ...msg, content: msg.content + chunk }
-                  : msg
-              )
-            );
-          }
         }
       );
     } catch (error) {

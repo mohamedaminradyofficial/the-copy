@@ -25,9 +25,6 @@ if (dsn) {
     integrations: [
       // HTTP integration for tracking outgoing requests
       Sentry.httpIntegration(),
-
-      // Node profiling for detailed performance data
-      Sentry.nodeProfilingIntegration(),
     ],
 
     // Profiling

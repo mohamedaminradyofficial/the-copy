@@ -56,9 +56,6 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // Enable SWC minification for better performance
-  swcMinify: true,
-
   experimental: {
     optimizePackageImports: [
       "@radix-ui/react-accordion",
