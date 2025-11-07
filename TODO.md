@@ -1,54 +1,191 @@
-الخطوة  1: قياسات الأساس (Baseline) -    
-1.1 إعداد بيئة الاختبار وقياس الأداء الحالي
-1.2 تحديث ملف baseline-queries.sql بالمعرفات الحقيقية
-1.3 تشغيل EXPLAIN ANALYZE وتسجيل النتائج الأساسية
-1.4 توثيق النتائج في baseline-results.md
-الخطوة  2: فهارس قاعدة البيانات -    
-2.1 التحقق من وجود الفهارس الجديدة في schema.ts
-2.2 توليد وتطبيق migrations باستخدام pnpm db:push
-2.3 التحقق من إنشاء الفهارس في قاعدة البيانات
-2.4 إعادة قياس الأداء بعد الفهارس وتوثيق التحسن
-الخطوة  3: الأمان والمراقبة -    
-3.1 التحقق من CORS configuration وتعزيزه
-3.2 إضافة UUID validation لجميع المسارات الحرجة
-3.3 تعزيز Security logging وإنشاء نظام التنبيهات
-3.4 تفعيل Sentry Web Vitals reporting في Frontend
-3.5 إجراء اختبارات أمان شاملة (SQL Injection, XSS, Rate Limiting)
-الخطوة  4: Redis والتخزين المؤقت -    
-4.1 إنشاء واختبار Redis connection configuration
-4.2 تطبيق Gemini cache strategy مع TTLs مناسبة
-4.3 دمج الكاش في controllers (Projects, Scenes, Characters)
-4.4 إضافة cache metrics endpoint ومراقبة الأداء
-الخطوة  5: نظام الطوابير (BullMQ) -    
-5.1 التحقق من Queue configuration وRedis connection
-5.2 التحقق من Workers registration واختبارها
-5.3 تحديث Analysis Controller لاستخدام Queue بدلاً من التنفيذ المباشر
-5.4 التحقق من Bull Board Dashboard وإمكانية الوصول
-الخطوة  6: القنوات الحية (Real-time) -    
-6.1 اختبار WebSocket service والاتصال
-6.2 اختبار SSE service واستقبال الأحداث
-6.3 توحيد بروتوكول الرسائل بين WebSocket وSSE
-6.4 إنشاء unified realtime types واختبارها
-الخطوة  7: تحسينات الواجهة الأمامية -    
-7.1 استبدال جميع <img> بـ <Image> من next/image مع optimization
-7.2 تكوين CDN loader للصور إن توفر
-7.3 تطبيق Particles LOD (Level of Detail) حسب قدرة الجهاز
-7.4 Lazy loading للمكونات الثقيلة باستخدام dynamic imports
-الخطوة  8: تحليل الحزمة -    
-8.1 إعداد Bundle Analyzer وتشغيل التحليل
-8.2 تحليل النتائج وتحديد المكتبات الكبيرة والمكررة
-8.3 تطبيق Code Splitting وDynamic imports للتقليل من حجم الحزمة
-الخطوة  9: ميزانية الأداء -    
-9.1 إضافة Performance Budget إلى next.config.ts
-9.2 تحديث ملف performance-budget.json بالحدود المناسبة
-9.3 إعداد CI/CD integration لفحص حجم الحزمة تلقائياً
-الخطوة  10: لوحة تحكم المقاييس -    
-10.1 التحقق من جميع Backend metrics endpoints
-10.2 إنشاء Frontend Dashboard UI لعرض المقاييس
-10.3 إضافة مميزات التحديث التلقائي والرسوم البيانية
-10.4 دمج Prometheus metrics (اختيار
-المهام النهائية والاختبارات
-تشغيل جميع الاختبارات ومراجعة logs الأخطاء
-اختبار smoke test للميزات الأساسية
-توثيق جميع التغييرات والنتائج
-إنشاء PR مع تقرير المقارنة قبل/بعد
+🚀 الخطوات المتبقية - المرحلة الأولى (قاعدة البيانات والأداء)
+الخطوة 1: إعداد قاعدة البيانات وتشغيل القياسات الأساسية
+المهام المرتبطة: generate-migrations, verify-indexes-db, explain-analyze-run
+إعداد قاعدة البيانات:
+   # في مجلد backend
+   cd backend
+   
+   # تشغيل Docker لقاعدة PostgreSQL
+   docker-compose up -d postgres
+   
+   # أو إعداد PostgreSQL محلياً
+   # أو استخدام خدمة سحابية مثل Neon
+   # في مجلد backend   cd backend      # تشغيل Docker لقاعدة PostgreSQL   docker-compose up -d postgres      # أو إعداد PostgreSQL محلياً   # أو استخدام خدمة سحابية مثل Neon
+تطبيق الـ Migrations:
+   # توليد وتطبيق schema قاعدة البيانات
+   pnpm db:push
+   # توليد وتطبيق schema قاعدة البيانات   pnpm db:push
+التحقق من الفهارس:
+   -- تشغيل الاستعلامات من optimized-indexes.sql
+   -- التحقق من إنشاء جميع الفهارس الجديدة
+   SELECT schemaname, tablename, indexname 
+   FROM pg_indexes 
+   WHERE schemaname = 'public';
+   -- تشغيل الاستعلامات من optimized-indexes.sql   -- التحقق من إنشاء جميع الفهارس الجديدة   SELECT schemaname, tablename, indexname    FROM pg_indexes    WHERE schemaname = 'public';
+تشغيل EXPLAIN ANALYZE:
+   # تشغيل جميع الاستعلامات من baseline-queries.sql
+   # تسجيل النتائج في baseline-results.md
+   # تشغيل جميع الاستعلامات من baseline-queries.sql   # تسجيل النتائج في baseline-results.md
+الخطوة 2: قياس الأداء بعد التحسينات
+المهام المرتبطة: post-index-performance
+إعادة تشغيل EXPLAIN ANALYZE:
+تشغيل نفس الاستعلامات من baseline-queries.sql
+مقارنة النتائج مع القياسات الأساسية
+توثيق التحسن:
+حساب النسبة المئوية للتحسن في كل استعلام
+تحديث baseline-results.md بالنتائج الجديدة
+🔒 الخطوة 3: الاختبارات الأمنية الشاملة
+المهام المرتبطة: comprehensive-security-tests
+اختبارات SQL Injection:
+   # استخدام أدوات مثل sqlmap أو اختبارات يدوية
+   # اختبار جميع endpoints الحساسة
+   # استخدام أدوات مثل sqlmap أو اختبارات يدوية   # اختبار جميع endpoints الحساسة
+اختبارات XSS:
+اختبار جميع حقول الإدخال
+التحقق من sanitization السليم
+اختبارات Rate Limiting:
+   # استخدام أدوات مثل Artillery أو k6
+   # اختبار حدود الطلبات لكل IP
+   # استخدام أدوات مثل Artillery أو k6   # اختبار حدود الطلبات لكل IP
+اختبارات التحقق من الهوية:
+اختبار JWT tokens
+اختبار UUID validation
+اختبار CORS policies
+⚡ الخطوة 4: نظام التخزين المؤقت (Redis)
+المهام المرتبطة: redis-connection, gemini-cache-strategy, integrate-cache-controllers, cache-metrics-endpoint
+إعداد Redis:
+   # تشغيل Redis عبر Docker
+   docker-compose up -d redis
+   
+   # أو تثبيت Redis محلياً
+   # تشغيل Redis عبر Docker   docker-compose up -d redis      # أو تثبيت Redis محلياً
+اختبار اتصال Redis:
+   redis-cli ping
+   redis-cli ping
+تطبيق استراتيجية Cache لـ Gemini:
+   // في gemini-cache.strategy.ts
+   // تطبيق TTL مناسب للاستجابات
+   // إعداد cache warming
+   // في gemini-cache.strategy.ts   // تطبيق TTL مناسب للاستجابات   // إعداد cache warming
+دمج Cache في Controllers:
+   // تحديث Projects, Scenes, Characters controllers
+   // إضافة cache layers للاستعلامات المتكررة
+   // تحديث Projects, Scenes, Characters controllers   // إضافة cache layers للاستعلامات المتكررة
+إضافة Cache Metrics:
+   // إنشاء endpoint لمراقبة أداء الـ cache
+   // hit/miss ratios, memory usage
+   // إنشاء endpoint لمراقبة أداء الـ cache   // hit/miss ratios, memory usage
+🔄 الخطوة 5: نظام الطوابير (BullMQ)
+المهام المرتبطة: queue-configuration, workers-registration, analysis-controller-queue, bull-board-dashboard
+التحقق من Queue Configuration:
+   // التحقق من queue.config.ts
+   // التأكد من اتصال Redis
+   // التحقق من queue.config.ts   // التأكد من اتصال Redis
+تسجيل واختبار Workers:
+   // تشغيل initializeWorkers()
+   // اختبار معالجة المهام
+   // تشغيل initializeWorkers()   // اختبار معالجة المهام
+تحديث Analysis Controller:
+   // استبدال التنفيذ المباشر بـ Queue
+   // إضافة job submission logic
+   // استبدال التنفيذ المباشر بـ Queue   // إضافة job submission logic
+Bull Board Dashboard:
+   # الوصول إلى /admin/queues
+   # التحقق من عرض الطوابير والمهام
+   # الوصول إلى /admin/queues   # التحقق من عرض الطوابير والمهام
+🌐 الخطوة 6: التحديثات الفورية (Real-time)
+المهام المرتبطة: websocket-testing, sse-testing, unify-message-protocol, unified-realtime-types
+اختبار WebSocket Service:
+   // اختبار اتصال WebSocket
+   // إرسال واستقبال الرسائل
+   // اختبار اتصال WebSocket   // إرسال واستقبال الرسائل
+اختبار SSE Service:
+   // اختبار Server-Sent Events
+   // التحقق من تدفق الأحداث
+   // اختبار Server-Sent Events   // التحقق من تدفق الأحداث
+توحيد بروتوكول الرسائل:
+   // إنشاء message protocol موحد
+   // بين WebSocket و SSE
+   // إنشاء message protocol موحد   // بين WebSocket و SSE
+إنشاء Unified Realtime Types:
+   // في realtime.types.ts
+   // تعريف types مشتركة
+   // في realtime.types.ts   // تعريف types مشتركة
+🎨 الخطوة 7: تحسينات الواجهة الأمامية
+المهام المرتبطة: cdn-loader-config, particles-lod
+تكوين CDN Loader:
+   // في next.config.ts
+   // إعداد CDN للصور إن توفر
+   // في next.config.ts   // إعداد CDN للصور إن توفر
+تطبيق Particles LOD:
+   // في particle-background-optimized.tsx
+   // تطبيق Level of Detail حسب قدرة الجهاز
+   // في particle-background-optimized.tsx   // تطبيق Level of Detail حسب قدرة الجهاز
+📦 الخطوة 8: تحليل الحزمة (Bundle Analysis)
+المهام المرتبطة: bundle-analyzer-setup, analyze-bundle-results, code-splitting-dynamic-imports
+إعداد Bundle Analyzer:
+   cd frontend
+   ANALYZE=true pnpm build
+   cd frontend   ANALYZE=true pnpm build
+تحليل النتائج:
+فحص حجم المكتبات
+تحديد المكتبات الكبيرة والمكررة
+تطبيق Code Splitting:
+   // تحسين dynamic imports
+   // فصل المكونات الكبيرة
+   // تحسين dynamic imports   // فصل المكونات الكبيرة
+📊 الخطوة 9: ميزانية الأداء (Performance Budget)
+المهام المرتبطة: performance-budget-config, update-performance-budget-json, ci-cd-budget-integration
+إضافة Performance Budget:
+   // في next.config.ts
+   // تحديد حدود الأداء
+   // في next.config.ts   // تحديد حدود الأداء
+تحديث ملف performance-budget.json:
+   {
+     "budgets": [
+       {"resourceType": "script", "budget": 350},
+       {"resourceType": "stylesheet", "budget": 50}
+     ]
+   }
+   {     "budgets": [       {"resourceType": "script", "budget": 350},       {"resourceType": "stylesheet", "budget": 50}     ]   }
+دمج CI/CD:
+   # في GitHub Actions
+   # إضافة خطوات فحص حجم الحزمة
+   # في GitHub Actions   # إضافة خطوات فحص حجم الحزمة
+📈 الخطوة 10: لوحة المقاييس (Metrics Dashboard)
+المهام المرتبطة: verify-backend-metrics, frontend-dashboard-ui, auto-refresh-charts, prometheus-integration
+التحقق من Backend Metrics:
+   # اختبار جميع endpoints المقاييس
+   curl http://localhost:3001/metrics
+   # اختبار جميع endpoints المقاييس   curl http://localhost:3001/metrics
+إنشاء Frontend Dashboard:
+   // في metrics-dashboard/page.tsx
+   // واجهة عرض المقاييس
+   // في metrics-dashboard/page.tsx   // واجهة عرض المقاييس
+إضافة Auto-refresh:
+   // تحديث تلقائي للرسوم البيانية
+   // real-time metrics display
+   // تحديث تلقائي للرسوم البيانية   // real-time metrics display
+دمج Prometheus (اختياري):
+   // إعداد Prometheus integration
+   // للمراقبة المتقدمة
+   // إعداد Prometheus integration   // للمراقبة المتقدمة
+🧪 الخطوة 11: الاختبارات والتوثيق
+المهام المرتبطة: run-all-tests, smoke-test, document-changes, create-pr-with-report
+تشغيل جميع الاختبارات:
+   # Backend tests
+   cd backend && pnpm test
+   
+   # Frontend tests  
+   cd frontend && pnpm test
+   # Backend tests   cd backend && pnpm test      # Frontend tests     cd frontend && pnpm test
+Smoke Tests:
+   # اختبار الميزات الأساسية
+   pnpm smoke:tests
+   # اختبار الميزات الأساسية   pnpm smoke:tests
+توثيق التغييرات:
+توثيق جميع التحسينات المطبقة
+قياس التحسن في الأداء
+إنشاء Pull Request:
+تقرير مقارنة قبل/بعد
+توثيق النتائج والمقاييس
