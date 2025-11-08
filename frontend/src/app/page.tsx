@@ -20,6 +20,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import images from "./images";
 import pagesManifest from "@/config/pages.manifest.json";
+import { LandingCardScanner } from "@/components/card-scanner/landing-card-scanner";
 
 // Register GSAP plugin
 if (typeof window !== "undefined") {
@@ -111,24 +112,24 @@ export default function Home() {
         );
       }
 
-      // Cards container animation - fade in from bottom
+      // Cards container animation - fade in from bottom to top
       if (cardsContainerRef.current) {
         gsap.fromTo(
           cardsContainerRef.current,
           {
             opacity: 0,
-            y: 100,
+            y: 150,
           },
           {
             opacity: 1,
             y: 0,
-            duration: 0.5,
-            ease: "power2.out",
+            duration: 1,
+            ease: "power3.out",
             scrollTrigger: {
               trigger: cardsContainerRef.current,
-              start: "top 80%",
-              end: "top 50%",
-              scrub: 1,
+              start: "top bottom",
+              end: "top 60%",
+              scrub: 1.5,
             },
           }
         );
@@ -209,68 +210,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cards Section */}
-      <section className="relative min-h-screen py-20 px-4 bg-gradient-to-b from-black via-zinc-900 to-black">
-        <div
-          ref={cardsContainerRef}
-          className="container mx-auto max-w-7xl"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <Link
-                  key={index}
-                  href={feature.link}
-                  className="group relative block"
-                  aria-label={`انتقل إلى ${feature.title}`}
-                >
-                  <div
-                    className={`relative h-96 rounded-2xl overflow-hidden transition-all duration-500 ease-out ${
-                      hoveredCard === index
-                        ? "scale-105 shadow-2xl shadow-white/20"
-                        : "scale-100 shadow-lg shadow-white/5"
-                    }`}
-                    onMouseEnter={() => setHoveredCard(index)}
-                    onMouseLeave={() => setHoveredCard(null)}
-                  >
-                    {/* Card Image */}
-                    <div className="absolute inset-0">
-                      <Image
-                        src={images[index] || "/placeholder.svg"}
-                        alt={feature.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover"
-                      />
-                    </div>
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
-
-                    {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-8">
-                      <div className="transform transition-all duration-500 group-hover:translate-y-0 translate-y-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <IconComponent className="h-8 w-8 text-white" />
-                          <h3 className="text-3xl font-black text-white">
-                            {feature.title}
-                          </h3>
-                        </div>
-                        <p className="text-base text-white/90 font-semibold leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Hover Border Effect */}
-                    <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 rounded-2xl transition-all duration-500" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+      {/* Cards Section with Scanner Effect */}
+      <section
+        ref={cardsContainerRef}
+        className="relative h-screen bg-black overflow-hidden opacity-0"
+      >
+        <LandingCardScanner />
       </section>
 
       {/* Footer */}
