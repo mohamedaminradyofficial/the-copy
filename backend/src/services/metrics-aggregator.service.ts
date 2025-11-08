@@ -179,13 +179,13 @@ export class MetricsAggregatorService {
     }
 
     const memoryMetric = redisParsed['the_copy_redis_memory_usage_bytes'];
-    if (memoryMetric && memoryMetric.values.length > 0) {
-      memoryUsage = memoryMetric.values[0].value || 0;
+    if (memoryMetric && memoryMetric.values && memoryMetric.values.length > 0) {
+      memoryUsage = memoryMetric.values[0]?.value || 0;
     }
 
     const clientsMetric = redisParsed['the_copy_redis_connected_clients'];
-    if (clientsMetric && clientsMetric.values.length > 0) {
-      connectedClients = clientsMetric.values[0].value || 0;
+    if (clientsMetric && clientsMetric.values && clientsMetric.values.length > 0) {
+      connectedClients = clientsMetric.values[0]?.value || 0;
     }
 
     const totalOperations = hits + misses;
@@ -320,13 +320,13 @@ export class MetricsAggregatorService {
     }
 
     const cacheHitsMetric = parsed['the_copy_gemini_cache_hits_total'];
-    if (cacheHitsMetric && cacheHitsMetric.values.length > 0) {
-      cacheHits = cacheHitsMetric.values[0].value || 0;
+    if (cacheHitsMetric && cacheHitsMetric.values && cacheHitsMetric.values.length > 0) {
+      cacheHits = cacheHitsMetric.values[0]?.value || 0;
     }
 
     const cacheMissesMetric = parsed['the_copy_gemini_cache_misses_total'];
-    if (cacheMissesMetric && cacheMissesMetric.values.length > 0) {
-      cacheMisses = cacheMissesMetric.values[0].value || 0;
+    if (cacheMissesMetric && cacheMissesMetric.values && cacheMissesMetric.values.length > 0) {
+      cacheMisses = cacheMissesMetric.values[0]?.value || 0;
     }
 
     const totalCacheOps = cacheHits + cacheMisses;
@@ -387,7 +387,7 @@ export class MetricsAggregatorService {
    * Get latest snapshot
    */
   getLatestSnapshot(): MetricsSnapshot | null {
-    return this.snapshots[this.snapshots.length - 1] || null;
+    return this.snapshots.length > 0 ? this.snapshots[this.snapshots.length - 1] || null : null;
   }
 
   /**
@@ -414,6 +414,10 @@ export class MetricsAggregatorService {
     }
 
     const latest = snapshots[snapshots.length - 1];
+
+    if (!latest) {
+      throw new Error('No valid metrics data available');
+    }
 
     // Calculate summary
     const totalRequests = latest.api.totalRequests;

@@ -62,23 +62,24 @@ describe('Particle Background Optimization', () => {
       });
 
       // The component should respect the user's motion preference
-      expect(result.current.prefersReducedMotion).toBe(false); // Default is no preference
+      // In this test, we mocked matchMedia to return true for reduced motion
+      expect(result.current.prefersReducedMotion).toBe(true);
     });
   });
 
   describe('Performance Configuration', () => {
     it('should have optimized particle counts for different devices', () => {
-      // Verify the optimized configuration exists
+      // Verify the optimized configuration uses device detection
       const fs = require('fs');
       const path = require('path');
       
       const filePath = path.join(__dirname, 'particle-background-optimized.tsx');
       const fileContent = fs.readFileSync(filePath, 'utf8');
       
-      // Should contain device-specific configurations
-      expect(fileContent).toContain('DESKTOP');
-      expect(fileContent).toContain('MOBILE');
-      expect(fileContent).toContain('TABLET');
+      // Should use device detection system
+      expect(fileContent).toContain('getDeviceCapabilities');
+      expect(fileContent).toContain('getParticleLODConfig');
+      expect(fileContent).toContain('getOptimalParticleCount');
     });
 
     it('should implement requestIdleCallback optimization', () => {
@@ -91,6 +92,66 @@ describe('Particle Background Optimization', () => {
       // Should implement idle callback for performance
       expect(fileContent).toContain('requestIdle');
       expect(fileContent).toContain('setTimeout');
+    });
+  });
+
+  describe('Visual Parity Between Components', () => {
+    it('should have identical distance field calculations', () => {
+      // This test ensures both components use shared constants
+      const fs = require('fs');
+      const path = require('path');
+      
+      const mainFilePath = path.join(__dirname, 'particle-background.tsx');
+      const optimizedFilePath = path.join(__dirname, 'particle-background-optimized.tsx');
+      const constantsFilePath = path.join(__dirname, 'particle-letters.constants.ts');
+      
+      const mainContent = fs.readFileSync(mainFilePath, 'utf8');
+      const optimizedContent = fs.readFileSync(optimizedFilePath, 'utf8');
+      const constantsContent = fs.readFileSync(constantsFilePath, 'utf8');
+      
+      // Check that both files import from shared constants
+      expect(mainContent).toContain('from "./particle-letters.constants"');
+      expect(optimizedContent).toContain('from "./particle-letters.constants"');
+      
+      // Check that shared constants file has all required exports
+      expect(constantsContent).toContain('export const BASELINE');
+      expect(constantsContent).toContain('export const STROKE_WIDTH');
+      expect(constantsContent).toContain('export const X_HEIGHT');
+      expect(constantsContent).toContain('export const LETTER_POSITIONS');
+      
+      // Check that both files use the shared constants
+      expect(mainContent).toContain('LETTER_POSITIONS.T');
+      expect(optimizedContent).toContain('LETTER_POSITIONS.T');
+      
+      // Check that letter 't' uses LETTER_POSITIONS in both files
+      const mainTXMatch = mainContent.match(/dist_t[^{]*{[^}]*const x = LETTER_POSITIONS\.T/s);
+      const optimizedTXMatch = optimizedContent.match(/dist_t[^{]*{[^}]*const x = LETTER_POSITIONS\.T/s);
+      
+      expect(mainTXMatch).toBeTruthy();
+      expect(optimizedTXMatch).toBeTruthy();
+    });
+
+    it('should have matching reduced-motion behavior', () => {
+      // Ensure both components handle reduced motion the same way
+      const fs = require('fs');
+      const path = require('path');
+      
+      const mainFilePath = path.join(__dirname, 'particle-background.tsx');
+      const optimizedFilePath = path.join(__dirname, 'particle-background-optimized.tsx');
+      
+      const mainContent = fs.readFileSync(mainFilePath, 'utf8');
+      const optimizedContent = fs.readFileSync(optimizedFilePath, 'utf8');
+      
+      // Both should check for prefers-reduced-motion
+      expect(mainContent).toContain('prefers-reduced-motion');
+      expect(optimizedContent).toContain('prefers-reduced-motion');
+      
+      // Both should return early or reduce particles for reduced motion
+      const mainHasReducedMotionReturn = mainContent.includes('if (prefersReducedMotion)');
+      const optimizedHasReducedMotionReturn = optimizedContent.includes('if (prefersReducedMotion)');
+      
+      expect(mainHasReducedMotionReturn).toBe(true);
+      expect(optimizedHasReducedMotionReturn).toBe(true);
     });
   });
 });

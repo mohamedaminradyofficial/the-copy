@@ -91,19 +91,19 @@ export class CacheService {
   private initializeRedis(): void {
     try {
       // Prefer REDIS_URL if provided, otherwise construct from individual variables
-      let redisConfig: string | object;
-      
+      let redisConfig: string | { host: string; port: number; password?: string };
+
       if (process.env.REDIS_URL) {
         redisConfig = process.env.REDIS_URL;
       } else {
         redisConfig = {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT || '6379'),
-          password: process.env.REDIS_PASSWORD,
+          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
         };
       }
 
-      this.redis = new Redis(redisConfig, {
+      this.redis = new Redis(redisConfig as any, {
         retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
           logger.debug(`Redis retry attempt ${times}, delay: ${delay}ms`);
@@ -183,16 +183,6 @@ export class CacheService {
    * Get value from cache (L1 -> L2 -> null)
    */
   async get<T>(key: string): Promise<T | null> {
-    const transaction = Sentry?.startTransaction?.(
-      {
-        op: 'cache.get',
-        name: 'Cache Get Operation',
-        tags: {
-          'cache.key': key,
-        },
-      }
-    );
-
     try {
       // Try L1 cache first
       const memEntry = this.memoryCache.get(key);
@@ -205,9 +195,6 @@ export class CacheService {
           this.metrics.hits.l1++;
           this.metrics.hits.total++;
           
-          transaction?.setTag?.('cache.hit', 'l1');
-          transaction?.setData?.('cache_layer', 'l1');
-          transaction?.finish?.();
           
           return memEntry.data as T;
         } else {
@@ -234,10 +221,6 @@ export class CacheService {
             this.metrics.hits.total++;
             this.updateRedisHealth('connected');
             
-            transaction?.setTag?.('cache.hit', 'l2');
-            transaction?.setData?.('cache_layer', 'l2');
-            transaction?.setData?.('redis_latency_ms', redisLatency);
-            transaction?.finish?.();
 
             return parsed;
           }
@@ -258,17 +241,12 @@ export class CacheService {
       logger.debug(`Cache miss: ${key}`);
       this.metrics.misses++;
       
-      transaction?.setTag?.('cache.hit', 'miss');
-      transaction?.setData?.('cache_layer', 'miss');
-      transaction?.finish?.();
       
       return null;
     } catch (error) {
       logger.error('Cache get error:', error);
       this.metrics.errors++;
       
-      transaction?.setStatus?.('internal_error');
-      transaction?.finish?.();
       
       if (Sentry) {
         Sentry.captureException(error, {
@@ -284,19 +262,6 @@ export class CacheService {
    * Set value in cache (L1 + L2)
    */
   async set<T>(key: string, value: T, ttl: number = this.DEFAULT_TTL): Promise<void> {
-    const transaction = Sentry?.startTransaction?.(
-      {
-        op: 'cache.set',
-        name: 'Cache Set Operation',
-        tags: {
-          'cache.key': key,
-        },
-        data: {
-          'cache.ttl': ttl,
-        },
-      }
-    );
-
     try {
       // Validate TTL
       if (ttl <= 0 || ttl > this.MAX_TTL) {
@@ -308,9 +273,6 @@ export class CacheService {
       const serialized = JSON.stringify(value);
       if (serialized.length > this.MAX_VALUE_SIZE) {
         logger.warn(`Value too large (${serialized.length} bytes), skipping cache`);
-        transaction?.setTag?.('cache.error', 'value_too_large');
-        transaction?.setStatus?.('invalid_argument');
-        transaction?.finish?.();
         return;
       }
 
@@ -328,16 +290,11 @@ export class CacheService {
           this.metrics.sets++;
           this.updateRedisHealth('connected');
           
-          transaction?.setTag?.('cache.layer', 'l1+l2');
-          transaction?.setData?.('redis_latency_ms', redisLatency);
-          transaction?.finish?.();
         } catch (redisError) {
           logger.error('Redis set error:', redisError);
           this.metrics.errors++;
           this.updateRedisHealth('error');
           
-          transaction?.setTag?.('cache.layer', 'l1_only');
-          transaction?.finish?.();
           
           if (Sentry) {
             Sentry.captureException(redisError, {
@@ -350,15 +307,11 @@ export class CacheService {
         logger.debug(`Cache set (L1 only): ${key}, TTL: ${ttl}s`);
         this.metrics.sets++;
         
-        transaction?.setTag?.('cache.layer', 'l1_only');
-        transaction?.finish?.();
       }
     } catch (error) {
       logger.error('Cache set error:', error);
       this.metrics.errors++;
       
-      transaction?.setStatus?.('internal_error');
-      transaction?.finish?.();
       
       if (Sentry) {
         Sentry.captureException(error, {

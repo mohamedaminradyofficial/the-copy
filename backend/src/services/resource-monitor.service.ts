@@ -245,7 +245,7 @@ export class ResourceMonitorService {
   incrementConcurrentRequests(): void {
     concurrentRequests.inc();
 
-    const current = concurrentRequests['hashMap'][''].value;
+    const current = (concurrentRequests as any)?.hashMap?.['']?.value || 0;
     if (current > this.thresholds.concurrentRequests.critical) {
       this.trackBackpressure('concurrent_requests_critical', { count: current });
       resourceThresholdBreaches.inc({ resource: 'concurrent_requests', threshold: 'critical' });
@@ -312,11 +312,11 @@ export class ResourceMonitorService {
     let concurrentReqs = 0;
 
     for (const metric of metrics) {
-      if (metric.name === 'the_copy_backpressure_events_total' && metric.type === 'counter') {
-        backpressureCount = metric.values.reduce((sum, val) => sum + (val.value || 0), 0);
+      if (metric.name === 'the_copy_backpressure_events_total') {
+        backpressureCount = (metric.values || []).reduce((sum: number, val: any) => sum + (val.value || 0), 0);
       }
-      if (metric.name === 'the_copy_concurrent_requests' && metric.type === 'gauge') {
-        concurrentReqs = metric.values[0]?.value || 0;
+      if (metric.name === 'the_copy_concurrent_requests') {
+        concurrentReqs = (metric.values && metric.values[0])?.value || 0;
       }
     }
 
@@ -385,7 +385,7 @@ export class ResourceMonitorService {
    * Check if system is under pressure
    */
   isUnderPressure(): boolean {
-    const cpuUsage = systemCpuUsage['hashMap'][''].value || 0;
+    const cpuUsage = (systemCpuUsage as any)?.hashMap?.['']?.value || 0;
     const totalMemory = os.totalmem();
     const freeMemory = os.freemem();
     const memoryPercent = ((totalMemory - freeMemory) / totalMemory) * 100;

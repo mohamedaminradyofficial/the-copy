@@ -844,6 +844,7 @@
 
 # pnpm
 **/pnpm-lock.yaml
+!pnpm-lock.yaml
 **/.pnpm-store/
 
 # Bower

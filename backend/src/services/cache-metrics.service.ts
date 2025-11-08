@@ -127,10 +127,7 @@ class CacheMetricsService {
    * Get latest snapshot
    */
   getLatestSnapshot(): CacheMetricsSnapshot | null {
-    if (this.snapshots.length === 0) {
-      return null;
-    }
-    return this.snapshots[this.snapshots.length - 1];
+    return this.snapshots.length === 0 ? null : this.snapshots[this.snapshots.length - 1] || null;
   }
 
   /**

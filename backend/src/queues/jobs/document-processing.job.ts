@@ -97,10 +97,10 @@ async function processDocument(
         wordCount,
         characterCount,
       },
-      scenes,
-      characters,
-      dialogue,
-      summary,
+      ...(scenes && { scenes }),
+      ...(characters && { characters }),
+      ...(dialogue && { dialogue }),
+      ...(summary && { summary }),
       processingTime,
     };
   } catch (error) {

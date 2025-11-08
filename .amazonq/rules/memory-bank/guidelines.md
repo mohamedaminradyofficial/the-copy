@@ -1,233 +1,148 @@
-# Development Guidelines & Patterns
+# The Copy - Development Guidelines
 
 ## Code Quality Standards
 
-### TypeScript Implementation Patterns
-- **Strict Type Safety**: All new code uses TypeScript with strict mode enabled
-- **Interface Definitions**: Comprehensive type definitions in dedicated `types/` directories
-- **Zod Schema Validation**: Input validation using Zod schemas with custom error messages in Arabic
-- **Generic Type Usage**: Extensive use of generic types for reusable components and functions
+### TypeScript Usage
+- **Strict TypeScript Configuration**: All files use strict TypeScript with comprehensive type definitions
+- **Interface Definitions**: Complex objects use detailed TypeScript interfaces (e.g., `SidebarContext`, `AutoRefreshConfig`)
+- **Type Safety**: Extensive use of type guards and proper typing for all function parameters and return values
+- **Generic Types**: Proper use of generics for reusable components and utilities
 
-### Code Structure & Organization
-- **Modular Architecture**: Clear separation between components, services, utilities, and types
-- **Barrel Exports**: Index files for clean imports (`export * from './module'`)
-- **Functional Components**: React functional components with hooks over class components
-- **Service Layer Pattern**: Business logic abstracted into service classes with dependency injection
+### File Structure and Naming
+- **Kebab-case for Files**: Component files use kebab-case (e.g., `particle-background-optimized.tsx`, `system-metrics-dashboard.tsx`)
+- **PascalCase for Components**: React components use PascalCase naming convention
+- **Descriptive Naming**: File names clearly indicate functionality and purpose
+- **Test File Naming**: Test files follow `.test.ts` pattern with descriptive names
 
-### Naming Conventions
-- **File Naming**: kebab-case for files (`screenplay-editor.tsx`, `particle-background.tsx`)
-- **Component Naming**: PascalCase for React components (`ScreenplayEditor`, `ParticleBackground`)
-- **Variable Naming**: camelCase for variables and functions (`currentFormat`, `handleKeyDown`)
-- **Constant Naming**: SCREAMING_SNAKE_CASE for constants (`ACTION_VERB_LIST`, `STROKE_WIDTH`)
-- **Class Naming**: PascalCase for classes (`ScreenplayClassifier`, `NetworkDiagnostics`)
+### Import Organization
+- **Grouped Imports**: Imports organized in logical groups (React, external libraries, internal modules)
+- **Absolute Imports**: Consistent use of `@/` path aliases for internal imports
+- **Type-only Imports**: Proper use of `import type` for TypeScript types
 
-### Documentation Standards
-- **JSDoc Comments**: Comprehensive function documentation with parameter and return types
-- **Inline Comments**: Arabic and English comments for complex logic
-- **README Files**: Detailed documentation in both Arabic and English
-- **Type Annotations**: Explicit type annotations for complex types and interfaces
+## React Component Patterns
 
-## Architectural Patterns
+### Component Structure
+- **Functional Components**: All components use React functional components with hooks
+- **forwardRef Pattern**: Extensive use of `React.forwardRef` for component composition
+- **Custom Hooks**: Complex logic extracted into custom hooks (e.g., `useSidebar`, `useMetrics`)
+- **Compound Components**: Complex UI components broken into smaller, composable parts
 
-### Frontend Architecture (Next.js)
-- **App Router Pattern**: Next.js 15 App Router with route groups `(main)`
-- **Server Components**: React Server Components for performance optimization
-- **Client Components**: Explicit `"use client"` directive for interactive components
-- **Custom Hooks**: Reusable state logic extracted into custom hooks
-- **Component Composition**: Compound components using shadcn/ui patterns
+### State Management
+- **useState for Local State**: Local component state managed with `useState`
+- **useContext for Shared State**: Shared state managed through React Context (e.g., `SidebarContext`)
+- **useMemo for Performance**: Expensive calculations memoized with `useMemo`
+- **useCallback for Functions**: Event handlers and functions memoized with `useCallback`
 
-### Backend Architecture (Express.js)
-- **Layered Architecture**: Controllers → Services → Utils separation
-- **Middleware Pipeline**: Express middleware for cross-cutting concerns
-- **Error Handling**: Centralized error handling with Winston logging
-- **Input Validation**: Zod schema validation at API boundaries
-- **Service Abstraction**: Business logic abstracted from HTTP concerns
+### Props and API Design
+- **Flexible Props**: Components accept both controlled and uncontrolled patterns
+- **Optional Props**: Extensive use of optional props with sensible defaults
+- **Variant Props**: Components support multiple variants through props (e.g., `variant`, `size`)
+- **Composition Props**: Support for `asChild` pattern for flexible composition
 
-### AI Integration Patterns
-- **Station-Based Processing**: Sequential AI processing through specialized stations
-- **Flow-Based Architecture**: Genkit flows for AI operations
-- **Service Abstraction**: AI services abstracted from business logic
-- **Constitutional AI**: Multi-agent systems for balanced analysis
-- **Pipeline Orchestration**: Coordinated execution of AI processing stages
+## Styling and UI Patterns
 
-## Security Implementation
+### CSS-in-JS and Tailwind
+- **Tailwind CSS**: Primary styling approach using Tailwind utility classes
+- **Class Variance Authority (CVA)**: Used for component variants and conditional styling
+- **CSS Variables**: Custom CSS properties for theming and dynamic values
+- **Responsive Design**: Mobile-first responsive design patterns
 
-### Input Validation & Sanitization
-- **HTML Sanitization**: DOMParser and manual sanitization to prevent XSS
-- **Command Injection Prevention**: Subprocess calls without `shell=True`
-- **Input Validation**: Zod schemas for all user inputs
-- **File Upload Security**: Type checking and content validation for uploaded files
-- **SQL Injection Prevention**: Parameterized queries and ORM usage
-
-### Security Headers & Middleware
-- **Helmet Integration**: HTTP security headers configuration
-- **CORS Configuration**: Strict CORS policies with environment-specific origins
-- **Rate Limiting**: Express rate limiting middleware
-- **Content Security Policy**: CSP headers for XSS prevention
-- **Authentication Middleware**: Secure session management
-
-### Error Handling & Logging
-- **Winston Logging**: Structured logging with different levels
-- **Error Boundaries**: React error boundaries for graceful failure
-- **Sentry Integration**: Error tracking and performance monitoring
-- **Safe Error Messages**: No sensitive information in error responses
-
-## Testing Patterns
-
-### Unit Testing (Vitest)
-- **Test Structure**: Describe/it blocks with clear test descriptions
-- **Mock Patterns**: Service mocking with dependency injection
-- **Type Testing**: Zod schema validation testing
-- **Edge Case Testing**: Boundary value testing and error conditions
-- **Coverage Requirements**: 80%+ coverage for lines, functions, and branches
-
-### E2E Testing (Playwright)
-- **Page Object Model**: Reusable page objects for UI interactions
-- **Test Data Management**: Isolated test data for each test
-- **Accessibility Testing**: A11y tests with `@a11y` tags
-- **Performance Testing**: Performance tests with `@performance` tags
-- **Cross-Browser Testing**: Chromium, Firefox, and WebKit support
-
-### Integration Testing
-- **API Testing**: Full request/response cycle testing
-- **Database Testing**: Transaction rollback for test isolation
-- **File System Testing**: Temporary directories for file operations
-- **External Service Mocking**: Mock external API dependencies
+### Component Variants
+- **Systematic Variants**: Components support multiple variants (default, outline, destructive, etc.)
+- **Size Variants**: Consistent size system (sm, default, lg)
+- **State Variants**: Visual states for different component states (active, disabled, loading)
 
 ## Performance Optimization
 
-### Frontend Performance
-- **Code Splitting**: Dynamic imports for large components
-- **Bundle Analysis**: Regular bundle size monitoring
-- **Image Optimization**: Next.js Image component usage
-- **Lazy Loading**: React.lazy for non-critical components
-- **Memoization**: React.memo and useMemo for expensive operations
+### React Performance
+- **Memoization**: Strategic use of `useMemo` and `useCallback` for performance
+- **Lazy Loading**: Components and resources loaded on demand
+- **Batch Processing**: Large datasets processed in batches to prevent UI blocking
+- **requestIdleCallback**: Background processing using browser idle time
 
-### Backend Performance
-- **Database Optimization**: Efficient queries with proper indexing
-- **Caching Strategies**: In-memory caching for frequently accessed data
-- **Connection Pooling**: Database connection pooling
-- **Compression**: Gzip/Brotli compression for responses
-- **Rate Limiting**: API rate limiting to prevent abuse
+### Resource Management
+- **Memory Management**: Proper cleanup of resources and event listeners
+- **Animation Optimization**: Performance-conscious animation implementations
+- **Device Detection**: Adaptive behavior based on device capabilities
+- **Reduced Motion**: Respect for user accessibility preferences
 
-### AI Processing Optimization
-- **Batch Processing**: Efficient batch processing for AI operations
-- **Caching**: AI response caching for repeated queries
-- **Streaming**: Streaming responses for long-running AI operations
-- **Resource Management**: Memory and CPU optimization for AI workloads
+## Error Handling and Validation
 
-## Internationalization (i18n)
+### Error Boundaries
+- **Comprehensive Error Handling**: Try-catch blocks around critical operations
+- **User-Friendly Messages**: Error messages in Arabic with clear explanations
+- **Graceful Degradation**: Fallback behavior when features fail
+- **Error Recovery**: Retry mechanisms and recovery options
 
-### Language Support
-- **Primary Language**: Arabic (RTL) as primary language
-- **Secondary Language**: English (LTR) support
-- **Direction Handling**: Proper RTL/LTR text direction handling
-- **Font Selection**: Arabic-optimized fonts (Amiri, Cairo, Noto Sans Arabic)
-- **Cultural Adaptation**: Arabic-specific UI patterns and conventions
+### Input Validation
+- **Type Validation**: Runtime type checking for critical inputs
+- **Boundary Checks**: Proper validation of numeric ranges and limits
+- **Sanitization**: Input sanitization for security
 
-### Text Processing
-- **Arabic Text Normalization**: Tashkeel removal and separator normalization
-- **Character Recognition**: Arabic character pattern matching
-- **Bidirectional Text**: Proper handling of mixed Arabic/English text
-- **Number Conversion**: Eastern to Western digit conversion
+## Testing Patterns
 
-## Development Workflow
+### Test Structure
+- **Comprehensive Test Coverage**: Detailed test suites covering multiple scenarios
+- **Mocking Strategy**: Proper mocking of external dependencies and services
+- **Test Organization**: Tests organized by functionality with clear describe blocks
+- **Edge Case Testing**: Testing of error conditions and edge cases
 
-### Git Workflow
-- **Branch Naming**: Feature branches with descriptive names
-- **Commit Messages**: Conventional commit format with clear descriptions
-- **Pull Request Process**: Code review requirements and CI checks
-- **Branch Protection**: Protected main branch with required status checks
+### Test Utilities
+- **Mock Objects**: Comprehensive mock implementations for testing
+- **Test Helpers**: Reusable test utilities and setup functions
+- **Async Testing**: Proper handling of asynchronous operations in tests
 
-### CI/CD Pipeline
-- **Automated Testing**: Full test suite on every commit
-- **Type Checking**: TypeScript compilation checks
-- **Linting**: ESLint and Prettier formatting checks
-- **Security Scanning**: Automated security vulnerability scanning
-- **Deployment**: Automated deployment to staging and production
+## API and Service Patterns
 
-### Code Review Standards
-- **Review Checklist**: Security, performance, and maintainability checks
-- **Documentation Review**: Ensure adequate documentation
-- **Test Coverage**: Verify test coverage meets requirements
-- **Breaking Changes**: Identify and document breaking changes
+### Service Architecture
+- **Service Layer**: Clear separation between UI and business logic
+- **WebSocket Integration**: Real-time communication patterns with proper error handling
+- **Event-Driven Architecture**: Event-based communication between components
+- **Queue Management**: Background job processing with progress tracking
 
-## Error Handling Patterns
+### Data Fetching
+- **Custom Hooks**: Data fetching logic encapsulated in custom hooks
+- **Auto-refresh**: Configurable auto-refresh patterns for real-time data
+- **Error States**: Proper handling of loading, error, and success states
+- **Caching Strategy**: Intelligent caching and data invalidation
 
-### Frontend Error Handling
-- **Error Boundaries**: React error boundaries for component failures
-- **Graceful Degradation**: Fallback UI for failed components
-- **User Feedback**: Clear error messages in user's language
-- **Retry Logic**: Automatic retry for transient failures
-- **Loading States**: Proper loading and error state management
+## Internationalization and Accessibility
 
-### Backend Error Handling
-- **Structured Errors**: Consistent error response format
-- **Error Classification**: Different handling for different error types
-- **Logging**: Comprehensive error logging with context
-- **Circuit Breakers**: Prevent cascading failures
-- **Timeout Handling**: Proper timeout configuration for external calls
+### Arabic Language Support
+- **RTL Support**: Right-to-left text direction support
+- **Arabic Text**: UI text and messages in Arabic
+- **Cultural Adaptation**: UI patterns adapted for Arabic users
 
-### AI Processing Error Handling
-- **Fallback Strategies**: Default responses when AI fails
-- **Retry Logic**: Exponential backoff for AI service calls
-- **Graceful Degradation**: Reduced functionality when AI unavailable
-- **Error Recovery**: Automatic recovery from transient AI failures
+### Accessibility
+- **ARIA Labels**: Proper ARIA labels and accessibility attributes
+- **Keyboard Navigation**: Full keyboard navigation support
+- **Screen Reader Support**: Semantic HTML and proper labeling
+- **Reduced Motion**: Respect for user motion preferences
 
-## Code Examples & Patterns
+## Code Documentation
 
-### React Component Pattern
-```typescript
-interface ComponentProps {
-  onAction?: () => void;
-}
+### Comments and Documentation
+- **JSDoc Comments**: Comprehensive function and component documentation
+- **Inline Comments**: Explanatory comments for complex logic
+- **Type Documentation**: Detailed TypeScript interface documentation
+- **Usage Examples**: Clear examples of component usage
 
-export default function Component({ onAction }: ComponentProps) {
-  const [state, setState] = useState<string>("");
-  
-  const handleEvent = useCallback(() => {
-    // Event handling logic
-  }, []);
-  
-  return (
-    <div className="component">
-      {/* Component JSX */}
-    </div>
-  );
-}
-```
+### Code Organization
+- **Logical Grouping**: Related functionality grouped together
+- **Clear Separation**: Distinct sections for different concerns
+- **Consistent Formatting**: Uniform code formatting and style
+- **Meaningful Names**: Descriptive variable and function names
 
-### Service Class Pattern
-```typescript
-class ServiceClass {
-  constructor(private dependency: Dependency) {}
-  
-  async processData(input: InputType): Promise<OutputType> {
-    // Service logic
-  }
-}
-```
+## Security and Best Practices
 
-### Error Handling Pattern
-```typescript
-try {
-  const result = await riskyOperation();
-  return { success: true, data: result };
-} catch (error) {
-  logger.error("Operation failed", { error: error.message });
-  return { success: false, error: "Operation failed" };
-}
-```
+### Security Measures
+- **Input Sanitization**: Proper sanitization of user inputs
+- **Type Safety**: TypeScript for compile-time safety
+- **Error Boundaries**: Contained error handling to prevent crashes
+- **Resource Cleanup**: Proper cleanup to prevent memory leaks
 
-### Zod Validation Pattern
-```typescript
-const schema = z.object({
-  field: z.string().min(1, "Field is required"),
-});
-
-const validateInput = (input: unknown) => {
-  return schema.parse(input);
-};
-```
-
-These guidelines ensure consistent, secure, and maintainable code across the entire project while supporting both Arabic and English languages effectively.
+### Performance Best Practices
+- **Bundle Optimization**: Code splitting and lazy loading
+- **Memory Management**: Proper cleanup of resources and listeners
+- **Efficient Algorithms**: Performance-conscious algorithm choices
+- **Monitoring Integration**: Built-in performance monitoring and metrics

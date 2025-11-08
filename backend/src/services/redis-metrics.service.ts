@@ -155,11 +155,11 @@ export class RedisMetricsService {
     let misses = 0;
 
     for (const metric of metrics) {
-      if (metric.name === 'the_copy_redis_cache_hits_total' && metric.type === 'counter') {
-        hits = metric.values.reduce((sum, val) => sum + (val.value || 0), 0);
+      if (metric.name === 'the_copy_redis_cache_hits_total') {
+        hits = (metric.values || []).reduce((sum: number, val: any) => sum + (val.value || 0), 0);
       }
-      if (metric.name === 'the_copy_redis_cache_misses_total' && metric.type === 'counter') {
-        misses = metric.values.reduce((sum, val) => sum + (val.value || 0), 0);
+      if (metric.name === 'the_copy_redis_cache_misses_total') {
+        misses = (metric.values || []).reduce((sum: number, val: any) => sum + (val.value || 0), 0);
       }
     }
 
@@ -296,7 +296,7 @@ export class RedisMetricsService {
     };
 
     for (const metric of metrics) {
-      if (metric.name === 'the_copy_redis_operation_latency_ms' && metric.type === 'histogram') {
+      if (metric.name === 'the_copy_redis_operation_latency_ms') {
         // Calculate percentiles from histogram buckets
         // This is a simplified calculation
         const values = metric.values || [];

@@ -1,138 +1,100 @@
-# Project Structure & Architecture
+# The Copy - Project Structure
 
-## Monorepo Organization
-The Copy is organized as a pnpm workspace monorepo with clear separation of concerns:
+## Monorepo Architecture
+The project follows a monorepo structure with clear separation between frontend, backend, and shared resources.
 
-```
-the-copy/
-├── frontend/          # Next.js application (main UI)
-├── backend/           # Express.js API server
-├── scripts/           # Utility scripts and automation
-├── graphite-demo/     # Demo server implementation
-└── .amazonq/          # AI assistant rules and memory bank
-```
+## Root Directory Structure
 
-## Frontend Architecture (`/frontend`)
+### Core Applications
+- **`frontend/`** - Next.js 14 React application with TypeScript
+- **`backend/`** - Express.js API server with TypeScript and Drizzle ORM
+- **`monitoring/`** - Grafana dashboards and Prometheus configuration
 
-### Core Application Structure
-```
-src/
-├── app/                    # Next.js App Router (v15.4.7)
-│   ├── (main)/            # Route groups for main application
-│   │   ├── analysis/      # Analysis tools and interfaces
-│   │   ├── directors-studio/ # Director's studio workspace
-│   │   └── editor/        # Screenplay editor interface
-│   ├── api/               # API routes and endpoints
-│   ├── layout.tsx         # Root layout component
-│   └── globals.css        # Global styles
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui component library
-│   └── particle-background.tsx # 3D visual effects
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilities and configurations
-│   ├── types/           # TypeScript type definitions
-│   ├── ai/              # AI helper functions
-│   └── utils.ts         # General utilities
-└── ai/                   # AI integration layer
-    ├── flows/           # Genkit AI flow definitions
-    ├── genkit.ts        # Genkit configuration
-    └── dev.ts           # AI development tools
-```
+### Documentation & Guides
+- **`docs/`** - Comprehensive documentation including performance optimization guides
+- **`scripts/`** - Automation scripts for maintenance, testing, and deployment
+- **`.github/`** - GitHub Actions workflows and CI/CD configuration
 
-### AI Processing Pipeline
-```
-ai/
-├── stations/              # 7-station analysis pipeline
-│   ├── station1-text-analysis.js
-│   ├── station2-conceptual-analysis.js
-│   ├── station3-network-builder.js
-│   ├── station4-efficiency-metrics.js
-│   ├── station5-dynamic-symbolic-stylistic.js
-│   ├── station6-diagnostics-treatment.js
-│   └── station7-finalization.js
-├── constitutional/        # Constitutional AI components
-│   ├── multi-agent-debate.js
-│   ├── principles.js
-│   └── uncertainty-quantification.js
-├── core/                 # Core AI models and pipeline
-├── flows/                # Genkit flow definitions
-├── interfaces/           # Response type definitions
-└── services/             # AI service implementations
-```
+### Configuration Files
+- **`pnpm-workspace.yaml`** - Monorepo workspace configuration
+- **`docker-compose.prometheus.yml`** - Monitoring stack setup
+- **`tsconfig.json`** - Root TypeScript configuration
 
-## Backend Architecture (`/backend`)
+## Frontend Structure (`frontend/`)
 
-### API Server Structure
-```
-src/
-├── config/               # Application configuration
-│   └── env.ts           # Environment variable management
-├── controllers/         # Request handling logic
-│   └── analysis.controller.ts
-├── middleware/          # Express middleware
-│   └── index.ts        # CORS, Helmet, Rate limiting
-├── services/           # Business logic layer
-│   ├── analysis.service.ts
-│   └── gemini.service.ts
-├── types/              # TypeScript type definitions
-│   └── index.ts
-├── utils/              # Utility functions
-│   └── logger.ts       # Winston logger configuration
-└── server.ts           # Application entry point
-```
+### Application Core
+- **`src/app/`** - Next.js App Router pages and layouts
+- **`src/components/`** - Reusable React components with shadcn/ui
+- **`src/lib/`** - Utility functions and shared logic
+- **`src/hooks/`** - Custom React hooks
+- **`src/types/`** - TypeScript type definitions
 
-## Core Components & Relationships
+### Specialized Modules
+- **`src/ai/`** - AI integration and Gemini API handling
+- **`src/workers/`** - Web Workers for background processing
+- **`public/`** - Static assets including fonts, images, and PDF workers
 
-### Frontend Components
-- **ScreenplayEditor**: Main text editing interface with AI integration
-- **ParticleBackground**: 3D visual effects using Three.js
-- **UI Components**: shadcn/ui based component library
-- **Analysis Tools**: Character analysis, theme extraction interfaces
+### Development Tools
+- **`tests/`** - Unit tests, E2E tests, and test utilities
+- **`scripts/`** - Build optimization and performance analysis scripts
+- **`docs/`** - Frontend-specific documentation
 
-### Backend Services
-- **Analysis Service**: Core text analysis logic
-- **Gemini Service**: Google AI integration layer
-- **File Processing**: PDF, DOCX, TXT file handling
-- **Security Middleware**: Authentication, rate limiting, validation
+## Backend Structure (`backend/`)
 
-### AI Pipeline Architecture
-- **Station-Based Processing**: Sequential analysis through 7 specialized stations
-- **Constitutional AI**: Multi-agent debate system for balanced analysis
-- **Network Analysis**: Character and theme relationship mapping
-- **Metrics Calculation**: Efficiency and quality metrics for dramatic elements
+### Application Core
+- **`src/controllers/`** - API route handlers and business logic
+- **`src/services/`** - Business services and external integrations
+- **`src/db/`** - Database schema and Drizzle ORM configuration
+- **`src/middleware/`** - Express middleware for auth, validation, etc.
 
-## Architectural Patterns
+### Infrastructure
+- **`src/queues/`** - BullMQ job queues for background processing
+- **`src/config/`** - Application configuration and environment setup
+- **`src/utils/`** - Utility functions and helpers
+- **`migrations/`** - Database migration files
 
-### Frontend Patterns
-- **App Router**: Next.js 15 App Router for file-based routing
-- **Server Components**: React Server Components for performance
-- **Client Components**: Interactive components with "use client" directive
-- **Custom Hooks**: Reusable state logic and side effects
-- **Component Composition**: Compound components with shadcn/ui
+### Performance & Analysis
+- **`db-performance-analysis/`** - Database optimization tools and reports
+- **`drizzle/`** - Drizzle ORM metadata and generated files
 
-### Backend Patterns
-- **Layered Architecture**: Controllers → Services → Utils separation
-- **Middleware Pipeline**: Express middleware for cross-cutting concerns
-- **Service Layer**: Business logic abstraction
-- **Type Safety**: Full TypeScript with Zod validation
-- **Error Handling**: Centralized error handling and logging
+## Key Architectural Patterns
 
-### AI Integration Patterns
-- **Pipeline Architecture**: Sequential processing through specialized stations
-- **Flow-Based Processing**: Genkit flows for AI operations
-- **Service Abstraction**: AI services abstracted from business logic
-- **Constitutional AI**: Multi-agent systems for balanced analysis
+### Separation of Concerns
+- **Frontend**: UI/UX, client-side logic, user interactions
+- **Backend**: API endpoints, business logic, data processing
+- **Database**: Data persistence with PostgreSQL and Redis caching
 
-## Development Environment
-- **Monorepo Management**: pnpm workspace with shared dependencies
-- **Development Servers**: Frontend (port 9002), Backend (port 3001)
-- **Hot Reloading**: Next.js dev server with fast refresh
-- **Type Checking**: Shared TypeScript configuration
-- **Code Quality**: ESLint, Prettier, Husky git hooks
+### Real-time Communication
+- **WebSocket**: Bidirectional real-time communication
+- **Server-Sent Events (SSE)**: Server-to-client streaming updates
+- **Queue System**: Background job processing with BullMQ
 
-## Build & Deployment Architecture
-- **Frontend Build**: Next.js static generation and optimization
-- **Backend Build**: TypeScript compilation to JavaScript
-- **Asset Optimization**: Bundle analysis, tree shaking, code splitting
-- **Deployment**: Firebase Hosting for frontend, containerized backend
-- **Monitoring**: Sentry error tracking, Web Vitals performance monitoring
+### Performance Architecture
+- **Caching Layer**: Redis for frequently accessed data
+- **Database Optimization**: Composite indexes and query optimization
+- **Bundle Optimization**: Code splitting and lazy loading
+- **CDN Integration**: Static asset optimization
+
+### Security Architecture
+- **Authentication**: JWT-based user authentication
+- **Authorization**: Role-based access control
+- **Data Validation**: Zod schema validation
+- **Rate Limiting**: Multi-level request throttling
+
+## Development Workflow
+
+### Package Management
+- **pnpm**: Workspace-aware package manager
+- **Shared Dependencies**: Common packages managed at root level
+- **Workspace Scripts**: Cross-package command execution
+
+### Build System
+- **Frontend**: Next.js with TypeScript and Tailwind CSS
+- **Backend**: Express.js with TypeScript compilation
+- **Containerization**: Docker support for deployment
+
+### Quality Assurance
+- **Linting**: ESLint with custom rules for code quality
+- **Type Checking**: Strict TypeScript configuration
+- **Testing**: Vitest for unit tests, Playwright for E2E
+- **Performance**: Bundle analysis and performance budgets

@@ -12,6 +12,7 @@ import {
   createRealtimeEvent,
   JobProgressPayload,
   AnalysisProgressPayload,
+  SystemEventPayload,
 } from '@/types/realtime.types';
 
 /**
@@ -32,7 +33,7 @@ export function broadcastJobProgress(
     progress,
     status: 'active',
     message: `Job ${progress}% complete`,
-    userId,
+    ...(userId && { userId }),
   });
 
   // Method 2: Using generic broadcast with custom event
@@ -42,7 +43,7 @@ export function broadcastJobProgress(
     progress,
     status: 'active',
     message: `Processing: ${progress}%`,
-    userId,
+    ...(userId && { userId }),
   });
 
   // Broadcast via WebSocket
@@ -168,7 +169,7 @@ export async function exampleJobProcessorWithRealtime(job: any): Promise<any> {
  * Use rooms to group related clients (e.g., project members)
  */
 export function broadcastToProjectRoom(projectId: string, message: string): void {
-  const event = createRealtimeEvent(RealtimeEventType.SYSTEM_INFO, {
+  const event = createRealtimeEvent<SystemEventPayload>(RealtimeEventType.SYSTEM_INFO, {
     level: 'info' as const,
     message,
     details: { projectId },
@@ -312,7 +313,7 @@ export function testRealtimeSystem(): void {
   console.log('Testing real-time system...');
 
   // Test 1: Broadcast a test event
-  const testEvent = createRealtimeEvent(RealtimeEventType.SYSTEM_INFO, {
+  const testEvent = createRealtimeEvent<SystemEventPayload>(RealtimeEventType.SYSTEM_INFO, {
     level: 'info' as const,
     message: 'Real-time system test',
     details: {

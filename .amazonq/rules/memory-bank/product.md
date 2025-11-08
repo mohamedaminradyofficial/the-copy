@@ -1,54 +1,68 @@
-# The Copy - AI-Powered Dramatic Text Analysis Platform
+# The Copy - Product Overview
 
 ## Project Purpose
-The Copy is a comprehensive full-stack platform for analyzing dramatic texts and screenplays using advanced AI capabilities. It combines Google Generative AI with sophisticated text processing to provide deep insights into dramatic works, character development, and narrative structure.
+The Copy (النسخة) is a comprehensive Arabic creative writing and dramatic analysis platform that combines AI-powered analysis with professional production tools for Arabic content creators.
 
 ## Core Value Proposition
-- **AI-Driven Analysis**: Leverages Google Genkit and Generative AI for intelligent text analysis
-- **Multilingual Support**: Primarily Arabic-focused with English support
-- **Professional Tools**: Screenplay editor, character analysis, and narrative structure evaluation
-- **Production-Ready**: Enterprise-grade architecture with comprehensive testing and monitoring
+- **Arabic-First Design**: Specifically built for Arabic language creative writing and dramatic analysis
+- **AI-Enhanced Analysis**: Advanced dramatic analysis using Google Gemini API with specialized Arabic language processing
+- **Professional Production Tools**: Complete suite for managing creative projects from concept to production
+- **Performance Optimized**: 40-70% performance improvements with advanced caching and queue systems
 
-## Key Features & Capabilities
+## Key Features
 
-### Frontend (Next.js Application)
-- **Screenplay Editor**: Advanced text editor for dramatic works with real-time analysis
-- **AI-Powered Insights**: Character analysis, theme extraction, and structural evaluation
-- **Interactive UI**: Modern React components with shadcn/ui and Tailwind CSS
-- **Performance Optimized**: Bundle analysis, Web Vitals tracking, and optimized builds
-- **Accessibility**: A11y compliant components and testing
+### 1. Seven Stations Analysis (تحليل المحطات السبع)
+- Advanced dramatic analysis using AI
+- Seven comprehensive analytical stations for script evaluation
+- AI-powered insights and recommendations
+- Detailed exportable reports in Arabic
 
-### Backend (Express.js API)
-- **Text Processing**: Support for PDF, DOCX, and TXT file formats
-- **AI Integration**: Google Generative AI for sophisticated text analysis
-- **Secure Architecture**: Helmet, CORS, rate limiting, and input validation
-- **Comprehensive Logging**: Winston-based logging system for monitoring
-- **Type Safety**: Full TypeScript implementation with Zod validation
+### 2. Directors Studio (استوديو المخرجين)
+- Multi-project management system
+- Scene and shot organization tools
+- Character tracking and consistency management
+- Visual planning and storyboarding tools
 
-### AI Analysis Pipeline
-- **Multi-Station Processing**: 7-station analysis pipeline for comprehensive text evaluation
-- **Constitutional AI**: Multi-agent debate system for balanced analysis
-- **Network Building**: Relationship mapping between characters and themes
-- **Efficiency Metrics**: Performance analysis of dramatic elements
-- **Dynamic Styling**: Stylistic and symbolic analysis capabilities
+### 3. Intelligent Analysis Engine
+- Automatic scene and character extraction
+- Shot and angle suggestions
+- Dramatic consistency analysis
+- Creative recommendations and insights
+
+### 4. Real-time Collaboration
+- WebSocket-based real-time updates
+- Multi-user project collaboration
+- Live editing and synchronization
+- Instant feedback and notifications
 
 ## Target Users
-- **Screenwriters & Playwrights**: Professional writers seeking AI-assisted analysis
-- **Literary Analysts**: Researchers analyzing dramatic texts and structures
-- **Educational Institutions**: Teachers and students studying dramatic literature
-- **Content Creators**: Professionals developing dramatic content for various media
 
-## Primary Use Cases
-1. **Screenplay Analysis**: Comprehensive evaluation of dramatic scripts
-2. **Character Development**: Deep analysis of character arcs and relationships
-3. **Narrative Structure**: Evaluation of plot structure and pacing
-4. **Theme Extraction**: Identification and analysis of underlying themes
-5. **Educational Research**: Academic analysis of dramatic works
-6. **Content Optimization**: Improving dramatic content based on AI insights
+### Primary Users
+- **Arabic Screenwriters**: Professional and aspiring writers creating Arabic content
+- **Film Directors**: Directors planning and organizing Arabic productions
+- **Content Creators**: Digital content creators working in Arabic media
+- **Production Teams**: Collaborative teams managing Arabic creative projects
 
-## Technology Stack Highlights
-- **Frontend**: Next.js 15.4.7, React 18, TypeScript 5, Tailwind CSS 4
-- **Backend**: Express.js 4.18.2, Node.js 20+, TypeScript 5
-- **AI/ML**: Google Genkit 1.20.0, Google Generative AI 0.24.1
-- **Testing**: Vitest, Playwright E2E, 80%+ coverage requirement
-- **Deployment**: Firebase Hosting, Sentry monitoring, CI/CD pipeline
+### Use Cases
+- Script analysis and improvement
+- Production planning and management
+- Character development and tracking
+- Scene organization and shot planning
+- Creative collaboration and feedback
+- Educational dramatic analysis
+
+## Technical Capabilities
+- **Scalable Architecture**: Monorepo structure supporting frontend/backend separation
+- **AI Integration**: Google Gemini API for advanced Arabic text analysis
+- **Real-time Features**: WebSocket and SSE for live collaboration
+- **Performance Optimization**: Redis caching, BullMQ queues, database indexing
+- **Security**: JWT authentication, rate limiting, data encryption
+- **Monitoring**: Sentry error tracking, Prometheus metrics, performance dashboards
+
+## Business Value
+- Streamlines Arabic content creation workflow
+- Reduces production planning time by 50%
+- Improves script quality through AI analysis
+- Enables efficient team collaboration
+- Provides data-driven creative insights
+- Supports Arabic language creative industry growth

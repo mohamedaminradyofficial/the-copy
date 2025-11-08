@@ -1,232 +1,144 @@
-# Technology Stack & Development Setup
+# The Copy - Technology Stack
 
-## Programming Languages & Versions
+## Core Technologies
 
-### Primary Languages
-- **TypeScript**: v5.x (strict mode enabled)
-- **JavaScript**: ES2022+ (for legacy AI modules)
-- **Python**: v3.x (utility scripts)
+### Frontend Stack
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript 5.9+
+- **Styling**: Tailwind CSS 4.1+ with tailwindcss-animate
+- **UI Components**: shadcn/ui + Radix UI primitives
+- **State Management**: React Hooks and Context API
+- **Build Tool**: Next.js built-in bundler with Turbopack
 
-### Language Usage Patterns
-- **TypeScript**: All new code, React components, API endpoints, type definitions
-- **JavaScript**: Legacy AI pipeline modules, utility scripts
-- **Python**: Data processing scripts, issue management automation
+### Backend Stack
+- **Runtime**: Node.js 20+
+- **Framework**: Express.js with TypeScript
+- **Database**: PostgreSQL (Neon Serverless)
+- **ORM**: Drizzle ORM with TypeScript
+- **Caching**: Redis for session and data caching
+- **Queue System**: BullMQ for background job processing
 
-## Frontend Technology Stack
+### AI & External Services
+- **AI Provider**: Google Gemini API for Arabic text analysis
+- **Alternative AI**: Mistral AI (@mistralai/mistralai ^1.10.0)
+- **Real-time**: WebSocket + Server-Sent Events (SSE)
 
-### Core Framework & Runtime
-- **Next.js**: v15.4.7 (App Router, React Server Components)
-- **React**: v18.3.1 (Functional components, hooks)
-- **Node.js**: ≥20.11.0 (LTS requirement)
-- **npm**: ≥10.0.0 (package management)
-
-### UI & Styling
-- **Tailwind CSS**: v4.1.16 (utility-first CSS framework)
-- **shadcn/ui**: Radix UI based component library
-- **Radix UI**: v1.x (accessible component primitives)
-- **Lucide React**: v0.475.0 (icon library)
-- **Framer Motion**: v11.0.0 (animations)
-- **Three.js**: v0.180.0 (3D graphics for particle effects)
-
-### AI & Data Processing
-- **Google Genkit**: v1.20.0 (AI application framework)
-- **Google Generative AI**: v0.8.0 (AI model integration)
-- **Zod**: v3.25.76 (schema validation)
-- **React Hook Form**: v7.54.2 (form management)
-
-### Development & Build Tools
-- **TypeScript**: v5.x (type checking)
-- **ESLint**: v9.17.0 (code linting)
-- **Prettier**: v3.6.2 (code formatting)
-- **Vitest**: v2.1.8 (unit testing)
-- **Playwright**: v1.49.1 (E2E testing)
-
-## Backend Technology Stack
-
-### Core Framework & Runtime
-- **Express.js**: v4.18.2 (web application framework)
-- **Node.js**: ≥20.0.0 (JavaScript runtime)
-- **TypeScript**: v5.x (type safety)
-
-### AI & Processing
-- **Google Generative AI**: v0.24.1 (text analysis)
-- **Zod**: v3.25.76 (input validation)
-- **Drizzle ORM**: v0.44.7 (database operations)
-
-### Security & Middleware
-- **Helmet**: HTTP security headers
-- **CORS**: Cross-origin resource sharing
-- **Express Rate Limit**: API rate limiting
-- **Winston**: v3.11.0 (logging system)
-
-## Build Systems & Package Management
+## Development Tools
 
 ### Package Management
-- **pnpm**: v10.20.0 (workspace package manager)
-- **npm**: ≥10.0.0 (fallback package manager)
-- **Workspace Configuration**: pnpm-workspace.yaml
+- **Package Manager**: pnpm 10.20.0 (workspace-aware)
+- **Workspace**: Monorepo with pnpm workspaces
+- **Node Version**: Managed with .nvmrc (Node.js 20+)
 
-### Build Configuration
-```json
-{
-  "engines": {
-    "node": ">=20.11.0",
-    "npm": ">=10.0.0"
-  }
-}
-```
+### Code Quality
+- **Linting**: ESLint with custom rules and TypeScript support
+- **Formatting**: Prettier with custom configuration
+- **Type Checking**: Strict TypeScript with custom type definitions
+- **Style Linting**: Stylelint for CSS/SCSS validation
 
-### Build Tools
-- **Next.js Build**: Production optimization, static generation
-- **TypeScript Compiler**: tsc for type checking and compilation
-- **Bundle Analyzer**: @next/bundle-analyzer for size analysis
-- **PostCSS**: CSS processing with autoprefixer and cssnano
+### Testing Framework
+- **Unit Testing**: Vitest 4.0+ for fast unit tests
+- **E2E Testing**: Playwright for end-to-end testing
+- **Test Setup**: Custom test utilities and setup files
+- **Coverage**: Built-in coverage reporting with Vitest
 
-## Development Commands & Scripts
+### Build & Optimization
+- **Image Optimization**: Sharp 0.34+ for image processing
+- **Bundle Analysis**: Custom scripts for bundle size monitoring
+- **Performance Budget**: Automated performance budget enforcement
+- **Code Splitting**: Next.js automatic code splitting
 
-### Frontend Development
-```bash
-# Development server (port 9002)
-npm run dev
+## Infrastructure & DevOps
 
-# AI development with Genkit
-npm run genkit:dev
-npm run genkit:watch
+### Containerization
+- **Docker**: Multi-stage builds for production
+- **Docker Compose**: Development environment orchestration
+- **Base Images**: Node.js Alpine for minimal footprint
 
-# Build and optimization
-npm run build
-npm run build:production
-npm run analyze
-
-# Testing
-npm run test
-npm run test:coverage
-npm run e2e
-npm run e2e:ui
-
-# Code quality
-npm run lint
-npm run lint:fix
-npm run format
-npm run typecheck
-```
-
-### Backend Development
-```bash
-# Development server (port 3001)
-npm run dev
-
-# Build and production
-npm run build
-npm run start
-
-# Testing and quality
-npm run test
-npm run test:coverage
-npm run lint
-npm run typecheck
-```
-
-### Monorepo Commands
-```bash
-# Start development environment
-npm run start:dev
-
-# Kill development processes
-npm run kill:dev
-
-# Workspace operations
-pnpm --filter nextn [command]
-```
-
-## Testing Framework & Configuration
-
-### Unit Testing (Vitest)
-- **Framework**: Vitest v2.1.8
-- **Coverage**: @vitest/coverage-v8
-- **UI**: @vitest/ui for test interface
-- **Configuration**: vitest.config.ts
-
-### E2E Testing (Playwright)
-- **Framework**: Playwright v1.49.1
-- **Browsers**: Chromium, Firefox, WebKit
-- **Configuration**: playwright.config.ts
-- **Modes**: Headed, headless, debug, UI
-
-### Testing Standards
-- **Coverage Requirement**: ≥80% (lines, functions, branches)
-- **Performance Tests**: @performance tagged tests
-- **Accessibility Tests**: @a11y tagged tests
-
-## Database & Data Management
-
-### ORM & Database
-- **Drizzle ORM**: v0.44.7 (type-safe database operations)
-- **Drizzle Zod**: v0.8.3 (schema validation integration)
-- **Configuration**: drizzle.config.ts
-
-### File Processing
-- **PDF**: pdfjs-dist v4.4.168
-- **DOCX**: mammoth v1.7.0
-- **Text Processing**: Custom utilities for dramatic text analysis
-
-## Deployment & Infrastructure
-
-### Frontend Deployment
-- **Platform**: Firebase Hosting
-- **Configuration**: firebase.json, apphosting.yaml
-- **Build**: Static site generation with Next.js
-- **CDN**: Firebase CDN for global distribution
-
-### Backend Deployment
-- **Runtime**: Node.js 20+ container
-- **Environment**: Production environment variables
-- **Monitoring**: Winston logging, Sentry error tracking
+### Monitoring & Observability
+- **Error Tracking**: Sentry for frontend and backend
+- **Metrics**: Prometheus for application metrics
+- **Dashboards**: Grafana for visualization
+- **Performance**: Web Vitals integration with Sentry
 
 ### CI/CD Pipeline
-```bash
-# Complete CI pipeline
-npm run ci  # lint + typecheck + test + build + e2e
+- **GitHub Actions**: Automated testing and deployment
+- **Workflows**: Lighthouse CI, performance budgets, security scans
+- **Quality Gates**: Linting, type checking, and test coverage
 
-# Pre-commit hooks
-npm run prepush  # lint + typecheck + test
+## Database & Caching
+
+### Database Configuration
+- **Primary DB**: PostgreSQL with Neon Serverless
+- **ORM**: Drizzle ORM with TypeScript schema
+- **Migrations**: Automated database migrations
+- **Performance**: Composite indexes for optimized queries
+
+### Caching Strategy
+- **Redis**: Session storage and data caching
+- **Application Cache**: In-memory caching for frequently accessed data
+- **CDN**: Static asset caching and optimization
+
+## Security & Performance
+
+### Security Measures
+- **Authentication**: JWT-based authentication system
+- **Validation**: Zod schema validation for all inputs
+- **Rate Limiting**: Multi-level request throttling
+- **CORS**: Strict cross-origin resource sharing policies
+- **Helmet**: Security headers and CSP configuration
+
+### Performance Optimizations
+- **Database Indexes**: 8 composite indexes for optimal query performance
+- **Queue Processing**: Background job processing with BullMQ
+- **Bundle Optimization**: Code splitting and lazy loading
+- **Image Optimization**: Automatic image compression and format conversion
+
+## Development Commands
+
+### Root Level Commands
+```bash
+pnpm start:dev          # Start development servers
+pnpm kill:dev           # Stop all development processes
+pnpm lint               # Run linting across workspace
+pnpm test               # Run all tests
+pnpm build              # Build all packages
+pnpm ci                 # Full CI pipeline locally
 ```
 
-## Monitoring & Analytics
-
-### Error Tracking
-- **Sentry**: v8.47.0 (error monitoring and performance)
-- **Configuration**: sentry.*.config.ts files
-- **Source Maps**: Automatic upload for debugging
-
-### Performance Monitoring
-- **Web Vitals**: v4.2.4 (Core Web Vitals tracking)
-- **Bundle Analysis**: Size and performance optimization
-- **Performance Reports**: Custom performance reporting scripts
-
-## Development Environment Setup
-
-### Required Tools
-1. **Node.js**: v20.11.0+ (LTS)
-2. **pnpm**: v10.20.0 (preferred package manager)
-3. **Git**: Version control
-4. **VS Code**: Recommended IDE with extensions
-
-### Environment Variables
+### Frontend Commands
 ```bash
-# Frontend (.env.local)
-NEXT_PUBLIC_GEMINI_API_KEY=your_api_key
-ALLOWED_DEV_ORIGIN=https://your-dev-url  # for external dev environments
-
-# Backend (.env)
-GOOGLE_GENAI_API_KEY=your_api_key
-PORT=3001
-NODE_ENV=development
-CORS_ORIGIN=http://localhost:9002
+pnpm dev                # Start Next.js development server
+pnpm build              # Build production bundle
+pnpm start              # Start production server
+pnpm test               # Run unit tests
+pnpm test:e2e           # Run E2E tests
+pnpm lint               # ESLint + Prettier
+pnpm typecheck          # TypeScript type checking
 ```
 
-### IDE Configuration
-- **TypeScript**: Strict mode enabled
-- **ESLint**: Configured for Next.js and TypeScript
-- **Prettier**: Code formatting on save
-- **Extensions**: TypeScript, ESLint, Prettier, Tailwind CSS IntelliSense
+### Backend Commands
+```bash
+pnpm dev                # Start Express development server
+pnpm build              # Compile TypeScript
+pnpm start              # Start production server
+pnpm test               # Run unit tests with Vitest
+pnpm db:push            # Push database schema changes
+pnpm db:studio          # Open Drizzle Studio
+```
+
+## Environment Configuration
+
+### Required Environment Variables
+- **Database**: `DATABASE_URL` for PostgreSQL connection
+- **Redis**: `REDIS_URL` for caching and sessions
+- **AI Services**: `GEMINI_API_KEY` for Google Gemini API
+- **Authentication**: `JWT_SECRET` for token signing
+- **Monitoring**: `SENTRY_DSN` for error tracking
+
+### Development Setup
+- **Frontend**: Port 3000 (Next.js)
+- **Backend**: Port 3001 (Express.js)
+- **Database**: PostgreSQL (local or Neon)
+- **Redis**: Port 6379 (Docker or local)
+- **Monitoring**: Grafana on port 3002

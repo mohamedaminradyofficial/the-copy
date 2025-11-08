@@ -1,8 +1,22 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useMemo } from "react";
+
+import { useEffect, useRef } from "react";
+
 import * as THREE from "three";
+
+import {
+  BASELINE,
+  STROKE_WIDTH,
+  X_HEIGHT,
+  ASCENDER_HEIGHT,
+  DESCENDER_DEPTH,
+  ARABIC_HEIGHT,
+  LETTER_POSITIONS,
+  SAMPLING_BOUNDS,
+  PARTICLE_THRESHOLDS,
+} from "@/lib/particle-letters.constants";
 
 type Effect = "default" | "spark" | "wave" | "vortex";
 
@@ -23,9 +37,6 @@ interface EffectConfig {
   repelStrength: number;
 }
 
-/**
- * Update camera position based on rotation
- */
 function updateCameraPosition(
   camera: THREE.PerspectiveCamera,
   rotationX: number,
@@ -37,26 +48,84 @@ function updateCameraPosition(
   camera.lookAt(0, 0, 0);
 }
 
-// تحديد عدد الجسيمات الأمثل حسب الجهاز
 const MAX_PARTICLES = {
   DESKTOP: 6000,
-  MOBILE: 2000
+  MOBILE: 2000,
 };
+
+function updateParticlePhysics(
+  positions: Float32Array,
+  velocities: Float32Array,
+  originalPositions: Float32Array,
+  colors: Float32Array,
+  particleCount: number,
+  config: any
+): void {
+  const { intersectionPoint, effect, repelStrength, damping } = config;
+
+  for (let i = 0; i < particleCount; i++) {
+    const idx = i * 3;
+
+    // Current state
+    const px = positions[idx] ?? 0;
+    const py = positions[idx + 1] ?? 0;
+    const pz = positions[idx + 2] ?? 0;
+
+    const vx = velocities[idx] ?? 0;
+    const vy = velocities[idx + 1] ?? 0;
+    const vz = velocities[idx + 2] ?? 0;
+
+    // Original position for attraction
+    const opx = originalPositions[idx] ?? 0;
+    const opy = originalPositions[idx + 1] ?? 0;
+    const opz = originalPositions[idx + 2] ?? 0;
+
+    let nvx = vx * damping;
+    let nvy = vy * damping;
+    let nvz = vz * damping;
+
+    // Attraction to original position
+    const adx = opx - px;
+    const ady = opy - py;
+    const adz = opz - pz;
+    const aDist = Math.sqrt(adx * adx + ady * ady + adz * adz);
+
+    if (aDist > 0.01) {
+      const aNorm = 0.02 / (aDist + 0.001);
+      nvx += adx * aNorm;
+      nvy += ady * aNorm;
+      nvz += adz * aNorm;
+    }
+
+    // Repulsion from intersection point
+    if (intersectionPoint) {
+      const rdx = px - intersectionPoint.x;
+      const rdy = py - intersectionPoint.y;
+      const rdz = pz - intersectionPoint.z;
+      const rDist = Math.sqrt(rdx * rdx + rdy * rdy + rdz * rdz);
+
+      if (rDist < 0.5) {
+        const rForce = repelStrength / (rDist + 0.01);
+        nvx += (rdx / (rDist + 0.001)) * rForce;
+        nvy += (rdy / (rDist + 0.001)) * rForce;
+        nvz += (rdz / (rDist + 0.001)) * rForce;
+      }
+    }
+
+    // Update velocities
+    velocities[idx] = nvx;
+    velocities[idx + 1] = nvy;
+    velocities[idx + 2] = nvz;
+
+    // Update positions
+    positions[idx] = px + nvx;
+    positions[idx + 1] = py + nvy;
+    positions[idx + 2] = pz + nvz;
+  }
+}
 
 export default function V0ParticleAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const currentEffect: Effect = "spark";
-  const workerRef = useRef<Worker | null>(null);
-  const isProcessingRef = useRef<boolean>(false);
-
-  // تحقق من window object
-  if (typeof window === 'undefined') return null;
-
-  // دعم prefers-reduced-motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // إيقاف كامل للحركة إذا كان المستخدم يفضل تقليل الحركة
-  if (prefersReducedMotion) return null;
 
   const sceneRef = useRef<{
     scene: THREE.Scene;
@@ -76,71 +145,12 @@ export default function V0ParticleAnimation() {
     particleCount: number;
   } | null>(null);
 
+  const currentEffect: Effect = "spark";
+
   const clamp = (value: number, min: number, max: number) => {
     return Math.max(min, Math.min(max, value));
   };
 
-  // Memory management for particles
-  const cleanupOldParticles = (
-    positions: Float32Array,
-    velocities: Float32Array,
-    phases: Float32Array,
-    currentCount: number,
-    maxAge: number = 30000 // 30 seconds
-  ): number => {
-    try {
-      const now = Date.now();
-      // في التطبيق الحقيقي، ستحتاج لتتبع عمر كل جسيم
-      // هنا ننفذ استراتيجية مبسطة لتنظيف الذاكرة
-      const cleanupThreshold = Math.floor(currentCount * 0.1); // إزالة 10% من الجسيمات
-      
-      if (currentCount > 15000 && cleanupThreshold > 0) {
-        // تنظيف الذاكرة: إزالة الجسيمات القديمة
-        return currentCount - cleanupThreshold;
-      }
-      
-      return currentCount;
-    } catch (error) {
-      // خطأ في تنظيف الذاكرة
-      return currentCount;
-    }
-  };
-
-  // Batch cleanup using requestIdleCallback
-  const performBatchCleanup = (sceneData: any) => {
-    if (!sceneData) return;
-
-    try {
-      const {
-        originalPositions,
-        velocities,
-        phases,
-        particleCount,
-      } = sceneData;
-
-      const newCount = cleanupOldParticles(
-        originalPositions,
-        velocities,
-        phases,
-        particleCount
-      );
-
-      if (newCount !== particleCount) {
-        sceneData.particleCount = newCount;
-        
-        // تنظيف المصفوفات
-        sceneData.originalPositions = originalPositions.slice(0, newCount * 3);
-        sceneData.velocities = velocities.slice(0, newCount * 3);
-        sceneData.phases = phases.slice(0, newCount);
-        
-        // تم تنظيف الذاكرة بنجاح
-      }
-    } catch (error) {
-      // خطأ في تنظيف الذاكرة
-    }
-  };
-
-  // Distance to box with rounded corners
   const sdBox = (
     px: number,
     py: number,
@@ -157,7 +167,6 @@ export default function V0ParticleAnimation() {
     );
   };
 
-  // Distance to circle
   const sdCircle = (
     px: number,
     py: number,
@@ -168,7 +177,6 @@ export default function V0ParticleAnimation() {
     return Math.hypot(px - cx, py - cy) - r;
   };
 
-  // Distance to ring (hollow circle)
   const sdRing = (
     px: number,
     py: number,
@@ -180,7 +188,6 @@ export default function V0ParticleAnimation() {
     return Math.abs(sdCircle(px, py, cx, cy, r)) - thickness;
   };
 
-  // Distance to line segment (capsule)
   const sdSegment = (
     px: number,
     py: number,
@@ -200,7 +207,6 @@ export default function V0ParticleAnimation() {
     return Math.sqrt(dx * dx + dy * dy) - r;
   };
 
-  // Distance to arc
   const sdArc = (
     px: number,
     py: number,
@@ -226,7 +232,6 @@ export default function V0ParticleAnimation() {
     return Math.hypot(px - targetX, py - targetY) - thickness;
   };
 
-  // Bezier curve helper for smooth curves
   const sdBezier = (
     px: number,
     py: number,
@@ -255,22 +260,11 @@ export default function V0ParticleAnimation() {
     return minDist - thickness;
   };
 
-  // SDF boolean operations
   const opUnion = (a: number, b: number): number => Math.min(a, b);
   const opSubtract = (a: number, b: number): number => Math.max(a, -b);
 
-  // Letter definitions using SDF
-  const STROKE_WIDTH = 0.035;
-  const BASELINE = 0.0;
-  const X_HEIGHT = 0.35;
-  const ASCENDER_HEIGHT = 0.65;
-  const DESCENDER_DEPTH = -0.25;
-  const ARABIC_HEIGHT = 0.45; // ارتفاع الحروف العربية
-
-  // ====== English Letters ======
-
   const dist_t = (px: number, py: number): number => {
-    const x = -1.7;
+    const x = LETTER_POSITIONS.T;
     const stem = sdSegment(
       px,
       py,
@@ -293,7 +287,7 @@ export default function V0ParticleAnimation() {
   };
 
   const dist_h = (px: number, py: number): number => {
-    const x = -1.25;
+    const x = LETTER_POSITIONS.H;
     const stem = sdSegment(
       px,
       py,
@@ -326,7 +320,7 @@ export default function V0ParticleAnimation() {
   };
 
   const dist_e = (px: number, py: number): number => {
-    const cx = -0.6;
+    const cx = LETTER_POSITIONS.E;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
 
@@ -340,7 +334,7 @@ export default function V0ParticleAnimation() {
   };
 
   const dist_c = (px: number, py: number): number => {
-    const cx = 0.0;
+    const cx = LETTER_POSITIONS.C;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
 
@@ -352,14 +346,14 @@ export default function V0ParticleAnimation() {
   };
 
   const dist_o = (px: number, py: number): number => {
-    const cx = 0.5;
+    const cx = LETTER_POSITIONS.O;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
     return sdRing(px, py, cx, cy, r, STROKE_WIDTH);
   };
 
   const dist_p = (px: number, py: number): number => {
-    const x = 1.0;
+    const x = LETTER_POSITIONS.P;
     const cy = BASELINE + X_HEIGHT * 0.5;
 
     const stem = sdSegment(
@@ -377,7 +371,7 @@ export default function V0ParticleAnimation() {
   };
 
   const dist_y = (px: number, py: number): number => {
-    const x = 1.9;
+    const x = LETTER_POSITIONS.Y;
     const top = BASELINE + X_HEIGHT;
     const mid = BASELINE + X_HEIGHT * 0.2;
 
@@ -396,10 +390,8 @@ export default function V0ParticleAnimation() {
     return opUnion(opUnion(leftArm, rightArm), descender);
   };
 
-  // ====== Dash Separator ======
-
   const dist_dash = (px: number, py: number): number => {
-    const x = 2.4; // موقع الشرطة
+    const x = LETTER_POSITIONS.DASH;
     return sdSegment(
       px,
       py,
@@ -411,12 +403,8 @@ export default function V0ParticleAnimation() {
     );
   };
 
-  // ====== Arabic Letters (النسخة) ======
-  // Enhanced Arabic letters with better particle density and shapes
-
-  // حرف ا (alef) - خط رأسي محسّن
   const dist_alef = (px: number, py: number): number => {
-    const x = 2.9;
+    const x = LETTER_POSITIONS.ALEF;
     const stem = sdSegment(
       px,
       py,
@@ -426,7 +414,6 @@ export default function V0ParticleAnimation() {
       BASELINE,
       STROKE_WIDTH * 1.2
     );
-    // إضافة قاعدة عريضة قليلاً
     const base = sdSegment(
       px,
       py,
@@ -439,9 +426,8 @@ export default function V0ParticleAnimation() {
     return opUnion(stem, base);
   };
 
-  // حرف ل (lam) - محسّن مع خطاف أفضل
   const dist_lam = (px: number, py: number): number => {
-    const x = 3.3;
+    const x = LETTER_POSITIONS.LAM;
     const stem = sdSegment(
       px,
       py,
@@ -451,7 +437,6 @@ export default function V0ParticleAnimation() {
       BASELINE + 0.08,
       STROKE_WIDTH * 1.2
     );
-    // خطاف محسّن بقوس أكبر
     const hook = sdArc(
       px,
       py,
@@ -474,12 +459,10 @@ export default function V0ParticleAnimation() {
     return opUnion(opUnion(stem, hook), hookEnd);
   };
 
-  // حرف ن (noon) - محسّن بشكل أفضل
   const dist_noon = (px: number, py: number): number => {
-    const x = 3.75;
+    const x = LETTER_POSITIONS.NOON;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
 
-    // قوس محسّن بزاوية أفضل
     const mainArc = sdArc(
       px,
       py,
@@ -490,7 +473,6 @@ export default function V0ParticleAnimation() {
       Math.PI * 0.85,
       STROKE_WIDTH * 1.1
     );
-    // خط الربط السفلي
     const connector = sdSegment(
       px,
       py,
@@ -509,19 +491,16 @@ export default function V0ParticleAnimation() {
       BASELINE,
       STROKE_WIDTH
     );
-    // نقطة محسّنة
     const dot = sdCircle(px, py, x, cy + 0.28, 0.035);
 
     return opUnion(opUnion(opUnion(mainArc, connector), base), dot);
   };
 
-  // حرف س (seen) - محسّن بأسنان أفضل
   const dist_seen = (px: number, py: number): number => {
-    const x = 4.25;
+    const x = LETTER_POSITIONS.SEEN;
     const baseY = BASELINE + 0.02;
     const toothHeight = ARABIC_HEIGHT * 0.35;
 
-    // الخط الأساسي الممتد
     const baseLine = sdSegment(
       px,
       py,
@@ -532,7 +511,6 @@ export default function V0ParticleAnimation() {
       STROKE_WIDTH * 1.1
     );
 
-    // الأسنان الثلاثة محسّنة
     const tooth1 = sdArc(
       px,
       py,
@@ -564,7 +542,6 @@ export default function V0ParticleAnimation() {
       STROKE_WIDTH
     );
 
-    // خطوط ربط الأسنان
     const connect1 = sdSegment(
       px,
       py,
@@ -605,12 +582,10 @@ export default function V0ParticleAnimation() {
     );
   };
 
-  // حرف خ (khaa) - محسّن بشكل أفضل
   const dist_khaa = (px: number, py: number): number => {
-    const x = 4.75;
+    const x = LETTER_POSITIONS.KHAA;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
 
-    // قوس مفتوح محسّن
     const mainArc = sdArc(
       px,
       py,
@@ -621,7 +596,6 @@ export default function V0ParticleAnimation() {
       Math.PI * 2.4,
       STROKE_WIDTH * 1.1
     );
-    // خط الربط الأيمن
     const rightConnect = sdSegment(
       px,
       py,
@@ -631,7 +605,6 @@ export default function V0ParticleAnimation() {
       BASELINE,
       STROKE_WIDTH
     );
-    // خط الربط الأيسر
     const leftConnect = sdSegment(
       px,
       py,
@@ -641,34 +614,27 @@ export default function V0ParticleAnimation() {
       BASELINE,
       STROKE_WIDTH
     );
-    // نقطة محسّنة
     const dot = sdCircle(px, py, x, cy + 0.28, 0.035);
 
     return opUnion(opUnion(opUnion(mainArc, rightConnect), leftConnect), dot);
   };
 
-  // حرف ة (taa marbouta) - محسّن بشكل أفضل
   const dist_taa_marbouta = (px: number, py: number): number => {
-    const x = 5.2;
+    const x = LETTER_POSITIONS.TAA_MARBOUTA;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
 
-    // دائرة محسّنة بفتحة صغيرة
     let circle = sdRing(px, py, x, cy, 0.17, STROKE_WIDTH * 1.1);
-    // فتحة صغيرة في الأعلى
     const opening = sdBox(px - x, py - (cy - 0.05), 0.08, 0.08, 0);
     circle = opSubtract(circle, opening);
 
-    // نقطتان محسّنتان
     const dot1 = sdCircle(px, py, x - 0.07, cy + 0.28, 0.03);
     const dot2 = sdCircle(px, py, x + 0.07, cy + 0.28, 0.03);
 
     return opUnion(opUnion(circle, dot1), dot2);
   };
 
-  // دمج جميع الحروف
   const dist_all = (px: number, py: number): number => {
     return Math.min(
-      // English letters
       dist_t(px, py),
       dist_h(px, py),
       dist_e(px, py),
@@ -676,9 +642,7 @@ export default function V0ParticleAnimation() {
       dist_o(px, py),
       dist_p(px, py),
       dist_y(px, py),
-      // Separator
       dist_dash(px, py),
-      // Arabic letters
       dist_alef(px, py),
       dist_lam(px, py),
       dist_noon(px, py),
@@ -691,6 +655,14 @@ export default function V0ParticleAnimation() {
   const dist = (px: number, py: number): number => dist_all(px, py);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion) return;
+
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
@@ -706,185 +678,31 @@ export default function V0ParticleAnimation() {
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0x000000);
 
-    // Initialize Web Worker
-    try {
-      workerRef.current = new Worker(
-        new URL('../workers/particle-physics.worker.ts', import.meta.url),
-        { type: 'module' }
-      );
-
-      // Handle messages from worker
-      workerRef.current.onmessage = (event) => {
-        const { type, positions, velocities, colors, error } = event.data;
-
-        if (type === 'error') {
-          console.error('Worker error:', error);
-          isProcessingRef.current = false;
-          return;
-        }
-
-        if (type === 'updated' && sceneRef.current) {
-          const { geometry, velocities: velocitiesArray } = sceneRef.current;
-          const positionAttribute = geometry.getAttribute("position") as THREE.BufferAttribute;
-          const colorAttribute = geometry.getAttribute("color") as THREE.BufferAttribute;
-
-          // Update geometry with new data from worker
-          positionAttribute.set(positions);
-          colorAttribute.set(colors);
-          positionAttribute.needsUpdate = true;
-          colorAttribute.needsUpdate = true;
-
-          // Update velocities
-          velocitiesArray.set(velocities);
-
-          isProcessingRef.current = false;
-        }
-      };
-
-      workerRef.current.onerror = (error) => {
-        console.error('Worker initialization error:', error);
-        isProcessingRef.current = false;
-      };
-    } catch (error) {
-      console.error('Failed to create worker:', error);
-    }
-
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
 
-    // تحسين عدد الجسيمات حسب الجهاز
     const isMobile = window.innerWidth <= 768;
     const numParticles = isMobile ? MAX_PARTICLES.MOBILE : MAX_PARTICLES.DESKTOP;
-    
-    // Generate particles in batches using requestIdleCallback for better performance
+
     const thickness = 0.15;
     const positions = new Float32Array(numParticles * 3);
     const colors = new Float32Array(numParticles * 3);
 
-    // توسيع منطقة أخذ العينات مع تركيز على الحروف العربية
-    const minX = -2.1;
-    const maxX = 5.6;
-    const minY = -0.4;
-    const maxY = 0.85;
+    const { minX, maxX, minY, maxY } = SAMPLING_BOUNDS;
 
-    // Generate particles in batches
-    const generateParticlesInBatches = (batchSize: number = 750): Promise<number> => {
-      return new Promise((resolve, reject) => {
-        let generatedCount = 0;
-        const maxAttempts = 3000000; // زيادة المحاولات لتغطية أفضل
-        let attempts = 0;
-        let batchAttempts = 0;
-        const maxBatchAttempts = 50000; // حد أقصى للمحاولات لكل دفعة
+    const originalPositions = new Float32Array(numParticles * 3);
+    const velocities = new Float32Array(numParticles * 3);
+    const phases = new Float32Array(numParticles);
 
-        const processBatch = () => {
-          try {
-            let batchGenerated = 0;
-            
-            while (batchGenerated < batchSize && 
-                   generatedCount < numParticles && 
-                   attempts < maxAttempts &&
-                   batchAttempts < maxBatchAttempts) {
-              
-              attempts++;
-              batchAttempts++;
-              
-              const x = Math.random() * (maxX - minX) + minX;
-              const y = Math.random() * (maxY - minY) + minY;
-              const z = Math.random() * thickness - thickness / 2;
+    camera.position.set(0, 0, 3.2);
 
-              const d = dist(x, y);
-
-              // تحسين عتبة القبول للحروف العربية
-              const threshold = x > 2.5 ? 0.015 : 0.01; // عتبة أعلى للحروف العربية
-
-              if (d <= threshold) {
-                positions[generatedCount * 3] = x;
-                positions[generatedCount * 3 + 1] = y;
-                positions[generatedCount * 3 + 2] = z;
-                colors[generatedCount * 3] = 1;
-                colors[generatedCount * 3 + 1] = 1;
-                colors[generatedCount * 3 + 2] = 1;
-                generatedCount++;
-                batchGenerated++;
-              }
-            }
-
-            // جدولة الدفعة التالية أو إنهاء التوليد
-            if (generatedCount < numParticles && 
-                attempts < maxAttempts && 
-                batchAttempts < maxBatchAttempts) {
-              
-              // استخدام requestIdleCallback مع fallback إلى setTimeout
-              if (typeof requestIdleCallback !== 'undefined') {
-                requestIdleCallback(processBatch, { timeout: 100 });
-              } else {
-                setTimeout(processBatch, 0);
-              }
-            } else {
-              // تم توليد الجسيمات بنجاح
-              resolve(generatedCount);
-            }
-          } catch (error) {
-            // خطأ في توليد الجسيمات
-            reject(error);
-          }
-        };
-
-        // بدء أول دفعة
-        processBatch();
-      });
-    };
-
-    // انتظار اكتمال توليد جميع الدفعات
-    generateParticlesInBatches()
-      .then((finalCount) => {
-        if (!sceneRef.current) return;
-        
-        // تحديث البيانات في sceneRef
-        sceneRef.current.particleCount = finalCount;
-        
-        // تحديث geometry مع العدد النهائي
-        const finalPositions = positions.slice(0, finalCount * 3);
-        const finalColors = colors.slice(0, finalCount * 3);
-        
-        geometry.setAttribute("position", new THREE.BufferAttribute(finalPositions, 3));
-        geometry.setAttribute("color", new THREE.BufferAttribute(finalColors, 3));
-        
-        // تم توليد الجسيمات بنجاح
-      })
-      .catch((error) => {
-        // فشل في توليد الجسيمات
-      });
-
-    // Initialize variables that will be set after particle generation
-    const originalPositions = new Float32Array(0);
-    const phases = new Float32Array(0);
-    const velocities = new Float32Array(0);
-    let finalParticleCount = 0;
-
-    const geometry = new THREE.BufferGeometry();
-    // سيتم تحديث geometry بعد اكتمال توليد الجسيمات
-
-    const material = new THREE.PointsMaterial({
-      size: 0.0045, // زيادة حجم النقاط قليلاً لجودة أفضل
-      sizeAttenuation: true,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.95, // زيادة الشفافية قليلاً
-    });
-
-    const points = new THREE.Points(geometry, material);
-    scene.add(points);
-    camera.position.set(0, 0, 3.2); // تعديل موضع الكاميرا لرؤية أفضل للنص المحسّن
-
-    // Store scene data
     sceneRef.current = {
       scene,
       camera,
       renderer,
-      points,
-      geometry,
+      points: null as any,
+      geometry: null as any,
       originalPositions,
       velocities,
       phases,
@@ -894,10 +712,9 @@ export default function V0ParticleAnimation() {
       isDragging: false,
       previousMouseX: 0,
       previousMouseY: 0,
-      particleCount: i,
+      particleCount: 0,
     };
 
-    // Mouse interaction handlers
     let animationId: number;
 
     const handleMouseMove = (event: MouseEvent) => {
@@ -922,11 +739,9 @@ export default function V0ParticleAnimation() {
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", handleMouseLeave);
 
-    // Optimized animation loop with Web Worker
     const animate = () => {
-      if (!sceneRef.current || !workerRef.current) return;
+      if (!sceneRef.current) return;
 
-      const time = Date.now() * 0.001;
       const {
         scene,
         camera,
@@ -935,121 +750,192 @@ export default function V0ParticleAnimation() {
         originalPositions,
         velocities,
         intersectionPoint,
-        rotationX,
         rotationY,
         particleCount,
       } = sceneRef.current;
 
-      const positionAttribute = geometry.getAttribute(
-        "position"
-      ) as THREE.BufferAttribute;
-      const colorAttribute = geometry.getAttribute(
-        "color"
-      ) as THREE.BufferAttribute;
-
-      // Apply rotation
-      updateCameraPosition(camera, rotationX, rotationY);
-
-      // Skip if worker is still processing
-      if (isProcessingRef.current) {
+      if (!geometry || particleCount === 0) {
         renderer.render(scene, camera);
         animationId = requestAnimationFrame(animate);
         return;
       }
 
-      // Prepare data for worker (copy arrays to avoid race conditions)
+      const positionAttribute = geometry.getAttribute("position");
+      const colorAttribute = geometry.getAttribute("color");
+
+      if (!positionAttribute || !colorAttribute) {
+        renderer.render(scene, camera);
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+
+      updateCameraPosition(camera, 0, rotationY);
+
       const positions = new Float32Array(positionAttribute.array);
       const colors = new Float32Array(colorAttribute.array);
-      const velocitiesCopy = new Float32Array(velocities);
-      const originalPositionsCopy = new Float32Array(originalPositions);
 
-      isProcessingRef.current = true;
+      updateParticlePhysics(positions, velocities, originalPositions, colors, particleCount, {
+        intersectionPoint,
+        effect: currentEffect,
+        repelStrength: 0.08,
+        damping: 0.92,
+      });
 
-      // Send data to worker for processing
-      workerRef.current.postMessage({
-        type: 'update',
-        positions,
-        velocities: velocitiesCopy,
-        originalPositions: originalPositionsCopy,
-        colors,
-        particleCount,
-        config: {
-          effect: currentEffect,
-          effectRadius: 0.5,
-          repelStrength: 0.08,
-          attractStrength: 0.15,
-          damping: 0.92,
-          intersectionPoint: intersectionPoint ? {
-            x: intersectionPoint.x,
-            y: intersectionPoint.y,
-            z: intersectionPoint.z
-          } : null,
-          time
-        }
-      }, [positions.buffer, velocitiesCopy.buffer, originalPositionsCopy.buffer, colors.buffer]);
+      if (positionAttribute instanceof THREE.BufferAttribute) {
+        positionAttribute.set(positions);
+        positionAttribute.needsUpdate = true;
+      }
+      if (colorAttribute instanceof THREE.BufferAttribute) {
+        colorAttribute.set(colors);
+        colorAttribute.needsUpdate = true;
+      }
 
-      // Render current frame
       renderer.render(scene, camera);
-
-      // Schedule next frame
       animationId = requestAnimationFrame(animate);
     };
 
-    // Schedule periodic memory cleanup
-    let lastCleanupTime = Date.now();
-    const scheduleMemoryCleanup = () => {
-      const now = Date.now();
-      if (now - lastCleanupTime > 60000) { // تنظيف كل دقيقة
-        lastCleanupTime = now;
-        
-        if (typeof requestIdleCallback !== 'undefined') {
-          requestIdleCallback(() => performBatchCleanup(sceneRef.current), { timeout: 500 });
-        } else {
-          setTimeout(() => performBatchCleanup(sceneRef.current), 0);
-        }
-      }
+    animationId = requestAnimationFrame(animate);
+
+    const generateParticlesInBatches = (batchSize = 750): Promise<number> => {
+      return new Promise((resolve, reject) => {
+        let generatedCount = 0;
+        const maxAttempts = 3000000;
+        let attempts = 0;
+        let batchAttempts = 0;
+        const maxBatchAttempts = 50000;
+
+        const processBatch = () => {
+          try {
+            let batchGenerated = 0;
+
+            while (
+              batchGenerated < batchSize &&
+              generatedCount < numParticles &&
+              attempts < maxAttempts &&
+              batchAttempts < maxBatchAttempts
+            ) {
+              attempts++;
+              batchAttempts++;
+
+              const x = Math.random() * (maxX - minX) + minX;
+              const y = Math.random() * (maxY - minY) + minY;
+              const z = Math.random() * thickness - thickness / 2;
+
+              const d = dist(x, y);
+
+              const threshold =
+                x > 2.5
+                  ? PARTICLE_THRESHOLDS.arabic
+                  : PARTICLE_THRESHOLDS.english;
+
+              if (d <= threshold) {
+                positions[generatedCount * 3] = x;
+                positions[generatedCount * 3 + 1] = y;
+                positions[generatedCount * 3 + 2] = z;
+                colors[generatedCount * 3] = 1;
+                colors[generatedCount * 3 + 1] = 1;
+                colors[generatedCount * 3 + 2] = 1;
+                generatedCount++;
+                batchGenerated++;
+              }
+            }
+
+            if (
+              generatedCount < numParticles &&
+              attempts < maxAttempts &&
+              batchAttempts < maxBatchAttempts
+            ) {
+              if (typeof requestIdleCallback !== "undefined") {
+                requestIdleCallback(processBatch, { timeout: 100 });
+              } else {
+                setTimeout(processBatch, 0);
+              }
+            } else {
+              resolve(generatedCount);
+            }
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        processBatch();
+      });
     };
 
-    // بدء الحلقة الرئيسية
-    animationId = requestAnimationFrame(() => {
-      animate();
-      scheduleMemoryCleanup();
-    });
+    generateParticlesInBatches()
+      .then((finalCount) => {
+        console.log("[v0] Generated particles:", finalCount);
+        if (!sceneRef.current) return;
 
-    // Cleanup function with error handling
+        sceneRef.current.particleCount = finalCount;
+
+        const finalPositions = positions.slice(0, finalCount * 3);
+        const finalColors = colors.slice(0, finalCount * 3);
+
+        // Copy to original positions
+        if (finalCount > 0) {
+          for (let i = 0; i < finalCount * 3; i++) {
+            originalPositions[i] = finalPositions[i] ?? 0;
+          }
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(finalPositions, 3)
+        );
+        geometry.setAttribute(
+          "color",
+          new THREE.BufferAttribute(finalColors, 3)
+        );
+
+        const material = new THREE.PointsMaterial({
+          size: 0.0045,
+          sizeAttenuation: true,
+          vertexColors: true,
+          transparent: true,
+          opacity: 0.95,
+        });
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+        sceneRef.current.geometry = geometry;
+        sceneRef.current.points = points;
+
+        console.log("[v0] Particles added to scene");
+      })
+      .catch((error) => {
+        console.error("Failed to generate particles:", error);
+      });
+
     const cleanup = () => {
       try {
         cancelAnimationFrame(animationId);
         canvas.removeEventListener("mousemove", handleMouseMove);
         canvas.removeEventListener("mouseleave", handleMouseLeave);
 
-        // تنظيف Web Worker
-        if (workerRef.current) {
-          workerRef.current.terminate();
-          workerRef.current = null;
+        if (sceneRef.current?.geometry) sceneRef.current.geometry.dispose();
+        if (sceneRef.current?.points?.material) {
+          const material = sceneRef.current.points.material;
+          if (material && !Array.isArray(material)) {
+            material.dispose();
+          }
         }
-
-        // تنظيف الذاكرة
-        if (geometry) geometry.dispose();
-        if (material) material.dispose();
         if (renderer) renderer.dispose();
 
-        // تنظيف البيانات
         if (sceneRef.current) {
           sceneRef.current.originalPositions = null as any;
           sceneRef.current.velocities = null as any;
           sceneRef.current.phases = null as any;
           sceneRef.current = null;
         }
-
-        // تم تنظيف موارد الجسيمات بنجاح
       } catch (error) {
-        // خطأ في تنظيف موارد الجسيمات
+        console.error("Cleanup error:", error);
       }
     };
 
-    // Enhanced cleanup with timeout safety
-    const safetyCleanup = setTimeout(cleanup, 300000); // تنظيف تلقائي بعد 5 دقائق
+    const safetyCleanup = setTimeout(cleanup, 300000);
 
     return () => {
       clearTimeout(safetyCleanup);
@@ -1057,7 +943,6 @@ export default function V0ParticleAnimation() {
     };
   }, []);
 
-  // Mouse drag handlers
   const handleMouseDown = (event: React.MouseEvent) => {
     if (!sceneRef.current) return;
     sceneRef.current.isDragging = true;
@@ -1084,7 +969,6 @@ export default function V0ParticleAnimation() {
     }
   };
 
-  // Touch handlers
   const handleTouchStart = (event: React.TouchEvent) => {
     if (!sceneRef.current || !event.touches[0]) return;
     sceneRef.current.isDragging = true;
@@ -1093,7 +977,11 @@ export default function V0ParticleAnimation() {
   };
 
   const handleTouchMove = (event: React.TouchEvent) => {
-    if (!sceneRef.current || !sceneRef.current.isDragging || !event.touches[0])
+    if (
+      !sceneRef.current ||
+      !sceneRef.current.isDragging ||
+      !event.touches[0]
+    )
       return;
 
     const deltaX = event.touches[0].clientX - sceneRef.current.previousMouseX;
@@ -1112,10 +1000,8 @@ export default function V0ParticleAnimation() {
     }
   };
 
-  
-
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-black">
+    <div className="relative flex items-center justify-center w-full h-full bg-black">
       <canvas
         ref={canvasRef}
         width={1400}
@@ -1129,12 +1015,6 @@ export default function V0ParticleAnimation() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       />
-
-      
-
-      
-
-      
     </div>
   );
 }

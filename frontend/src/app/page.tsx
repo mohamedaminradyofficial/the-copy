@@ -29,10 +29,7 @@ import images from "./images";
 import "./slider.css";
 import pagesManifest from "@/config/pages.manifest.json";
 
-const ParticleBackground = dynamic(
-  () => import("@/components/particle-background-optimized"),
-  { ssr: false }
-);
+
 
 // Icon mapping for each page slug
 const iconMap: Record<string, typeof PenSquare> = {
@@ -113,9 +110,7 @@ export default function Home() {
   const showCards = scrollY > 300;
 
   return (
-    <div className="relative min-h-screen">
-      <ParticleBackground />
-
+    <div className="relative min-h-screen bg-black">
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="container mx-auto flex items-center justify-between px-4 py-6">
           <Link href="/" aria-label="العودة للصفحة الرئيسية">

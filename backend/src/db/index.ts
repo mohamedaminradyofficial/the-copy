@@ -55,7 +55,6 @@ const poolConfig = {
 
 // Create connection pool
 let pool: Pool | null = null;
-let db: ReturnType<typeof drizzle> | null = null;
 
 // Mock database for testing
 const mockDb = {
@@ -111,8 +110,8 @@ function initializeDatabase() {
       logger.error('Database connection test failed:', error);
     });
 
-    db = drizzle(pool, { schema });
-    return db;
+    const dbInstance = drizzle(pool, { schema });
+    return dbInstance;
   } catch (error) {
     logger.error('Failed to initialize database:', error);
     logger.warn('Falling back to mock database');
@@ -121,7 +120,7 @@ function initializeDatabase() {
 }
 
 // Initialize and export database instance
-const db = initializeDatabase();
+const db: ReturnType<typeof drizzle> = initializeDatabase() as ReturnType<typeof drizzle>;
 
 // Export database instance (backwards compatible)
 export { db, pool };
