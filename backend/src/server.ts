@@ -60,13 +60,15 @@ try {
 }
 
 // Initialize background job workers (BullMQ)
-try {
-  initializeWorkers();
-  logger.info('Background job workers initialized');
-} catch (error) {
-  logger.error('Failed to initialize job workers:', error);
-  // Continue without workers - app can still function
-}
+(async () => {
+  try {
+    await initializeWorkers();
+    logger.info('Background job workers initialized');
+  } catch (error) {
+    logger.error('Failed to initialize job workers:', error);
+    // Continue without workers - app can still function
+  }
+})();
 
 // Setup Bull Board dashboard for queue monitoring (with authentication)
 // Access at: http://localhost:3000/admin/queues
