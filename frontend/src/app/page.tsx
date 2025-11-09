@@ -239,16 +239,13 @@ export default function Home() {
             ref={heroTextRef}
             className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8"
             style={{
-              background: canvasRef.current ? `url(${canvasRef.current.toDataURL()})` : '#000',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: 'transparent',
+              color: "transparent",
+              background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              textShadow: "0 0 60px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.6)",
               letterSpacing: "-0.05em",
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale',
+              filter: "drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))",
             }}
           >
             النسخة

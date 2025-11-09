@@ -271,8 +271,8 @@ export function LandingCardScanner() {
           if (!ctx) return
 
           const gradient = ctx.createLinearGradient(0, 0, 400, 250)
-          gradient.addColorStop(0, "#667eea")
-          gradient.addColorStop(1, "#764ba2")
+          gradient.addColorStop(0, "#1a1a1a")
+          gradient.addColorStop(1, "#000000")
 
           ctx.fillStyle = gradient
           ctx.fillRect(0, 0, 400, 250)
@@ -1079,7 +1079,7 @@ export function LandingCardScanner() {
           left: 0;
           width: 100%;
           height: 100%;
-          color: rgba(220, 210, 255, 0.6);
+          color: rgba(255, 255, 255, 0.6);
           font-family: 'Courier New', monospace;
           font-size: 11px;
           line-height: 13px;
