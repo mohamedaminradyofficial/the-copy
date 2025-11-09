@@ -14,7 +14,7 @@
  * - Sentry performance monitoring integration
  */
 
-import Redis from 'ioredis';
+import { createClient, RedisClientType } from 'redis';
 import crypto from 'crypto';
 import { logger } from '@/utils/logger';
 import { env } from '@/config/env';
@@ -55,7 +55,7 @@ interface CacheMetrics {
 }
 
 export class CacheService {
-  private redis: Redis | null = null;
+  private redis: RedisClientType | null = null;
   private memoryCache: Map<string, CacheEntry<unknown>> = new Map();
   private readonly MAX_MEMORY_CACHE_SIZE = 100; // Maximum items in L1 cache
   private readonly DEFAULT_TTL = 1800; // 30 minutes in seconds
@@ -91,34 +91,46 @@ export class CacheService {
   private initializeRedis(): void {
     try {
       // Prefer REDIS_URL if provided, otherwise construct from individual variables
-      let redisConfig: string | { host: string; port: number; password?: string };
+      let redisConfig: any;
 
       if (process.env.REDIS_URL) {
-        redisConfig = process.env.REDIS_URL;
+        redisConfig = {
+          url: process.env.REDIS_URL,
+        };
       } else {
         redisConfig = {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT || '6379'),
-          ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+          password: process.env.REDIS_PASSWORD,
         };
       }
 
-      this.redis = new Redis(redisConfig as any, {
-        retryStrategy: (times: number) => {
-          const delay = Math.min(times * 50, 2000);
-          logger.debug(`Redis retry attempt ${times}, delay: ${delay}ms`);
-          return delay;
-        },
-        maxRetriesPerRequest: 3,
-        enableOfflineQueue: false,
-        lazyConnect: true,
-      });
+      // Add retry strategy
+      redisConfig.retry_strategy = (options: any) => {
+        if (options.error && options.error.code === 'ECONNREFUSED') {
+          logger.error('Redis connection refused');
+          return new Error('Redis Server Connection Error');
+        }
+        if (options.total_retry_time > 1000 * 60 * 60) {
+          logger.error('Redis retry time exhausted');
+          return new Error('Retry time exhausted');
+        }
+        if (options.attempt > 10) {
+          return undefined;
+        }
+        // reconnect after
+        const delay = Math.min(options.attempt * 100, 3000);
+        logger.debug(`Redis retry attempt ${options.attempt}, delay: ${delay}ms`);
+        return delay;
+      };
+
+      this.redis = createClient(redisConfig);
 
       this.redis.on('error', (error) => {
         logger.warn('Redis connection error, falling back to memory cache:', error.message);
         this.updateRedisHealth('error');
         this.metrics.errors++;
-        
+
         // Report to Sentry if configured
         if (Sentry) {
           Sentry.captureException(error, {
@@ -133,7 +145,7 @@ export class CacheService {
         this.updateRedisHealth('connected');
       });
 
-      this.redis.on('close', () => {
+      this.redis.on('end', () => {
         logger.warn('Redis connection closed');
         this.updateRedisHealth('disconnected');
       });
@@ -204,7 +216,7 @@ export class CacheService {
       }
 
       // Try L2 (Redis) cache
-      if (this.redis && this.redis.status === 'ready') {
+      if (this.redis && this.redis.isOpen) {
         const redisStartTime = Date.now();
         try {
           const value = await this.redis.get(key);
@@ -280,10 +292,10 @@ export class CacheService {
       this.setMemoryCache(key, value, ttl);
 
       // Set in L2 (Redis)
-      if (this.redis && this.redis.status === 'ready') {
+      if (this.redis && this.redis.isOpen) {
         const redisStartTime = Date.now();
         try {
-          await this.redis.setex(key, ttl, serialized);
+          await this.redis.setEx(key, ttl, serialized);
           const redisLatency = Date.now() - redisStartTime;
           
           logger.debug(`Cache set (L1+L2): ${key}, TTL: ${ttl}s`);
@@ -330,7 +342,7 @@ export class CacheService {
       this.memoryCache.delete(key);
 
       // Delete from L2
-      if (this.redis && this.redis.status === 'ready') {
+      if (this.redis && this.redis.isOpen) {
         await this.redis.del(key);
       }
 
@@ -366,10 +378,10 @@ export class CacheService {
 
         keysToDelete.forEach(key => this.memoryCache.delete(key));
 
-        if (this.redis && this.redis.status === 'ready') {
+        if (this.redis && this.redis.isOpen) {
           const keys = await this.redis.keys(`${pattern}*`);
           if (keys.length > 0) {
-            await this.redis.del(...keys);
+            await this.redis.del(keys);
           }
         }
 
@@ -378,8 +390,8 @@ export class CacheService {
         // Clear all
         this.memoryCache.clear();
 
-        if (this.redis && this.redis.status === 'ready') {
-          await this.redis.flushdb();
+        if (this.redis && this.redis.isOpen) {
+          await this.redis.flushDb();
         }
 
         logger.info('All cache cleared');
@@ -449,7 +461,7 @@ export class CacheService {
 
     return {
       memorySize: this.memoryCache.size,
-      redisStatus: this.redis?.status || 'disconnected',
+      redisStatus: this.redis?.isOpen ? 'connected' : 'disconnected',
       metrics: { ...this.metrics },
       hitRate: Math.round(hitRate * 100) / 100, // Round to 2 decimal places
     };
@@ -487,7 +499,7 @@ export class CacheService {
 
     // Disconnect Redis
     if (this.redis) {
-      await this.redis.quit();
+      await this.redis.disconnect();
       this.redis = null;
     }
 

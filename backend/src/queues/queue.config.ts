@@ -5,13 +5,10 @@
  */
 
 import { Queue, Worker, QueueOptions, WorkerOptions, ConnectionOptions, Job } from 'bullmq';
-import Redis from 'ioredis';
 
 // Redis connection configuration for BullMQ
 // Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
 function getRedisConnection(): ConnectionOptions {
-
-
   const baseConfig: ConnectionOptions = {
     maxRetriesPerRequest: null, // Required for BullMQ
     enableReadyCheck: false,
@@ -28,13 +25,9 @@ function getRedisConnection(): ConnectionOptions {
 
   // If REDIS_URL is provided, parse it and merge with base config
   if (process.env.REDIS_URL) {
-    // Parse REDIS_URL (format: redis://:password@host:port)
-    const url = new URL(process.env.REDIS_URL);
     return {
       ...baseConfig,
-      host: url.hostname,
-      port: url.port ? parseInt(url.port) : 6379,
-      password: url.password || undefined,
+      url: process.env.REDIS_URL,
     };
   }
 
@@ -43,7 +36,7 @@ function getRedisConnection(): ConnectionOptions {
     ...baseConfig,
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD,
+    password: process.env.REDIS_PASSWORD || undefined,
   };
 }
 
