@@ -169,15 +169,10 @@ export default function Home() {
         ref={headerRef}
         className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10 opacity-0"
       >
-        <div className="container mx-auto flex items-center justify-between px-6 py-4">
+        <div className="container mx-auto flex items-center justify-center px-6 py-4">
           <Link href="/" aria-label="العودة للصفحة الرئيسية">
-            <span className="font-headline text-xl font-bold text-white">
+            <span className="font-headline text-3xl font-bold text-white">
               النسخة
-            </span>
-          </Link>
-          <Link href="/" aria-label="The Copy Home">
-            <span className="font-body text-sm font-bold text-white">
-              The Copy
             </span>
           </Link>
         </div>
@@ -186,13 +181,10 @@ export default function Home() {
       {/* Hero Section with Video Mask */}
       <section
         ref={heroRef}
-        className="relative w-full h-screen flex items-center justify-center overflow-hidden"
-        style={{
-          backgroundColor: '#000000',
-        }}
+        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
       >
-        {/* Video background layer */}
-        <div className="absolute inset-0 z-0">
+        {/* Video background layer with dark overlay */}
+        <div className="absolute inset-0 z-0 bg-black">
           <video
             ref={videoRef}
             autoPlay
@@ -201,7 +193,8 @@ export default function Home() {
             playsInline
             className="w-full h-full object-cover"
             style={{
-              opacity: 0.8,
+              opacity: 0.7,
+              filter: 'brightness(0.8) contrast(1.1)',
             }}
           >
             <source
@@ -211,17 +204,8 @@ export default function Home() {
           </video>
         </div>
 
-        {/* Black overlay with blend mode to darken video except where text is */}
-        <div
-          className="absolute inset-0 z-10"
-          style={{
-            backgroundColor: '#000000',
-            mixBlendMode: 'multiply',
-          }}
-        />
-
         {/* Hero Text - Creates knockout effect revealing video */}
-        <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
           <h1
             ref={heroTextRef}
             className="text-[10rem] md:text-[14rem] lg:text-[18rem] xl:text-[24rem] font-black leading-none select-none px-8"
