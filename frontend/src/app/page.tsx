@@ -167,11 +167,12 @@ export default function Home() {
       {/* Sticky Header - Initially Hidden */}
       <header
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10 opacity-0"
+        className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10"
+        style={{ opacity: 0 }}
       >
         <div className="container mx-auto flex items-center justify-center px-6 py-4">
           <Link href="/" aria-label="العودة للصفحة الرئيسية">
-            <span className="font-headline text-3xl font-bold text-white">
+            <span className="font-headline text-5xl font-bold text-white">
               النسخة
             </span>
           </Link>
@@ -204,11 +205,8 @@ export default function Home() {
           </video>
         </div>
 
-        {/* Black Layer - Everything is black except where text reveals video */}
-        <div className="absolute inset-0 bg-black" style={{ zIndex: 2 }} />
-
-        {/* Hero Text - White text with screen blend mode reveals video */}
-        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 3 }}>
+        {/* Hero Text Container with black background - White text with screen blend reveals video */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black" style={{ zIndex: 2 }}>
           <h1
             ref={heroTextRef}
             className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8 text-white"
