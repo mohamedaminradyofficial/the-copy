@@ -3,7 +3,10 @@
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-app.ps1",
+    "stop": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/kill-ports.ps1",
     "start:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "start:redis": "powershell -Command \"Start-Process -FilePath '.\\redis\\redis-server.exe' -WindowStyle Minimized\"",
     "kill:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./kill-dev.ps1",
     "lint": "pnpm --filter frontend lint",
     "lint:fix": "pnpm --filter frontend lint:fix",
@@ -22,6 +25,7 @@
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.10.0",
+    "@sentry/nextjs": "^10.23.0",
     "stylelint-config-standard": "^39.0.1",
     "tailwindcss": "^4.1.16",
     "tailwindcss-animate": "^1.0.7",
