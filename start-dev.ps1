@@ -5,6 +5,19 @@ param(
   [int] $FrontendPort = 5000
 )
 
+Write-Output "Starting Redis server..." -ForegroundColor Cyan
+
+# Start Redis server in minimized window
+try {
+  Start-Process -FilePath "$PSScriptRoot\redis\redis-server.exe" -WindowStyle Minimized -ErrorAction Stop
+  Write-Output "Redis server started successfully" -ForegroundColor Green
+} catch {
+  Write-Output "Warning: Could not start Redis server - $($_.Exception.Message)" -ForegroundColor Yellow
+  Write-Output "Application will continue without Redis (reduced functionality)" -ForegroundColor Yellow
+}
+
+Start-Sleep -Seconds 2
+
 Write-Output "Launching Backend and Frontend in separate PowerShell windows..." -ForegroundColor Yellow
 
 # Backend window (auto-fallback from BackendPort implemented in server.ts)

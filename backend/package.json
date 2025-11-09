@@ -63,6 +63,7 @@
     "jsonwebtoken": "^9.0.2",
     "mammoth": "^1.7.0",
     "module-alias": "^2.2.3",
+    "mongodb": "^7.0.0",
     "multer": "^2.0.2",
     "pdfjs-dist": "^4.4.168",
     "prom-client": "^15.1.3",

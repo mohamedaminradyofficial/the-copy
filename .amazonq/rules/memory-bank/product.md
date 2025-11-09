@@ -1,68 +1,65 @@
 # The Copy - Product Overview
 
 ## Project Purpose
-The Copy (النسخة) is a comprehensive Arabic creative writing and dramatic analysis platform that combines AI-powered analysis with professional production tools for Arabic content creators.
+**The Copy** (النسخة) is a comprehensive Arabic-language creative writing and dramatic analysis platform that combines AI-powered analysis with professional production tools for screenwriters, directors, and creative professionals.
 
 ## Core Value Proposition
-- **Arabic-First Design**: Specifically built for Arabic language creative writing and dramatic analysis
-- **AI-Enhanced Analysis**: Advanced dramatic analysis using Google Gemini API with specialized Arabic language processing
-- **Professional Production Tools**: Complete suite for managing creative projects from concept to production
-- **Performance Optimized**: 40-70% performance improvements with advanced caching and queue systems
+- **AI-Powered Drama Analysis**: Advanced 7-station dramatic analysis using Google Gemini API
+- **Arabic Language Focus**: Specifically designed for Arabic creative content and cultural context
+- **Professional Production Tools**: Complete workflow from script analysis to production planning
+- **Real-time Collaboration**: Multi-user project management with live updates
 
 ## Key Features
 
 ### 1. Seven Stations Analysis (تحليل المحطات السبع)
-- Advanced dramatic analysis using AI
-- Seven comprehensive analytical stations for script evaluation
+- Comprehensive dramatic structure analysis
 - AI-powered insights and recommendations
-- Detailed exportable reports in Arabic
+- Detailed exportable reports
+- Character arc tracking and consistency analysis
 
 ### 2. Directors Studio (استوديو المخرجين)
 - Multi-project management system
 - Scene and shot organization tools
-- Character tracking and consistency management
-- Visual planning and storyboarding tools
+- Character tracking and consistency monitoring
+- Visual planning and storyboarding capabilities
 
-### 3. Intelligent Analysis Engine
-- Automatic scene and character extraction
-- Shot and angle suggestions
-- Dramatic consistency analysis
-- Creative recommendations and insights
+### 3. Intelligent Content Processing
+- Automatic scene and character extraction from scripts
+- Shot and angle suggestions based on dramatic analysis
+- Consistency checking across scenes and characters
+- Creative recommendations powered by AI
 
-### 4. Real-time Collaboration
-- WebSocket-based real-time updates
-- Multi-user project collaboration
-- Live editing and synchronization
-- Instant feedback and notifications
+### 4. Performance & Security
+- JWT-based secure authentication
+- Multi-level rate limiting
+- Optimized caching with Redis
+- Real-time updates via WebSocket + SSE
+- Comprehensive monitoring with Sentry + Prometheus
 
 ## Target Users
 
 ### Primary Users
-- **Arabic Screenwriters**: Professional and aspiring writers creating Arabic content
-- **Film Directors**: Directors planning and organizing Arabic productions
-- **Content Creators**: Digital content creators working in Arabic media
-- **Production Teams**: Collaborative teams managing Arabic creative projects
+- **Screenwriters**: Script analysis, character development, story structure optimization
+- **Directors**: Production planning, scene organization, shot planning
+- **Producers**: Project management, timeline tracking, resource planning
+- **Creative Writing Students**: Learning dramatic structure and storytelling techniques
 
 ### Use Cases
-- Script analysis and improvement
-- Production planning and management
-- Character development and tracking
-- Scene organization and shot planning
-- Creative collaboration and feedback
-- Educational dramatic analysis
+- **Script Development**: From initial draft to production-ready screenplay
+- **Educational**: Teaching dramatic structure and storytelling principles
+- **Production Planning**: Organizing scenes, shots, and production schedules
+- **Creative Analysis**: Understanding story structure and character development
+- **Collaboration**: Multi-user project development and review
 
-## Technical Capabilities
-- **Scalable Architecture**: Monorepo structure supporting frontend/backend separation
-- **AI Integration**: Google Gemini API for advanced Arabic text analysis
-- **Real-time Features**: WebSocket and SSE for live collaboration
-- **Performance Optimization**: Redis caching, BullMQ queues, database indexing
-- **Security**: JWT authentication, rate limiting, data encryption
-- **Monitoring**: Sentry error tracking, Prometheus metrics, performance dashboards
+## Business Model
+- Professional creative writing and production platform
+- Subscription-based service for advanced features
+- Educational licensing for institutions
+- API access for integration with other creative tools
 
-## Business Value
-- Streamlines Arabic content creation workflow
-- Reduces production planning time by 50%
-- Improves script quality through AI analysis
-- Enables efficient team collaboration
-- Provides data-driven creative insights
-- Supports Arabic language creative industry growth
+## Competitive Advantages
+- First comprehensive Arabic-language dramatic analysis platform
+- AI-powered analysis specifically trained for Arabic storytelling traditions
+- Complete workflow from analysis to production planning
+- Real-time collaboration features
+- Performance-optimized architecture with 40-70% speed improvements

@@ -1,148 +1,310 @@
-# The Copy - Development Guidelines
+
+
+ChatGPT said:
+أمر توجيهي للنموذج: سياسة عدم ترحيل المشكلات (No-Deferral, Root-Cause First)
+
+المبدأ الحاكم:
+أي مشكلة تُكتشف في هذه المرحلة يُحظر تأجيلها أو تجاوزها مؤقتًا. يجب حلّها من الجذور (Root Cause) حلًا دائمًا قبل الانتقال لأي مهمة أخرى.
+
+النطاق:
+يسري على جميع الأخطاء والتحذيرات والتدهورات الأداءية ومخاطر الأمان والتقنية الديونية (Tech Debt) التي تظهر أثناء التطوير أو الاختبار أو الدمج.
+
+القواعد الإلزامية:
+
+تشخيص سببي: طبّق منهجية 5 Whys أو Fishbone للوصول للسبب الجذري وتوثيقه بإيجاز.
+
+حل دائم لا مؤقت: يُمنع استخدام الحيل/الـWorkarounds/التجاهل/@ts-ignore دون معالجة السبب.
+
+اختبارات مانعة للتكرار: أضِف اختبار وحدة/تكامل يُثبت عدم تكرار المشكلة (Regression Guard).
+
+حماية أمامية: أضِف تحققات إدخال/تحكم أخطاء/قياسات أداء أو قواعد أمان حيث يلزم.
+
+توثيق موجز: سجّل: وصف المشكلة، السبب الجذري، التعديل، الاختبارات المضافة، وأي تأثيرات جانبية.
+
+تحقق مستقل: نفّذ إعادة اختبار كاملة للمسار المتأثر وراجِع السجلات/القياسات بعد الإصلاح.
+
+مسار التنفيذ عند اكتشاف مشكلة:
+
+(أ) إعادة إنتاج مُوثّقة بخطوات واضحة وبيانات اختبارية.
+
+(ب) عزل السبب الجذري وتأكيده بأدلة (رسائل خطأ، تتبّع، قياسات).
+
+(ج) تنفيذ تعديل يعالج السبب لا العرض.
+
+(د) إضافة اختبارات مانعة + مراقبة (Metrics/Logging) إن لزم.
+
+(هـ) تشغيل الحزمة الاختبارية كاملة وتمريرها دون إنذارات جديدة.
+
+(و) مراجعة سريعة من نظير (Peer Review) قبل الدمج.
+
+معيار الإغلاق (Definition of Done):
+
+السبب الجذري مُوثّق ومُعالج.
+
+اختبارات مانعة مضافة وتنجح.
+
+عدم وجود تحذيرات/ديون مؤجلة مرتبطة بالمشكلة.
+
+لا تدهور في الأداء أو الأمان.
+
+المراقبة لا تُظهر تكرارًا بعد الإصلاح.
+
+الاستثناءات والطوارئ:
+لا يُسمح بتجاوز هذه السياسة إلا بموافقة صريحة مُسبّبة ومؤقتة، مع إنشاء تذكرة مُلزمة بزمن قصير لإزالة أي حلّ مؤقت.# The Copy - Development Guidelines
 
 ## Code Quality Standards
 
 ### TypeScript Usage
-- **Strict TypeScript Configuration**: All files use strict TypeScript with comprehensive type definitions
-- **Interface Definitions**: Complex objects use detailed TypeScript interfaces (e.g., `SidebarContext`, `AutoRefreshConfig`)
-- **Type Safety**: Extensive use of type guards and proper typing for all function parameters and return values
-- **Generic Types**: Proper use of generics for reusable components and utilities
+- **Strict TypeScript**: All files use TypeScript with strict type checking
+- **Type Definitions**: Comprehensive type definitions in dedicated `types/` directories
+- **Interface Patterns**: Consistent interface naming with descriptive properties
+- **Generic Types**: Extensive use of generics for reusable components and functions
 
-### File Structure and Naming
-- **Kebab-case for Files**: Component files use kebab-case (e.g., `particle-background-optimized.tsx`, `system-metrics-dashboard.tsx`)
-- **PascalCase for Components**: React components use PascalCase naming convention
-- **Descriptive Naming**: File names clearly indicate functionality and purpose
-- **Test File Naming**: Test files follow `.test.ts` pattern with descriptive names
+### File Organization
+- **Barrel Exports**: Use index files for clean imports from directories
+- **Feature-Based Structure**: Group related functionality in feature directories
+- **Separation of Concerns**: Clear separation between components, services, and utilities
+- **Consistent Naming**: kebab-case for files, PascalCase for components, camelCase for functions
 
-### Import Organization
-- **Grouped Imports**: Imports organized in logical groups (React, external libraries, internal modules)
-- **Absolute Imports**: Consistent use of `@/` path aliases for internal imports
-- **Type-only Imports**: Proper use of `import type` for TypeScript types
+### Import/Export Patterns
+- **Absolute Imports**: Use `@/` path aliases for clean imports
+- **Named Exports**: Prefer named exports over default exports for better tree-shaking
+- **Type-Only Imports**: Use `import type` for type-only imports
+- **Consistent Export Style**: Export functions and classes at declaration point
 
-## React Component Patterns
+## Frontend Development Patterns
 
-### Component Structure
-- **Functional Components**: All components use React functional components with hooks
-- **forwardRef Pattern**: Extensive use of `React.forwardRef` for component composition
-- **Custom Hooks**: Complex logic extracted into custom hooks (e.g., `useSidebar`, `useMetrics`)
-- **Compound Components**: Complex UI components broken into smaller, composable parts
+### React Component Structure
+```typescript
+// Component pattern observed in card-scanner.tsx
+"use client"
+
+import { useEffect, useRef } from "react"
+import * as THREE from "three"
+
+export function ComponentName() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    // Cleanup pattern
+    return () => {
+      // Cleanup logic
+    }
+  }, [])
+
+  return (
+    <>
+      <style jsx global>{`
+        /* Component-specific styles */
+      `}</style>
+      <div ref={containerRef}>
+        {/* Component content */}
+      </div>
+    </>
+  )
+}
+```
+
+### Custom Hooks Pattern
+```typescript
+// Pattern from useMetrics.ts
+export function useCustomHook(refreshInterval = 30000) {
+  return useQuery<ReturnType>({
+    queryKey: ['category', 'specific'],
+    queryFn: () => fetchWithAuth<ReturnType>('/api/endpoint'),
+    refetchInterval: refreshInterval,
+    staleTime: 20000,
+  });
+}
+```
 
 ### State Management
-- **useState for Local State**: Local component state managed with `useState`
-- **useContext for Shared State**: Shared state managed through React Context (e.g., `SidebarContext`)
-- **useMemo for Performance**: Expensive calculations memoized with `useMemo`
-- **useCallback for Functions**: Event handlers and functions memoized with `useCallback`
+- **React Query**: Use TanStack Query for server state management
+- **Local State**: Use React hooks for component-level state
+- **Ref Usage**: Use refs for DOM manipulation and imperative operations
+- **Effect Cleanup**: Always provide cleanup functions in useEffect
 
-### Props and API Design
-- **Flexible Props**: Components accept both controlled and uncontrolled patterns
-- **Optional Props**: Extensive use of optional props with sensible defaults
-- **Variant Props**: Components support multiple variants through props (e.g., `variant`, `size`)
-- **Composition Props**: Support for `asChild` pattern for flexible composition
+### Styling Approach
+- **Tailwind CSS**: Primary styling framework
+- **CSS-in-JS**: Use styled-jsx for component-specific styles
+- **Global Styles**: Minimal global styles, prefer component-scoped
+- **Responsive Design**: Mobile-first approach with responsive utilities
 
-## Styling and UI Patterns
-
-### CSS-in-JS and Tailwind
-- **Tailwind CSS**: Primary styling approach using Tailwind utility classes
-- **Class Variance Authority (CVA)**: Used for component variants and conditional styling
-- **CSS Variables**: Custom CSS properties for theming and dynamic values
-- **Responsive Design**: Mobile-first responsive design patterns
-
-### Component Variants
-- **Systematic Variants**: Components support multiple variants (default, outline, destructive, etc.)
-- **Size Variants**: Consistent size system (sm, default, lg)
-- **State Variants**: Visual states for different component states (active, disabled, loading)
-
-## Performance Optimization
-
-### React Performance
-- **Memoization**: Strategic use of `useMemo` and `useCallback` for performance
-- **Lazy Loading**: Components and resources loaded on demand
-- **Batch Processing**: Large datasets processed in batches to prevent UI blocking
-- **requestIdleCallback**: Background processing using browser idle time
-
-### Resource Management
-- **Memory Management**: Proper cleanup of resources and event listeners
-- **Animation Optimization**: Performance-conscious animation implementations
-- **Device Detection**: Adaptive behavior based on device capabilities
-- **Reduced Motion**: Respect for user accessibility preferences
-
-## Error Handling and Validation
-
-### Error Boundaries
-- **Comprehensive Error Handling**: Try-catch blocks around critical operations
-- **User-Friendly Messages**: Error messages in Arabic with clear explanations
-- **Graceful Degradation**: Fallback behavior when features fail
-- **Error Recovery**: Retry mechanisms and recovery options
-
-### Input Validation
-- **Type Validation**: Runtime type checking for critical inputs
-- **Boundary Checks**: Proper validation of numeric ranges and limits
-- **Sanitization**: Input sanitization for security
-
-## Testing Patterns
-
-### Test Structure
-- **Comprehensive Test Coverage**: Detailed test suites covering multiple scenarios
-- **Mocking Strategy**: Proper mocking of external dependencies and services
-- **Test Organization**: Tests organized by functionality with clear describe blocks
-- **Edge Case Testing**: Testing of error conditions and edge cases
-
-### Test Utilities
-- **Mock Objects**: Comprehensive mock implementations for testing
-- **Test Helpers**: Reusable test utilities and setup functions
-- **Async Testing**: Proper handling of asynchronous operations in tests
-
-## API and Service Patterns
+## Backend Development Patterns
 
 ### Service Architecture
-- **Service Layer**: Clear separation between UI and business logic
-- **WebSocket Integration**: Real-time communication patterns with proper error handling
-- **Event-Driven Architecture**: Event-based communication between components
-- **Queue Management**: Background job processing with progress tracking
+```typescript
+// Pattern from SSE service
+class ServiceName {
+  private property: Type
+  
+  constructor() {
+    this.initialize()
+  }
+  
+  public method(): ReturnType {
+    // Implementation
+  }
+  
+  private helperMethod(): void {
+    // Private implementation
+  }
+  
+  public destroy(): void {
+    // Cleanup logic
+  }
+}
+```
 
-### Data Fetching
-- **Custom Hooks**: Data fetching logic encapsulated in custom hooks
-- **Auto-refresh**: Configurable auto-refresh patterns for real-time data
-- **Error States**: Proper handling of loading, error, and success states
-- **Caching Strategy**: Intelligent caching and data invalidation
+### Middleware Pattern
+```typescript
+// Pattern from bull-board.middleware.ts
+export function setupMiddleware() {
+  const router = Router();
+  
+  // Apply authentication
+  router.use(authMiddleware);
+  
+  // Add specific functionality
+  router.use(specificRouter);
+  
+  logger.info('[Service] Middleware initialized');
+  
+  return router;
+}
+```
 
-## Internationalization and Accessibility
+### Error Handling
+- **Try-Catch Blocks**: Comprehensive error handling in async operations
+- **Graceful Degradation**: Services continue operating when non-critical components fail
+- **Logging**: Structured logging with appropriate log levels
+- **Error Recovery**: Automatic cleanup and recovery mechanisms
 
-### Arabic Language Support
-- **RTL Support**: Right-to-left text direction support
-- **Arabic Text**: UI text and messages in Arabic
-- **Cultural Adaptation**: UI patterns adapted for Arabic users
+### API Design
+- **RESTful Endpoints**: Follow REST conventions for API design
+- **Consistent Response Format**: Standardized response structure with success/error fields
+- **Authentication**: JWT-based authentication with middleware
+- **Rate Limiting**: Implement rate limiting for API protection
 
-### Accessibility
-- **ARIA Labels**: Proper ARIA labels and accessibility attributes
-- **Keyboard Navigation**: Full keyboard navigation support
-- **Screen Reader Support**: Semantic HTML and proper labeling
-- **Reduced Motion**: Respect for user motion preferences
+## Testing Standards
+
+### Test Structure
+```typescript
+// Pattern from sse.service.test.ts
+describe('ServiceName', () => {
+  let mockDependency: Partial<Dependency>;
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDependency = createMockDependency();
+  });
+  
+  afterEach(() => {
+    // Cleanup
+  });
+  
+  describe('Feature Group', () => {
+    it('should perform specific behavior', () => {
+      // Arrange
+      // Act
+      // Assert
+    });
+  });
+});
+```
+
+### Testing Practices
+- **Comprehensive Coverage**: Test all public methods and edge cases
+- **Mock External Dependencies**: Mock all external services and APIs
+- **Cleanup**: Proper cleanup in afterEach hooks
+- **Descriptive Tests**: Clear test descriptions and organized test groups
+- **Async Testing**: Proper handling of async operations in tests
 
 ## Code Documentation
 
-### Comments and Documentation
-- **JSDoc Comments**: Comprehensive function and component documentation
-- **Inline Comments**: Explanatory comments for complex logic
-- **Type Documentation**: Detailed TypeScript interface documentation
-- **Usage Examples**: Clear examples of component usage
+### JSDoc Comments
+```typescript
+/**
+ * Service Description
+ *
+ * Detailed explanation of service functionality
+ */
+export class ServiceName {
+  /**
+   * Method description
+   * @param param - Parameter description
+   * @returns Return value description
+   */
+  public method(param: Type): ReturnType {
+    // Implementation
+  }
+}
+```
 
-### Code Organization
-- **Logical Grouping**: Related functionality grouped together
-- **Clear Separation**: Distinct sections for different concerns
-- **Consistent Formatting**: Uniform code formatting and style
-- **Meaningful Names**: Descriptive variable and function names
+### Documentation Standards
+- **File Headers**: Every file starts with a descriptive comment
+- **Function Documentation**: JSDoc comments for all public functions
+- **Complex Logic**: Inline comments for complex algorithms
+- **API Documentation**: Comprehensive API documentation with examples
 
-## Security and Best Practices
+## Performance Optimization
 
-### Security Measures
-- **Input Sanitization**: Proper sanitization of user inputs
-- **Type Safety**: TypeScript for compile-time safety
-- **Error Boundaries**: Contained error handling to prevent crashes
-- **Resource Cleanup**: Proper cleanup to prevent memory leaks
+### Frontend Optimization
+- **Code Splitting**: Dynamic imports for large components
+- **Memoization**: Use React.memo and useMemo for expensive operations
+- **Bundle Analysis**: Regular bundle size monitoring
+- **Image Optimization**: Optimized images with Next.js Image component
 
-### Performance Best Practices
-- **Bundle Optimization**: Code splitting and lazy loading
-- **Memory Management**: Proper cleanup of resources and listeners
-- **Efficient Algorithms**: Performance-conscious algorithm choices
-- **Monitoring Integration**: Built-in performance monitoring and metrics
+### Backend Optimization
+- **Caching Strategy**: Redis caching for frequently accessed data
+- **Database Indexing**: Optimized database queries with proper indexing
+- **Queue Processing**: Background job processing with BullMQ
+- **Connection Pooling**: Efficient database connection management
+
+## Security Practices
+
+### Authentication & Authorization
+- **JWT Tokens**: Secure token-based authentication
+- **Middleware Protection**: Authentication middleware for protected routes
+- **Input Validation**: Zod schema validation for all inputs
+- **CORS Configuration**: Strict CORS policies
+
+### Data Protection
+- **Environment Variables**: Sensitive data in environment variables
+- **SQL Injection Prevention**: Parameterized queries and ORM usage
+- **XSS Protection**: Input sanitization and CSP headers
+- **Rate Limiting**: API rate limiting to prevent abuse
+
+## Development Workflow
+
+### Code Quality Gates
+- **ESLint**: Strict linting rules with custom rules for duplicate exports
+- **TypeScript**: Strict type checking enabled
+- **Prettier**: Consistent code formatting
+- **Husky**: Pre-commit hooks for quality checks
+
+### Git Practices
+- **Conventional Commits**: Structured commit messages
+- **Feature Branches**: Feature-based branching strategy
+- **Code Reviews**: Mandatory code reviews for all changes
+- **Automated Testing**: CI/CD pipeline with automated tests
+
+## Architecture Principles
+
+### Modularity
+- **Single Responsibility**: Each module has a single, well-defined purpose
+- **Loose Coupling**: Minimal dependencies between modules
+- **High Cohesion**: Related functionality grouped together
+- **Interface Segregation**: Small, focused interfaces
+
+### Scalability
+- **Horizontal Scaling**: Design for horizontal scaling
+- **Stateless Services**: Stateless service design where possible
+- **Caching Layers**: Multiple caching layers for performance
+- **Queue-Based Processing**: Asynchronous processing for heavy operations
+
+### Maintainability
+- **Clear Abstractions**: Well-defined abstractions and interfaces
+- **Consistent Patterns**: Consistent coding patterns across the codebase
+- **Comprehensive Testing**: High test coverage for maintainability
+- **Documentation**: Up-to-date documentation for all components

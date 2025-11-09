@@ -1,68 +1,36 @@
-// Sentry Client Configuration with Performance Monitoring
+// Sentry Client Configuration
 import * as Sentry from "@sentry/nextjs";
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 if (dsn) {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV || 'development',
-
+    
     // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-
-    // Trace propagation targets (configured at top level)
-    tracePropagationTargets: [
-      'localhost',
-      /^\//,
-      process.env.NEXT_PUBLIC_API_URL || '',
-    ],
-
-    // Session Replay
-    replaysOnErrorSampleRate: 1.0,
-    replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-
-    // Debug mode
-    debug: process.env.NODE_ENV === "development",
-
-    // Integrations
-    integrations: [
-      // Session replay for debugging
-      Sentry.replayIntegration({
-        maskAllText: false,
-        blockAllMedia: false,
-      }),
-
-      // Browser tracing for performance monitoring
-      Sentry.browserTracingIntegration({
-        enableInp: true,
-      }),
-
-      // Browser profiling (for detailed performance data)
-      Sentry.browserProfilingIntegration(),
-    ],
-
-    // Performance metrics
-    profilesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-
-    // Track specific errors
+    tracesSampleRate: isDevelopment ? 1.0 : 0.1,
+    
+    // Debug mode for development
+    debug: isDevelopment,
+    
+    // Basic error filtering
     beforeSend(event, hint) {
-      // Filter out certain errors in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Sentry] Captured event:', event);
-      }
-
       // Don't send cancelled requests
       if (event.exception?.values?.[0]?.value?.includes('cancelled')) {
         return null;
       }
-
+      
+      if (isDevelopment) {
+        console.log('[Sentry] Event captured:', event.message || event.exception?.values?.[0]?.value);
+      }
+      
       return event;
     },
-
-    // Enhance context
+    
+    // Enhanced context for navigation
     beforeBreadcrumb(breadcrumb, hint) {
-      // Add more context to navigation breadcrumbs
       if (breadcrumb.category === 'navigation') {
         breadcrumb.data = {
           ...breadcrumb.data,
@@ -71,21 +39,9 @@ if (dsn) {
       }
       return breadcrumb;
     },
-
-    // Track specific transactions
-    tracesSampler(samplingContext) {
-      // Higher sampling rate for important routes
-      const pathname = samplingContext.location?.pathname || '';
-
-      if (pathname.includes('/api/') || pathname.includes('/directors-studio')) {
-        return 1.0; // 100% sampling for important routes
-      }
-
-      return process.env.NODE_ENV === "production" ? 0.1 : 1.0;
-    },
   });
 
-  console.log('[Sentry] Client initialized with performance monitoring');
+  console.log(`[Sentry] Initialized for ${isDevelopment ? 'development' : 'production'}`);
 } else {
   console.warn('[Sentry] DSN not configured, monitoring disabled');
 }

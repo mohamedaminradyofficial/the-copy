@@ -9,19 +9,34 @@ import { Queue, Worker, QueueOptions, WorkerOptions, ConnectionOptions, Job } fr
 // Redis connection configuration for BullMQ
 // Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
 function getRedisConnection(): ConnectionOptions {
-  // If REDIS_URL is provided, use it directly
+  const baseConfig: ConnectionOptions = {
+    maxRetriesPerRequest: null, // Required for BullMQ
+    enableReadyCheck: false,
+    retryStrategy(times: number) {
+      // Limit retries to prevent spam
+      if (times > 5) {
+        console.warn('[Redis] Max retries reached, disabling Redis');
+        return null;
+      }
+      const delay = Math.min(times * 50, 2000);
+      return delay;
+    },
+  };
+
+  // If REDIS_URL is provided, parse it and merge with base config
   if (process.env.REDIS_URL) {
     return {
+      ...baseConfig,
       url: process.env.REDIS_URL,
     };
   }
 
   // Otherwise use individual variables
   return {
+    ...baseConfig,
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379'),
     password: process.env.REDIS_PASSWORD || undefined,
-    maxRetriesPerRequest: null,
   };
 }
 
