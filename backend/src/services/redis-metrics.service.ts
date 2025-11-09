@@ -8,7 +8,7 @@
  * - Memory usage
  */
 
-import Redis from 'ioredis';
+import { RedisClientType } from 'redis';
 import { Counter, Histogram, Gauge, Registry } from 'prom-client';
 import { logger } from '@/utils/logger';
 
@@ -89,10 +89,10 @@ export const redisKeysCount = new Gauge({
  * Redis Metrics Service Class
  */
 export class RedisMetricsService {
-  private redis: Redis;
+  private redis: RedisClientType;
   private metricsUpdateInterval: NodeJS.Timeout | null = null;
 
-  constructor(redis: Redis) {
+  constructor(redis: RedisClientType) {
     this.redis = redis;
   }
 

@@ -4,7 +4,7 @@
  * Handles Redis connection configuration and version validation for BullMQ
  */
 
-import Redis from 'ioredis';
+import { createClient, RedisClientType } from 'redis';
 import { logger } from '@/utils/logger';
 
 const BULLMQ_MIN_REDIS_VERSION = '5.0.0';
@@ -13,32 +13,27 @@ const BULLMQ_MIN_REDIS_VERSION = '5.0.0';
  * Parse Redis URL or use individual configuration
  */
 export function getRedisConfig() {
-  const baseConfig = {
-    maxRetriesPerRequest: null, // Required for BullMQ
-    enableReadyCheck: false,
-    retryStrategy(times: number) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
-  };
-
-  // If REDIS_URL is provided, parse it and merge with base config
+  // If REDIS_URL is provided, use it directly
   if (process.env.REDIS_URL) {
-    const url = new URL(process.env.REDIS_URL);
     return {
-      ...baseConfig,
-      host: url.hostname,
-      port: url.port ? parseInt(url.port) : 6379,
-      ...(url.password && { password: url.password }),
+      url: process.env.REDIS_URL,
     };
   }
 
   // Otherwise use individual variables
   return {
-    ...baseConfig,
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
+    socket: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379'),
+      reconnectStrategy: (retries: number) => {
+        if (retries > 10) {
+          logger.error('Redis retry attempts exhausted');
+          return false;
+        }
+        return Math.min(retries * 100, 3000);
+      },
+    },
+    password: process.env.REDIS_PASSWORD || undefined,
   };
 }
 
@@ -60,11 +55,11 @@ export async function checkRedisVersion(): Promise<{
   minVersion: string;
   reason?: string;
 }> {
-  let client: Redis | null = null;
+  let client: RedisClientType | null = null;
 
   try {
     const config = getRedisConfig();
-    client = new Redis(config);
+    client = createClient(config);
 
     // Wait for connection
     await new Promise<void>((resolve, reject) => {
@@ -73,17 +68,20 @@ export async function checkRedisVersion(): Promise<{
       }, 5000);
 
       if (client) {
-        client.once('ready', () => {
+        client.on('ready', () => {
           clearTimeout(timeout);
           resolve();
         });
 
-        client.once('error', (err) => {
+        client.on('error', (err) => {
           clearTimeout(timeout);
           reject(err);
         });
       }
     });
+
+    // Connect to Redis
+    await client.connect();
 
     // Get server info
     const info = await client.info('server');
@@ -128,7 +126,7 @@ export async function checkRedisVersion(): Promise<{
     };
   } finally {
     if (client) {
-      client.disconnect();
+      await client.disconnect();
     }
   }
 }
