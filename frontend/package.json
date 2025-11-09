@@ -7,7 +7,8 @@
   },
   "private": true,
   "scripts": {
-    "dev": "node --max-old-space-size=4096 scripts/dev-with-fallback.js",
+    "dev": "next dev",
+    "dev:fallback": "node --max-old-space-size=4096 scripts/dev-with-fallback.js",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "prebuild": "node scripts/generate-pages-manifest.js",

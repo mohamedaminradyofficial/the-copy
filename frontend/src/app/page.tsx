@@ -61,6 +61,7 @@ export default function Home() {
   const headerRef = useRef<HTMLElement>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   // Smooth scroll behavior
@@ -68,6 +69,34 @@ export default function Home() {
     document.documentElement.style.scrollBehavior = "smooth";
     return () => {
       document.documentElement.style.scrollBehavior = "auto";
+    };
+  }, []);
+
+  // Video to Canvas for text masking
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+
+    const drawVideo = () => {
+      if (video.readyState >= video.HAVE_CURRENT_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      animationId = requestAnimationFrame(drawVideo);
+    };
+
+    video.addEventListener('loadeddata', drawVideo);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      video.removeEventListener('loadeddata', drawVideo);
     };
   }, []);
 
@@ -108,6 +137,8 @@ export default function Home() {
         });
       }
 
+      
+
       // Header animation - slide down when scrolling
       if (headerRef.current) {
         gsap.fromTo(
@@ -130,16 +161,16 @@ export default function Home() {
         );
       }
 
-      // Cards container animation - fade in from bottom to top
+      // Cards container animation - slide in from bottom to top
       if (cardsContainerRef.current) {
         gsap.fromTo(
           cardsContainerRef.current,
           {
-            opacity: 0,
+            // opacity: 0,  <-- تم الحذف
             y: 150,
           },
           {
-            opacity: 1,
+            // opacity: 1,  <-- تم الحذف
             y: 0,
             ease: "power3.out",
             scrollTrigger: {
@@ -167,12 +198,12 @@ export default function Home() {
       {/* Sticky Header - Initially Hidden */}
       <header
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10"
+        className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/10"
         style={{ opacity: 0 }}
       >
         <div className="container mx-auto flex items-center justify-center px-6 py-4">
           <Link href="/" aria-label="العودة للصفحة الرئيسية">
-            <span className="font-headline text-5xl font-bold text-white">
+            <span className="font-headline text-5xl font-bold text-black">
               النسخة
             </span>
           </Link>
@@ -182,36 +213,39 @@ export default function Home() {
       {/* Hero Section with Video Mask */}
       <section
         ref={heroRef}
-        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
+        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-red-500"
       >
-        {/* Video Layer - Will show through text */}
-        <div className="absolute inset-0" style={{ zIndex: 1 }}>
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source
-              src="https://cdn.pixabay.com/video/2025/04/22/314880_large.mp4"
-              type="video/mp4"
-            />
-            <source
-              src="https://cdn.pixabay.com/video/2025/04/22/314880_medium.mp4"
-              type="video/mp4"
-            />
-          </video>
-        </div>
+        {/* Hidden Video Element */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="hidden"
+        >
+          <source
+            src="/promise-video.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-        {/* Hero Text Container with black background - White text with screen blend reveals video */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black" style={{ zIndex: 2 }}>
+        {/* Hidden Canvas for video rendering */}
+        <canvas ref={canvasRef} className="hidden" />
+
+        {/* Hero Text with Video Mask */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
           <h1
             ref={heroTextRef}
-            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8 text-white"
+            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8"
             style={{
-              mixBlendMode: 'screen',
+              background: canvasRef.current ? `url(${canvasRef.current.toDataURL()})` : '#000',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
               letterSpacing: "-0.05em",
               WebkitFontSmoothing: 'antialiased',
               MozOsxFontSmoothing: 'grayscale',
@@ -220,12 +254,14 @@ export default function Home() {
             النسخة
           </h1>
         </div>
+
+        
       </section>
 
       {/* Cards Section with Scanner Effect */}
       <section
         ref={cardsContainerRef}
-        className="relative h-screen bg-black overflow-hidden opacity-0"
+        className="relative h-screen bg-black overflow-hidden"
       >
         <LandingCardScanner />
       </section>

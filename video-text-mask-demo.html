@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Text Mask - PROMISE Effect</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .video-text-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* الفيديو في الخلفية */
+    .background-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    /* النص مع الماسك */
+    .text-mask {
+      position: relative;
+      z-index: 2;
+      font-size: 15vw;
+      font-weight: 900;
+      font-family: 'Arial Black', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      
+      /* السحر هنا */
+      background: url('') no-repeat center;
+      background-size: cover;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      
+      /* أو استخدم mix-blend-mode */
+      mix-blend-mode: screen;
+    }
+
+    /* طريقة بديلة: استخدام mask-image */
+    .video-container-mask {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .masked-video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      
+      /* الماسك بالنص */
+      -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="200" font-weight="900" font-family="Arial Black">PROMISE</text></svg>');
+      mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="200" font-weight="900" font-family="Arial Black">PROMISE</text></svg>');
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الطريقة الأولى: background-clip -->
+  <div class="video-text-container">
+    <video class="background-video" autoplay loop muted playsinline>
+      <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    </video>
+    <h1 class="text-mask">PROMISE</h1>
+  </div>
+
+  <!-- الطريقة الثانية: mask-image (أفضل) -->
+  <!-- 
+  <div class="video-container-mask">
+    <video class="masked-video" autoplay loop muted playsinline>
+      <source src="your-video.mp4" type="video/mp4">
+    </video>
+  </div>
+  -->
+
+  <script>
+    // تحديث background للنص من الفيديو
+    const video = document.querySelector('.background-video');
+    const text = document.querySelector('.text-mask');
+    
+    // رسم الفيديو على canvas ثم استخدامه كـ background
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function updateTextBackground() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      text.style.background = `url(${canvas.toDataURL()})`;
+      text.style.backgroundSize = 'cover';
+      text.style.backgroundPosition = 'center';
+      requestAnimationFrame(updateTextBackground);
+    }
+    
+    video.addEventListener('loadeddata', () => {
+      updateTextBackground();
+    });
+  </script>
+
+</body>
+</html>
