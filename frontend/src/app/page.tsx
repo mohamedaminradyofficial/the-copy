@@ -73,18 +73,37 @@ export default function Home() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero text animation on scroll
+      // Video zoom effect on scroll
+      if (videoRef.current && heroRef.current) {
+        gsap.fromTo(
+          videoRef.current,
+          {
+            scale: 1,
+          },
+          {
+            scale: 1.2,
+            ease: "power2.inOut",
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: "top top",
+              end: "bottom center",
+              scrub: 1.5,
+            },
+          }
+        );
+      }
+
+      // Hero text animation on scroll - zoom and fade
       if (heroTextRef.current) {
         gsap.to(heroTextRef.current, {
-          scale: 1.1,
+          scale: 1.3,
           opacity: 0,
-          duration: 0.3,
           ease: "power2.out",
           scrollTrigger: {
             trigger: heroRef.current,
             start: "top top",
             end: "bottom center",
-            scrub: 1,
+            scrub: 2,
           },
         });
       }
@@ -100,7 +119,6 @@ export default function Home() {
           {
             opacity: 1,
             y: 0,
-            duration: 0.3,
             ease: "power2.out",
             scrollTrigger: {
               trigger: heroRef.current,
@@ -123,7 +141,6 @@ export default function Home() {
           {
             opacity: 1,
             y: 0,
-            duration: 1,
             ease: "power3.out",
             scrollTrigger: {
               trigger: cardsContainerRef.current,
@@ -169,10 +186,13 @@ export default function Home() {
       {/* Hero Section with Video Mask */}
       <section
         ref={heroRef}
-        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
+        className="relative w-full h-screen flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundColor: '#000000',
+        }}
       >
-        {/* Video Background - Full Screen */}
-        <div className="absolute inset-0">
+        {/* Video background layer */}
+        <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
             autoPlay
@@ -180,6 +200,9 @@ export default function Home() {
             muted
             playsInline
             className="w-full h-full object-cover"
+            style={{
+              opacity: 0.8,
+            }}
           >
             <source
               src="https://cdn.pixabay.com/video/2022/11/09/138397-768408689_large.mp4"
@@ -188,21 +211,27 @@ export default function Home() {
           </video>
         </div>
 
-        {/* Dark overlay for better contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+        {/* Black overlay with blend mode to darken video except where text is */}
+        <div
+          className="absolute inset-0 z-10"
+          style={{
+            backgroundColor: '#000000',
+            mixBlendMode: 'multiply',
+          }}
+        />
 
-        {/* Hero Text with Video Masking Effect */}
-        <div className="relative z-10 flex items-center justify-center w-full h-full">
+        {/* Hero Text - Creates knockout effect revealing video */}
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
           <h1
             ref={heroTextRef}
             className="text-[10rem] md:text-[14rem] lg:text-[18rem] xl:text-[24rem] font-black leading-none select-none px-8"
             style={{
-              color: "transparent",
-              background: "linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              textShadow: "0 0 40px rgba(255, 255, 255, 0.3)",
+              color: '#ffffff',
+              mixBlendMode: 'screen',
               letterSpacing: "-0.05em",
+              textShadow: "0 0 100px rgba(255, 255, 255, 0.6), 0 0 50px rgba(255, 255, 255, 0.4)",
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale',
             }}
           >
             النسخة
