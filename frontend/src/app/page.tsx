@@ -73,22 +73,30 @@ export default function Home() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero section zoom and fade effect
-      if (heroRef.current && heroTextRef.current) {
-        // Zoom in the entire hero section
-        gsap.to(heroRef.current, {
-          scale: 1.15,
-          ease: "power2.inOut",
-          scrollTrigger: {
-            trigger: heroRef.current,
-            start: "top top",
-            end: "bottom center",
-            scrub: 1.5,
+      // Video zoom effect on scroll
+      if (videoRef.current && heroRef.current) {
+        gsap.fromTo(
+          videoRef.current,
+          {
+            scale: 1,
           },
-        });
+          {
+            scale: 1.2,
+            ease: "power2.inOut",
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: "top top",
+              end: "bottom center",
+              scrub: 1.5,
+            },
+          }
+        );
+      }
 
-        // Fade out the text
+      // Hero text zoom and fade out
+      if (heroTextRef.current && heroRef.current) {
         gsap.to(heroTextRef.current, {
+          scale: 1.3,
           opacity: 0,
           ease: "power2.out",
           scrollTrigger: {
@@ -175,39 +183,34 @@ export default function Home() {
         ref={heroRef}
         className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
       >
-        {/* Video background - fixed in place */}
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="fixed inset-0 w-full h-full object-cover"
-          style={{
-            zIndex: 1,
-          }}
-        >
-          <source
-            src="/النسخة.mp4.mp4"
-            type="video/mp4"
-          />
-        </video>
+        {/* Video Layer - Will show through text */}
+        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source
+              src="/النسخة.mp4.mp4"
+              type="video/mp4"
+            />
+          </video>
+        </div>
 
-        {/* Hero Text with Video Masking using background-clip */}
-        <div className="relative z-10 flex items-center justify-center w-full h-full">
+        {/* Black Layer - Everything is black except where text reveals video */}
+        <div className="absolute inset-0 bg-black" style={{ zIndex: 2 }} />
+
+        {/* Hero Text - White text with screen blend mode reveals video */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 3 }}>
           <h1
             ref={heroTextRef}
-            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8"
+            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8 text-white"
             style={{
-              background: 'url(/النسخة.mp4.mp4)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: 'transparent',
+              mixBlendMode: 'screen',
               letterSpacing: "-0.05em",
-              textShadow: "none",
               WebkitFontSmoothing: 'antialiased',
               MozOsxFontSmoothing: 'grayscale',
             }}
@@ -215,15 +218,6 @@ export default function Home() {
             النسخة
           </h1>
         </div>
-
-        {/* Black overlay to darken everything except text */}
-        <div
-          className="fixed inset-0 bg-black pointer-events-none"
-          style={{
-            zIndex: 2,
-            mixBlendMode: 'multiply',
-          }}
-        />
       </section>
 
       {/* Cards Section with Scanner Effect */}
