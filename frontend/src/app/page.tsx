@@ -73,30 +73,22 @@ export default function Home() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Video zoom effect on scroll
-      if (videoRef.current && heroRef.current) {
-        gsap.fromTo(
-          videoRef.current,
-          {
-            scale: 1,
+      // Hero section zoom and fade effect
+      if (heroRef.current && heroTextRef.current) {
+        // Zoom in the entire hero section
+        gsap.to(heroRef.current, {
+          scale: 1.15,
+          ease: "power2.inOut",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom center",
+            scrub: 1.5,
           },
-          {
-            scale: 1.2,
-            ease: "power2.inOut",
-            scrollTrigger: {
-              trigger: heroRef.current,
-              start: "top top",
-              end: "bottom center",
-              scrub: 1.5,
-            },
-          }
-        );
-      }
+        });
 
-      // Hero text animation on scroll - zoom and fade
-      if (heroTextRef.current) {
+        // Fade out the text
         gsap.to(heroTextRef.current, {
-          scale: 1.3,
           opacity: 0,
           ease: "power2.out",
           scrollTrigger: {
@@ -183,37 +175,39 @@ export default function Home() {
         ref={heroRef}
         className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
       >
-        {/* Video background layer with dark overlay */}
-        <div className="absolute inset-0 z-0 bg-black">
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{
-              opacity: 0.7,
-              filter: 'brightness(0.8) contrast(1.1)',
-            }}
-          >
-            <source
-              src="https://cdn.pixabay.com/video/2022/11/09/138397-768408689_large.mp4"
-              type="video/mp4"
-            />
-          </video>
-        </div>
+        {/* Video background - fixed in place */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="fixed inset-0 w-full h-full object-cover"
+          style={{
+            zIndex: 1,
+          }}
+        >
+          <source
+            src="/النسخة.mp4.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-        {/* Hero Text - Creates knockout effect revealing video */}
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
+        {/* Hero Text with Video Masking using background-clip */}
+        <div className="relative z-10 flex items-center justify-center w-full h-full">
           <h1
             ref={heroTextRef}
-            className="text-[10rem] md:text-[14rem] lg:text-[18rem] xl:text-[24rem] font-black leading-none select-none px-8"
+            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8"
             style={{
-              color: '#ffffff',
-              mixBlendMode: 'screen',
+              background: 'url(/النسخة.mp4.mp4)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
               letterSpacing: "-0.05em",
-              textShadow: "0 0 100px rgba(255, 255, 255, 0.6), 0 0 50px rgba(255, 255, 255, 0.4)",
+              textShadow: "none",
               WebkitFontSmoothing: 'antialiased',
               MozOsxFontSmoothing: 'grayscale',
             }}
@@ -221,6 +215,15 @@ export default function Home() {
             النسخة
           </h1>
         </div>
+
+        {/* Black overlay to darken everything except text */}
+        <div
+          className="fixed inset-0 bg-black pointer-events-none"
+          style={{
+            zIndex: 2,
+            mixBlendMode: 'multiply',
+          }}
+        />
       </section>
 
       {/* Cards Section with Scanner Effect */}
