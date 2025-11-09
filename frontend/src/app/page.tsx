@@ -71,6 +71,15 @@ export default function Home() {
     };
   }, []);
 
+  // Ensure video plays automatically
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(error => {
+        console.log("Video autoplay prevented:", error);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Hero text animation on scroll
@@ -198,11 +207,12 @@ export default function Home() {
             className="text-[10rem] md:text-[14rem] lg:text-[18rem] xl:text-[24rem] font-black leading-none select-none px-8"
             style={{
               color: "transparent",
-              background: "linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%)",
+              background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
-              textShadow: "0 0 40px rgba(255, 255, 255, 0.3)",
+              textShadow: "0 0 60px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.6)",
               letterSpacing: "-0.05em",
+              filter: "drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))",
             }}
           >
             النسخة
