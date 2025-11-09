@@ -61,6 +61,7 @@ export default function Home() {
   const headerRef = useRef<HTMLElement>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   // Smooth scroll behavior
@@ -71,32 +72,72 @@ export default function Home() {
     };
   }, []);
 
-  // Ensure video plays automatically
+  // Video to Canvas for text masking
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.log("Video autoplay prevented:", error);
-      });
-    }
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+
+    const drawVideo = () => {
+      if (video.readyState >= video.HAVE_CURRENT_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      animationId = requestAnimationFrame(drawVideo);
+    };
+
+    video.addEventListener('loadeddata', drawVideo);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      video.removeEventListener('loadeddata', drawVideo);
+    };
   }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero text animation on scroll
-      if (heroTextRef.current) {
+      // Video zoom effect on scroll
+      if (videoRef.current && heroRef.current) {
+        gsap.fromTo(
+          videoRef.current,
+          {
+            scale: 1,
+          },
+          {
+            scale: 1.2,
+            ease: "power2.inOut",
+            scrollTrigger: {
+              trigger: heroRef.current,
+              start: "top top",
+              end: "bottom center",
+              scrub: 1.5,
+            },
+          }
+        );
+      }
+
+      // Hero text zoom and fade out
+      if (heroTextRef.current && heroRef.current) {
         gsap.to(heroTextRef.current, {
-          scale: 1.1,
+          scale: 1.3,
           opacity: 0,
-          duration: 0.3,
           ease: "power2.out",
           scrollTrigger: {
             trigger: heroRef.current,
             start: "top top",
             end: "bottom center",
-            scrub: 1,
+            scrub: 2,
           },
         });
       }
+
+      
 
       // Header animation - slide down when scrolling
       if (headerRef.current) {
@@ -109,7 +150,6 @@ export default function Home() {
           {
             opacity: 1,
             y: 0,
-            duration: 0.3,
             ease: "power2.out",
             scrollTrigger: {
               trigger: heroRef.current,
@@ -121,18 +161,17 @@ export default function Home() {
         );
       }
 
-      // Cards container animation - fade in from bottom to top
+      // Cards container animation - slide in from bottom to top
       if (cardsContainerRef.current) {
         gsap.fromTo(
           cardsContainerRef.current,
           {
-            opacity: 0,
+            // opacity: 0,  <-- تم الحذف
             y: 150,
           },
           {
-            opacity: 1,
+            // opacity: 1,  <-- تم الحذف
             y: 0,
-            duration: 1,
             ease: "power3.out",
             scrollTrigger: {
               trigger: cardsContainerRef.current,
@@ -159,17 +198,13 @@ export default function Home() {
       {/* Sticky Header - Initially Hidden */}
       <header
         ref={headerRef}
-        className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10 opacity-0"
+        className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/10"
+        style={{ opacity: 0 }}
       >
-        <div className="container mx-auto flex items-center justify-between px-6 py-4">
+        <div className="container mx-auto flex items-center justify-center px-6 py-4">
           <Link href="/" aria-label="العودة للصفحة الرئيسية">
-            <span className="font-headline text-xl font-bold text-white">
+            <span className="font-headline text-5xl font-bold text-black">
               النسخة
-            </span>
-          </Link>
-          <Link href="/" aria-label="The Copy Home">
-            <span className="font-body text-sm font-bold text-white">
-              The Copy
             </span>
           </Link>
         </div>
@@ -178,33 +213,31 @@ export default function Home() {
       {/* Hero Section with Video Mask */}
       <section
         ref={heroRef}
-        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-black"
+        className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-red-500"
       >
-        {/* Video Background - Full Screen */}
-        <div className="absolute inset-0">
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source
-              src="https://cdn.pixabay.com/video/2022/11/09/138397-768408689_large.mp4"
-              type="video/mp4"
-            />
-          </video>
-        </div>
+        {/* Hidden Video Element */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="hidden"
+        >
+          <source
+            src="/promise-video.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-        {/* Dark overlay for better contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+        {/* Hidden Canvas for video rendering */}
+        <canvas ref={canvasRef} className="hidden" />
 
-        {/* Hero Text with Video Masking Effect */}
-        <div className="relative z-10 flex items-center justify-center w-full h-full">
+        {/* Hero Text with Video Mask */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
           <h1
             ref={heroTextRef}
-            className="text-[10rem] md:text-[14rem] lg:text-[18rem] xl:text-[24rem] font-black leading-none select-none px-8"
+            className="text-[15rem] md:text-[20rem] lg:text-[28rem] xl:text-[35rem] font-black leading-none select-none px-8"
             style={{
               color: "transparent",
               background: "linear-gradient(135deg, #ffffff 0%, #f5f5f5 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)",
@@ -218,12 +251,14 @@ export default function Home() {
             النسخة
           </h1>
         </div>
+
+        
       </section>
 
       {/* Cards Section with Scanner Effect */}
       <section
         ref={cardsContainerRef}
-        className="relative h-screen bg-black overflow-hidden opacity-0"
+        className="relative h-screen bg-black overflow-hidden"
       >
         <LandingCardScanner />
       </section>

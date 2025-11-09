@@ -10,6 +10,17 @@ Write-Host "   Cleaning up existing processes..." -ForegroundColor Yellow
 & "$PSScriptRoot\kill-ports.ps1"
 Start-Sleep -Seconds 1
 
+# Clean cache
+Write-Host "   Cleaning cache..." -ForegroundColor Yellow
+if (Test-Path "$root\frontend\.next") {
+    Remove-Item -Path "$root\frontend\.next" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "   Frontend cache cleaned" -ForegroundColor Green
+}
+if (Test-Path "$root\backend\dist") {
+    Remove-Item -Path "$root\backend\dist" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "   Backend cache cleaned" -ForegroundColor Green
+}
+
 # Start Redis
 Write-Host "   Starting Redis..." -ForegroundColor Cyan
 try {

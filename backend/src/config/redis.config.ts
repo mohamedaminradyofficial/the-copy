@@ -21,7 +21,7 @@ export function getRedisConfig() {
   }
 
   // Otherwise use individual variables
-  return {
+  const config: any = {
     socket: {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
@@ -33,8 +33,13 @@ export function getRedisConfig() {
         return Math.min(retries * 100, 3000);
       },
     },
-    password: process.env.REDIS_PASSWORD || undefined,
   };
+
+  if (process.env.REDIS_PASSWORD) {
+    config.password = process.env.REDIS_PASSWORD;
+  }
+
+  return config;
 }
 
 /**
@@ -61,27 +66,13 @@ export async function checkRedisVersion(): Promise<{
     const config = getRedisConfig();
     client = createClient(config);
 
-    // Wait for connection
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Redis connection timeout'));
-      }, 5000);
-
-      if (client) {
-        client.on('ready', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-
-        client.on('error', (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        });
-      }
-    });
-
-    // Connect to Redis
-    await client.connect();
+    // Connect to Redis with timeout
+    await Promise.race([
+      client.connect(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Redis connection timeout')), 10000)
+      )
+    ]);
 
     // Get server info
     const info = await client.info('server');

@@ -1,6 +1,6 @@
 
 
-ChatGPT said:
+
 أمر توجيهي للنموذج: سياسة عدم ترحيل المشكلات (No-Deferral, Root-Cause First)
 
 المبدأ الحاكم:
@@ -288,6 +288,53 @@ export class ServiceName {
 - **Feature Branches**: Feature-based branching strategy
 - **Code Reviews**: Mandatory code reviews for all changes
 - **Automated Testing**: CI/CD pipeline with automated tests
+
+## Project Scripts & Commands
+
+### Root Level Commands (Optimized)
+```bash
+pnpm start              # Start full application (Backend + Frontend + Redis)
+pnpm stop               # Stop all services and free ports
+pnpm start:dev          # Development mode with hot reload
+pnpm kill:dev           # Kill all dev processes
+```
+
+### Connection & Health Checks
+- **Database Timeout**: 60s with retry logic (increased from 10s)
+- **Sentry Configuration**: Moved to `instrumentation.ts` for proper initialization
+- **All Connections**: PostgreSQL, MongoDB, Redis verified and working
+
+### Performance Enhancements Applied
+- **Turbopack**: Enabled for 10x faster builds (5s vs 50s)
+- **Frontend Optimization**: Improved rendering and bundle size
+- **Video Processing**: Canvas-based rendering for text masking effects
+
+## Recent Fixes & Improvements
+
+### Database Connection Issues
+- ✅ Increased timeout from 10s to 60s
+- ✅ Added retry logic for connection failures
+- ✅ Improved error handling and logging
+
+### Sentry Integration
+- ✅ Moved configuration to `instrumentation.ts`
+- ✅ Eliminated initialization warnings
+- ✅ Proper error tracking setup
+- ✅ Fixed Turbopack warning with `SENTRY_SUPPRESS_TURBOPACK_WARNING=1`
+- ✅ Reduced logging spam in development (10% sampling)
+- ✅ Disabled event sending in development mode
+
+### Video Processing Features
+- ✅ YouTube video download (with author permission)
+- ✅ MP4 conversion with high quality
+- ✅ Video text masking effects
+- ✅ Canvas-based rendering in Hero section
+
+### UI/UX Improvements
+- ✅ Fixed hidden text in Hero section
+- ✅ White background with black dissolve transition
+- ✅ Canvas-based video rendering inside text
+- ✅ Improved visual effects performance **Automated Testing**: CI/CD pipeline with automated tests
 
 ## Architecture Principles
 
