@@ -194,7 +194,11 @@ export default function Home() {
             className="w-full h-full object-cover"
           >
             <source
-              src="/النسخة.mp4.mp4"
+              src="https://cdn.pixabay.com/video/2025/04/22/314880_large.mp4"
+              type="video/mp4"
+            />
+            <source
+              src="https://cdn.pixabay.com/video/2025/04/22/314880_medium.mp4"
               type="video/mp4"
             />
           </video>
