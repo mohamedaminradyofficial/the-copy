@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import WebVitalsReporter from "@/components/WebVitalsReporter";
@@ -12,12 +12,6 @@ export const metadata: Metadata = {
   description: "منصة للكتابة الإبداعية والتحليل الدرامي باللغة العربية",
   keywords: ["كتابة إبداعية", "تحليل درامي", "عربي", "سيناريو", "محطات سبع"],
   authors: [{ name: "The Copy Team" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-  themeColor: "#ffffff",
   robots: "index, follow",
   openGraph: {
     title: "النسخة - The Copy",
@@ -25,6 +19,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ar_SA",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({

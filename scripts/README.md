@@ -1,58 +1,42 @@
-# دليل المجلد: scripts
+# Scripts Documentation
 
-## وصف المجلد
-المجلد `scripts` يحتوي على مجموعة من البرامج النصية (scripts) التي تستخدم في إدارة المشروع، تحليل الكود، وإدارة القضايا الأمنية. هذه البرامج النصية توفر وظائف متخصصة لمهام محددة.
+## Available Scripts
 
-## قائمة الملفات ووظائفها
+### Start Application
+```bash
+pnpm start
+```
+Starts the entire application (Redis + Backend + Frontend) in the correct order.
 
-### 1. create_security_issues_direct.py
-- **الوصف**: برنامج نصي لإنشاء قضايا أمنية مباشرة باستخدام واجهة برمجة تطبيقات GitHub.
-- **الوظائف الرئيسية**:
-  - قراءة ملف SECURITY_SCAN_REPORT.md
-  - إنشاء قضية GitHub لكل اكتشاف أمني
-  - دعم وضع تجريبي (dry-run) لتجنب إنشاء القضايا فعليًا
-  - معالجة الأخطاء بشكل آمن
+### Stop Application
+```bash
+pnpm stop
+```
+Stops all running services and closes all development ports.
 
-### 2. create_test_issues.py
-- **الوصف**: برنامج نصي لاختبار إنشاء عدد محدود من قضايا الأمنية من SECURITY_SCAN_REPORT.md.
-- **الوظائف الرئيسية**:
-  - إنشاء عدد محدود من القضايا الأمنية
-  - تصفية القضايا حسب مستوى الخطورة
-  - وضع تجريبي (dry-run) لتجنب إنشاء القضايا فعليًا
+## Direct Script Usage
 
-### 3. link_issues_to_project.sh
-- **الوصف**: برنامج نصي لربط القضايا الأمنية بلوحة المشروع الكلاسيكية (Classic Project) في GitHub.
-- **الوظائف الرئيسية**:
-  - ربط القضايا بلوحة المشروع
-  - تصنيف القضايا حسب مستوى الخطورة
-  - إنشاء لوحة المشروع إذا لم تكن موجودة
-  - عرض ملخص للعمليات
+### Kill Ports
+```powershell
+.\scripts\kill-ports.ps1
+```
+Stops all processes on ports: 3000, 3001, 5000, 5001, 6379 and kills Redis server.
 
-### 4. measure-complexity.js
-- **الوصف**: برنامج نصي لقياس تعقيد الكود ونمط السطور (NLOC) لموديولات TypeScript/TSX.
-- **الوظائف الرئيسية**:
-  - حساب تعقيد الكود
-  - حساب عدد السطور الفعالة
-  - تقديم النتائج بتنسيق JSON
+### Start Application
+```powershell
+.\scripts\start-app.ps1
+```
+Starts Redis, Backend (port 3001), and Frontend (port 5000) in separate windows.
 
-### 5. parse_create_issues.py
-- **الوصف**: برنامج نصي لتحليل SECURITY_SCAN_REPORT.md وإنشاء قضايا GitHub لكل اكتشاف أمني.
-- **الوظائف الرئيسية**:
-  - تحليل تنسيق الجدول في SECURITY_SCAN_REPORT.md
-  - إنشاء قضايا GitHub لكل اكتشاف أمني
-  - دعم وضع تجريبي (dry-run) لتجنب إنشاء القضايا فعليًا
-  - معالجة الأخطاء بشكل آمن
+## Port Configuration
 
-## ملاحظات خاصة
-- جميع البرامج النصية مكتوبة بلغة Python أو JavaScript.
-- البرامج النصية مصممة لتجنب حقن الأوامر (command injection) من خلال استخدام واجهة سطر الأوامر (CLI) بشكل آمن.
-- بعض البرامج النصية تتطلب تثبيت GitHub CLI (gh) والتحقق من المصادقة.
-- بعض البرامج النصية توفر وضع تجريبي (dry-run) لتجنب إجراء تغييرات فعلية.
+- **Frontend**: 5000
+- **Backend**: 3001
+- **Redis**: 6379
 
-## الاعتماديات
-- بعض البرامج النصية تتطلب تثبيت GitHub CLI (gh).
-- بعض البرامج النصية تتطلب تثبيت Node.js.
+## Notes
 
-## العلاقات مع مجلدات أخرى
-- هذه البرامج النصية تستخدم ملفات مثل SECURITY_SCAN_REPORT.md وSECURITY_PROCESS.md وSECURITY.md من المجلد الجذر.
-- بعض البرامج النصية تستخدم واجهة سطر الأوامر (CLI) لبرامج مثل GitHub CLI (gh).
+- Scripts automatically clean up existing processes before starting
+- Each service runs in a separate PowerShell window
+- Redis runs minimized in the background
+- If Redis fails to start, the application continues with reduced functionality

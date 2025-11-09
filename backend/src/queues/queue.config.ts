@@ -10,10 +10,17 @@ import Redis from 'ioredis';
 // Redis connection configuration for BullMQ
 // Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
 function getRedisConnection(): ConnectionOptions {
+
+
   const baseConfig: ConnectionOptions = {
     maxRetriesPerRequest: null, // Required for BullMQ
     enableReadyCheck: false,
     retryStrategy(times: number) {
+      // Limit retries to prevent spam
+      if (times > 5) {
+        console.warn('[Redis] Max retries reached, disabling Redis');
+        return null;
+      }
       const delay = Math.min(times * 50, 2000);
       return delay;
     },

@@ -1,100 +1,113 @@
 # The Copy - Project Structure
 
-## Monorepo Architecture
-The project follows a monorepo structure with clear separation between frontend, backend, and shared resources.
+## Architecture Overview
+The Copy is a full-stack monorepo application with separate frontend and backend services, following a microservices-oriented architecture with shared utilities and comprehensive tooling.
 
-## Root Directory Structure
+## Directory Structure
 
-### Core Applications
-- **`frontend/`** - Next.js 14 React application with TypeScript
-- **`backend/`** - Express.js API server with TypeScript and Drizzle ORM
-- **`monitoring/`** - Grafana dashboards and Prometheus configuration
+### Root Level
+```
+k:\New folder (48)/
+├── frontend/          # Next.js 15 React application
+├── backend/           # Express.js API server
+├── docs/             # Comprehensive documentation
+├── scripts/          # Build and maintenance scripts
+├── monitoring/       # Grafana/Prometheus configuration
+├── redis/            # Redis server binaries and config
+├── slidingcarousel/  # Standalone carousel component demo
+└── .amazonq/         # AI assistant rules and memory bank
+```
 
-### Documentation & Guides
-- **`docs/`** - Comprehensive documentation including performance optimization guides
-- **`scripts/`** - Automation scripts for maintenance, testing, and deployment
-- **`.github/`** - GitHub Actions workflows and CI/CD configuration
+### Frontend Structure (`frontend/`)
+```
+frontend/
+├── src/
+│   ├── app/                    # Next.js 15 App Router pages
+│   │   ├── (main)/            # Main application routes
+│   │   │   ├── directors-studio/  # Directors Studio feature
+│   │   │   └── seven-stations/    # Seven Stations Analysis
+│   │   ├── api/               # API route handlers
+│   │   └── globals.css        # Global styles
+│   ├── components/            # Reusable UI components
+│   │   ├── ui/               # shadcn/ui base components
+│   │   ├── card-scanner/     # Document scanning components
+│   │   └── [feature-specific]/
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utility functions and configurations
+│   ├── types/                # TypeScript type definitions
+│   ├── ai/                   # AI integration (Genkit)
+│   └── workers/              # Web Workers for heavy processing
+├── public/                   # Static assets
+├── tests/                    # Test suites (unit, e2e)
+└── docs/                     # Frontend-specific documentation
+```
 
-### Configuration Files
-- **`pnpm-workspace.yaml`** - Monorepo workspace configuration
-- **`docker-compose.prometheus.yml`** - Monitoring stack setup
-- **`tsconfig.json`** - Root TypeScript configuration
+### Backend Structure (`backend/`)
+```
+backend/
+├── src/
+│   ├── controllers/          # Request handlers
+│   ├── services/            # Business logic layer
+│   ├── middleware/          # Express middleware
+│   ├── db/                  # Database schema and migrations
+│   ├── queues/              # BullMQ job processors
+│   ├── utils/               # Utility functions
+│   ├── types/               # TypeScript definitions
+│   └── config/              # Configuration management
+├── db-performance-analysis/ # Database optimization tools
+├── migrations/              # Database migration scripts
+└── docs/                    # Backend documentation
+```
 
-## Frontend Structure (`frontend/`)
+## Core Components
 
-### Application Core
-- **`src/app/`** - Next.js App Router pages and layouts
-- **`src/components/`** - Reusable React components with shadcn/ui
-- **`src/lib/`** - Utility functions and shared logic
-- **`src/hooks/`** - Custom React hooks
-- **`src/types/`** - TypeScript type definitions
+### Frontend Components
+- **Directors Studio**: Project management interface with tabs for scenes, characters, shots
+- **Seven Stations Analysis**: AI-powered dramatic analysis interface
+- **Card Scanner**: Document upload and processing components
+- **UI Components**: shadcn/ui based design system with Arabic RTL support
 
-### Specialized Modules
-- **`src/ai/`** - AI integration and Gemini API handling
-- **`src/workers/`** - Web Workers for background processing
-- **`public/`** - Static assets including fonts, images, and PDF workers
+### Backend Services
+- **Project Service**: CRUD operations for projects, scenes, characters
+- **Analysis Service**: AI integration for dramatic analysis
+- **Queue Service**: Background job processing with BullMQ
+- **SSE Service**: Server-sent events for real-time updates
+- **Cache Service**: Redis-based caching layer
 
-### Development Tools
-- **`tests/`** - Unit tests, E2E tests, and test utilities
-- **`scripts/`** - Build optimization and performance analysis scripts
-- **`docs/`** - Frontend-specific documentation
+### Database Schema
+- **Projects**: Main project entities with metadata
+- **Scenes**: Individual scenes within projects
+- **Characters**: Character definitions and tracking
+- **Shots**: Shot planning and organization
+- **Users**: Authentication and user management
+- **Analysis Results**: Cached AI analysis results
 
-## Backend Structure (`backend/`)
+## Architectural Patterns
 
-### Application Core
-- **`src/controllers/`** - API route handlers and business logic
-- **`src/services/`** - Business services and external integrations
-- **`src/db/`** - Database schema and Drizzle ORM configuration
-- **`src/middleware/`** - Express middleware for auth, validation, etc.
+### Frontend Patterns
+- **App Router**: Next.js 15 file-based routing
+- **Server Components**: React Server Components for performance
+- **Client Components**: Interactive components with state management
+- **Custom Hooks**: Reusable logic abstraction
+- **Component Composition**: Modular, reusable component design
 
-### Infrastructure
-- **`src/queues/`** - BullMQ job queues for background processing
-- **`src/config/`** - Application configuration and environment setup
-- **`src/utils/`** - Utility functions and helpers
-- **`migrations/`** - Database migration files
+### Backend Patterns
+- **MVC Architecture**: Controllers, Services, Models separation
+- **Middleware Pipeline**: Express middleware for cross-cutting concerns
+- **Queue Processing**: Asynchronous job processing with BullMQ
+- **Caching Strategy**: Multi-level caching with Redis
+- **Event-Driven**: Real-time updates via WebSocket + SSE
 
-### Performance & Analysis
-- **`db-performance-analysis/`** - Database optimization tools and reports
-- **`drizzle/`** - Drizzle ORM metadata and generated files
+### Data Flow
+1. **Frontend** → API calls → **Backend Controllers**
+2. **Controllers** → **Services** → **Database/Cache**
+3. **Background Jobs** → **Queue Processors** → **External APIs**
+4. **Real-time Updates** → **SSE/WebSocket** → **Frontend**
 
-## Key Architectural Patterns
-
-### Separation of Concerns
-- **Frontend**: UI/UX, client-side logic, user interactions
-- **Backend**: API endpoints, business logic, data processing
-- **Database**: Data persistence with PostgreSQL and Redis caching
-
-### Real-time Communication
-- **WebSocket**: Bidirectional real-time communication
-- **Server-Sent Events (SSE)**: Server-to-client streaming updates
-- **Queue System**: Background job processing with BullMQ
-
-### Performance Architecture
-- **Caching Layer**: Redis for frequently accessed data
-- **Database Optimization**: Composite indexes and query optimization
-- **Bundle Optimization**: Code splitting and lazy loading
-- **CDN Integration**: Static asset optimization
-
-### Security Architecture
-- **Authentication**: JWT-based user authentication
-- **Authorization**: Role-based access control
-- **Data Validation**: Zod schema validation
-- **Rate Limiting**: Multi-level request throttling
-
-## Development Workflow
-
-### Package Management
-- **pnpm**: Workspace-aware package manager
-- **Shared Dependencies**: Common packages managed at root level
-- **Workspace Scripts**: Cross-package command execution
-
-### Build System
-- **Frontend**: Next.js with TypeScript and Tailwind CSS
-- **Backend**: Express.js with TypeScript compilation
-- **Containerization**: Docker support for deployment
-
-### Quality Assurance
-- **Linting**: ESLint with custom rules for code quality
-- **Type Checking**: Strict TypeScript configuration
-- **Testing**: Vitest for unit tests, Playwright for E2E
-- **Performance**: Bundle analysis and performance budgets
+## Integration Points
+- **AI Services**: Google Gemini API for analysis
+- **Database**: PostgreSQL with Drizzle ORM
+- **Cache**: Redis for session and data caching
+- **Monitoring**: Sentry for error tracking, Prometheus for metrics
+- **File Storage**: Local file system with CDN integration
+- **Real-time**: WebSocket + Server-Sent Events for live updates

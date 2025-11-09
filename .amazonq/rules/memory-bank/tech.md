@@ -1,144 +1,161 @@
 # The Copy - Technology Stack
 
-## Core Technologies
+## Programming Languages
+- **TypeScript 5.9+**: Primary language for both frontend and backend
+- **JavaScript**: Legacy code and build scripts
+- **SQL**: Database queries and migrations
+- **Bash/PowerShell**: Build and deployment scripts
 
-### Frontend Stack
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript 5.9+
-- **Styling**: Tailwind CSS 4.1+ with tailwindcss-animate
-- **UI Components**: shadcn/ui + Radix UI primitives
-- **State Management**: React Hooks and Context API
-- **Build Tool**: Next.js built-in bundler with Turbopack
+## Frontend Technology Stack
 
-### Backend Stack
-- **Runtime**: Node.js 20+
-- **Framework**: Express.js with TypeScript
-- **Database**: PostgreSQL (Neon Serverless)
-- **ORM**: Drizzle ORM with TypeScript
-- **Caching**: Redis for session and data caching
-- **Queue System**: BullMQ for background job processing
+### Core Framework
+- **Next.js 15.4.7**: React framework with App Router
+- **React 18.3.1**: UI library with Server Components
+- **TypeScript 5.x**: Type safety and developer experience
+
+### Styling & UI
+- **Tailwind CSS 4.1.16**: Utility-first CSS framework
+- **shadcn/ui**: Component library built on Radix UI
+- **Radix UI**: Headless UI primitives
+- **Framer Motion 11.0**: Animation library
+- **GSAP 3.13**: Advanced animations
+
+### State Management & Data
+- **TanStack Query 5.90**: Server state management
+- **React Hook Form 7.54**: Form handling
+- **Zod 3.25**: Schema validation
+- **React Hooks**: Local state management
+
+### Development Tools
+- **ESLint 9.17**: Code linting
+- **Prettier 3.6**: Code formatting
+- **Vitest 2.1**: Unit testing
+- **Playwright 1.49**: E2E testing
+- **Lighthouse CI**: Performance monitoring
+
+## Backend Technology Stack
+
+### Core Framework
+- **Node.js 20+**: Runtime environment
+- **Express.js 4.18**: Web framework
+- **TypeScript 5.x**: Type safety
+
+### Database & ORM
+- **PostgreSQL**: Primary database (Neon Serverless)
+- **Drizzle ORM 0.44**: Type-safe database toolkit
+- **Redis 5.9**: Caching and session storage
+
+### Queue & Background Processing
+- **BullMQ 5.63**: Job queue system
+- **Bull Board 6.14**: Queue monitoring dashboard
 
 ### AI & External Services
-- **AI Provider**: Google Gemini API for Arabic text analysis
-- **Alternative AI**: Mistral AI (@mistralai/mistralai ^1.10.0)
-- **Real-time**: WebSocket + Server-Sent Events (SSE)
+- **Google Generative AI 0.24**: Gemini API integration
+- **Genkit 1.20**: AI development framework
 
-## Development Tools
+### Security & Monitoring
+- **Helmet 7.1**: Security headers
+- **CORS 2.8**: Cross-origin resource sharing
+- **JWT**: Authentication tokens
+- **bcrypt 6.0**: Password hashing
+- **Sentry 10.23**: Error monitoring
+- **Prometheus**: Metrics collection
+
+### Development Tools
+- **ESLint**: Code linting
+- **Vitest 4.0**: Testing framework
+- **tsc-watch**: TypeScript compilation
+- **tsx**: TypeScript execution
+
+## Development Environment
 
 ### Package Management
-- **Package Manager**: pnpm 10.20.0 (workspace-aware)
-- **Workspace**: Monorepo with pnpm workspaces
-- **Node Version**: Managed with .nvmrc (Node.js 20+)
+- **pnpm 10.20**: Fast, disk space efficient package manager
+- **Monorepo**: Workspace-based project structure
 
-### Code Quality
-- **Linting**: ESLint with custom rules and TypeScript support
-- **Formatting**: Prettier with custom configuration
-- **Type Checking**: Strict TypeScript with custom type definitions
-- **Style Linting**: Stylelint for CSS/SCSS validation
+### Build Tools
+- **Next.js Build**: Frontend compilation and optimization
+- **TypeScript Compiler**: Type checking and compilation
+- **PostCSS**: CSS processing
+- **Bundle Analyzer**: Bundle size analysis
 
-### Testing Framework
-- **Unit Testing**: Vitest 4.0+ for fast unit tests
-- **E2E Testing**: Playwright for end-to-end testing
-- **Test Setup**: Custom test utilities and setup files
-- **Coverage**: Built-in coverage reporting with Vitest
+### Development Commands
 
-### Build & Optimization
-- **Image Optimization**: Sharp 0.34+ for image processing
-- **Bundle Analysis**: Custom scripts for bundle size monitoring
-- **Performance Budget**: Automated performance budget enforcement
-- **Code Splitting**: Next.js automatic code splitting
-
-## Infrastructure & DevOps
-
-### Containerization
-- **Docker**: Multi-stage builds for production
-- **Docker Compose**: Development environment orchestration
-- **Base Images**: Node.js Alpine for minimal footprint
-
-### Monitoring & Observability
-- **Error Tracking**: Sentry for frontend and backend
-- **Metrics**: Prometheus for application metrics
-- **Dashboards**: Grafana for visualization
-- **Performance**: Web Vitals integration with Sentry
-
-### CI/CD Pipeline
-- **GitHub Actions**: Automated testing and deployment
-- **Workflows**: Lighthouse CI, performance budgets, security scans
-- **Quality Gates**: Linting, type checking, and test coverage
-
-## Database & Caching
-
-### Database Configuration
-- **Primary DB**: PostgreSQL with Neon Serverless
-- **ORM**: Drizzle ORM with TypeScript schema
-- **Migrations**: Automated database migrations
-- **Performance**: Composite indexes for optimized queries
-
-### Caching Strategy
-- **Redis**: Session storage and data caching
-- **Application Cache**: In-memory caching for frequently accessed data
-- **CDN**: Static asset caching and optimization
-
-## Security & Performance
-
-### Security Measures
-- **Authentication**: JWT-based authentication system
-- **Validation**: Zod schema validation for all inputs
-- **Rate Limiting**: Multi-level request throttling
-- **CORS**: Strict cross-origin resource sharing policies
-- **Helmet**: Security headers and CSP configuration
-
-### Performance Optimizations
-- **Database Indexes**: 8 composite indexes for optimal query performance
-- **Queue Processing**: Background job processing with BullMQ
-- **Bundle Optimization**: Code splitting and lazy loading
-- **Image Optimization**: Automatic image compression and format conversion
-
-## Development Commands
-
-### Root Level Commands
+#### Root Level Commands
 ```bash
-pnpm start:dev          # Start development servers
-pnpm kill:dev           # Stop all development processes
-pnpm lint               # Run linting across workspace
-pnpm test               # Run all tests
-pnpm build              # Build all packages
-pnpm ci                 # Full CI pipeline locally
+pnpm start:dev          # Start both frontend and backend
+pnpm kill:dev           # Stop all development servers
+pnpm lint               # Lint frontend code
+pnpm test               # Run frontend tests
+pnpm build              # Build frontend for production
 ```
 
-### Frontend Commands
+#### Frontend Commands
 ```bash
-pnpm dev                # Start Next.js development server
-pnpm build              # Build production bundle
+pnpm dev                # Start development server
+pnpm build              # Production build
 pnpm start              # Start production server
+pnpm lint               # ESLint checking
+pnpm typecheck          # TypeScript checking
 pnpm test               # Run unit tests
-pnpm test:e2e           # Run E2E tests
-pnpm lint               # ESLint + Prettier
-pnpm typecheck          # TypeScript type checking
+pnpm e2e                # Run E2E tests
+pnpm lighthouse         # Performance audit
 ```
 
-### Backend Commands
+#### Backend Commands
 ```bash
-pnpm dev                # Start Express development server
+pnpm dev                # Start development server with watch
 pnpm build              # Compile TypeScript
 pnpm start              # Start production server
-pnpm test               # Run unit tests with Vitest
-pnpm db:push            # Push database schema changes
+pnpm test               # Run unit tests
+pnpm lint               # ESLint checking
+pnpm db:push            # Push database schema
 pnpm db:studio          # Open Drizzle Studio
 ```
 
-## Environment Configuration
+## Performance Optimizations
 
-### Required Environment Variables
-- **Database**: `DATABASE_URL` for PostgreSQL connection
-- **Redis**: `REDIS_URL` for caching and sessions
-- **AI Services**: `GEMINI_API_KEY` for Google Gemini API
-- **Authentication**: `JWT_SECRET` for token signing
-- **Monitoring**: `SENTRY_DSN` for error tracking
+### Database
+- **8 Composite Indexes**: Optimized query performance
+- **Connection Pooling**: Efficient database connections
+- **Query Optimization**: Analyzed and optimized slow queries
 
-### Development Setup
-- **Frontend**: Port 3000 (Next.js)
-- **Backend**: Port 3001 (Express.js)
-- **Database**: PostgreSQL (local or Neon)
-- **Redis**: Port 6379 (Docker or local)
-- **Monitoring**: Grafana on port 3002
+### Caching Strategy
+- **Redis Caching**: API response caching
+- **Next.js Caching**: Static and dynamic content caching
+- **Browser Caching**: Optimized cache headers
+
+### Bundle Optimization
+- **Code Splitting**: Dynamic imports and lazy loading
+- **Tree Shaking**: Unused code elimination
+- **Bundle Analysis**: Size monitoring and optimization
+
+## Deployment & DevOps
+
+### Containerization
+- **Docker**: Container orchestration
+- **Docker Compose**: Multi-service development
+
+### CI/CD
+- **GitHub Actions**: Automated testing and deployment
+- **Husky**: Git hooks for quality gates
+- **Lint-staged**: Pre-commit code quality checks
+
+### Monitoring
+- **Sentry**: Error tracking and performance monitoring
+- **Prometheus**: Metrics collection
+- **Grafana**: Metrics visualization
+- **Bull Board**: Queue monitoring
+
+### Environment Management
+- **Environment Variables**: Configuration management
+- **dotenv**: Local environment configuration
+- **Multiple Environments**: Development, staging, production
+
+## Version Requirements
+- **Node.js**: >=20.11.0
+- **npm**: >=10.0.0
+- **pnpm**: 10.20.0
+- **TypeScript**: ^5.0.0
+- **PostgreSQL**: Latest stable
+- **Redis**: Latest stable

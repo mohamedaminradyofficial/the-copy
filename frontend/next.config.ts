@@ -234,6 +234,14 @@ const nextConfig = {
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;
 
+    // Suppress OpenTelemetry warnings in development
+    if (dev) {
+      config.ignoreWarnings = [
+        /Critical dependency: the request of a dependency is an expression/,
+        /require function is used in a way in which dependencies cannot be statically extracted/,
+      ];
+    }
+
     // Bundle size optimization
     if (!isServer) {
       config.resolve.fallback = {
