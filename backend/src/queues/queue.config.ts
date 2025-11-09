@@ -4,16 +4,23 @@
  * Background job processing for long-running tasks
  */
 
-import { Queue, Worker, QueueOptions, WorkerOptions, ConnectionOptions } from 'bullmq';
+import { Queue, Worker, QueueOptions, WorkerOptions, ConnectionOptions, Job } from 'bullmq';
 import Redis from 'ioredis';
 
 // Redis connection configuration for BullMQ
 // Supports both REDIS_URL and individual REDIS_HOST/PORT/PASSWORD
 function getRedisConnection(): ConnectionOptions {
+
+
   const baseConfig: ConnectionOptions = {
     maxRetriesPerRequest: null, // Required for BullMQ
     enableReadyCheck: false,
     retryStrategy(times: number) {
+      // Limit retries to prevent spam
+      if (times > 5) {
+        console.warn('[Redis] Max retries reached, disabling Redis');
+        return null;
+      }
       const delay = Math.min(times * 50, 2000);
       return delay;
     },
@@ -85,8 +92,8 @@ const defaultWorkerOptions: Omit<WorkerOptions, 'connection'> = {
  * Queue manager singleton
  */
 class QueueManager {
-  private queues: Map<QueueName, Queue> = new Map();
-  private workers: Map<QueueName, Worker> = new Map();
+  public queues: Map<QueueName, Queue> = new Map();
+  public workers: Map<QueueName, Worker> = new Map();
 
   /**
    * Get or create a queue
@@ -99,24 +106,24 @@ class QueueManager {
       });
 
       // Queue event handlers
-      queue.on('error', (error) => {
+      queue.on('error', (error: Error) => {
         console.error(`[Queue:${name}] Error:`, error);
       });
 
-      queue.on('waiting', (job) => {
+      queue.on('waiting', (job: Job) => {
         console.log(`[Queue:${name}] Job ${job.id} is waiting`);
       });
 
-      queue.on('active', (job) => {
+      queue.on('active' as any, (job: Job) => {
         console.log(`[Queue:${name}] Job ${job.id} is active`);
       });
 
-      queue.on('completed', (job) => {
+      queue.on('completed' as any, (job: Job) => {
         console.log(`[Queue:${name}] Job ${job.id} completed`);
       });
 
-      queue.on('failed', (job, error) => {
-        console.error(`[Queue:${name}] Job ${job?.id} failed:`, error);
+      queue.on('failed' as any, (job: Job, err: Error) => {
+        console.error(`[Queue:${name}] Job ${job.id} failed:`, err);
       });
 
       this.queues.set(name, queue);
@@ -130,7 +137,7 @@ class QueueManager {
    */
   registerWorker(
     name: QueueName,
-    processor: (job: any) => Promise<any>,
+    processor: (job: Job) => Promise<any>,
     options?: Partial<WorkerOptions>
   ): Worker {
     if (this.workers.has(name)) {
@@ -145,19 +152,19 @@ class QueueManager {
     });
 
     // Worker event handlers
-    worker.on('completed', (job) => {
+    worker.on('completed', (job: { id?: string | number }) => {
       console.log(`[Worker:${name}] Job ${job.id} completed successfully`);
     });
 
-    worker.on('failed', (job, error) => {
+    worker.on('failed', (job: { id?: string | number } | undefined, error: Error) => {
       console.error(`[Worker:${name}] Job ${job?.id} failed:`, error);
     });
 
-    worker.on('error', (error) => {
+    worker.on('error', (error: Error) => {
       console.error(`[Worker:${name}] Error:`, error);
     });
 
-    worker.on('stalled', (jobId) => {
+    worker.on('stalled', (jobId: string | number) => {
       console.warn(`[Worker:${name}] Job ${jobId} stalled`);
     });
 

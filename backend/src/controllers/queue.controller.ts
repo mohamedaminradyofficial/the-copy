@@ -16,6 +16,15 @@ export class QueueController {
   async getJobStatus(req: Request, res: Response): Promise<void> {
     try {
       const { jobId } = req.params;
+
+      if (!jobId) {
+        res.status(400).json({
+          success: false,
+          error: 'معرف المهمة مطلوب',
+        });
+        return;
+      }
+
       const queueName = (req.query.queue as string) || QueueName.AI_ANALYSIS;
 
       const queue = queueManager.getQueue(queueName as QueueName);
@@ -130,6 +139,15 @@ export class QueueController {
   async retryJob(req: Request, res: Response): Promise<void> {
     try {
       const { jobId } = req.params;
+
+      if (!jobId) {
+        res.status(400).json({
+          success: false,
+          error: 'معرف المهمة مطلوب',
+        });
+        return;
+      }
+
       const queueName = (req.query.queue as string) || QueueName.AI_ANALYSIS;
 
       const queue = queueManager.getQueue(queueName as QueueName);

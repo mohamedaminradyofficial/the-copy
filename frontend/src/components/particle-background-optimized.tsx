@@ -17,6 +17,17 @@ import {
   getParticleLODConfig,
   logDeviceCapabilities,
 } from "./device-detection";
+import {
+  BASELINE,
+  STROKE_WIDTH,
+  X_HEIGHT,
+  ASCENDER_HEIGHT,
+  DESCENDER_DEPTH,
+  ARABIC_HEIGHT,
+  LETTER_POSITIONS,
+  SAMPLING_BOUNDS,
+  PARTICLE_THRESHOLDS,
+} from "./particle-letters.constants";
 
 type Effect = "default" | "spark" | "wave" | "vortex";
 
@@ -74,12 +85,14 @@ export default function OptimizedParticleAnimation() {
   
   const currentEffect: Effect = "spark";
 
+  // Check for window object
+  if (typeof window === 'undefined') return null;
+
   // Check for reduced motion preference
-  const prefersReducedMotion = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    return mediaQuery.matches;
-  }, []);
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Skip animation if user prefers reduced motion
+  if (prefersReducedMotion) return null;
 
   // Scene reference with all necessary data
   const sceneRef = useRef<{
@@ -174,24 +187,16 @@ export default function OptimizedParticleAnimation() {
   const opUnion = (a: number, b: number): number => Math.min(a, b);
   const opSubtract = (a: number, b: number): number => Math.max(a, -b);
 
-  // Character definitions for "the-copy" text
-  const STROKE_WIDTH = 0.035;
-  const BASELINE = 0.0;
-  const X_HEIGHT = 0.35;
-  const ASCENDER_HEIGHT = 0.65;
-  const DESCENDER_DEPTH = -0.25;
-  const ARABIC_HEIGHT = 0.45;
-
-  // Letters SDF definitions (simplified for performance)
+  // Letters SDF definitions (using shared constants)
   const dist_t = (px: number, py: number): number => {
-    const x = -1.7;
+    const x = LETTER_POSITIONS.T;
     const stem = sdSegment(px, py, x, BASELINE + ASCENDER_HEIGHT - 0.05, x, BASELINE, STROKE_WIDTH);
     const crossbar = sdSegment(px, py, x - 0.15, BASELINE + ASCENDER_HEIGHT, x + 0.15, BASELINE + ASCENDER_HEIGHT, STROKE_WIDTH);
     return opUnion(stem, crossbar);
   };
 
   const dist_h = (px: number, py: number): number => {
-    const x = -1.25;
+    const x = LETTER_POSITIONS.H;
     const stem = sdSegment(px, py, x, BASELINE + ASCENDER_HEIGHT, x, BASELINE, STROKE_WIDTH);
     const shoulder = sdArc(px, py, x, BASELINE + X_HEIGHT * 0.8, 0.22, -Math.PI / 2, 0, STROKE_WIDTH);
     const rightLeg = sdSegment(px, py, x + 0.22, BASELINE + X_HEIGHT * 0.8, x + 0.22, BASELINE, STROKE_WIDTH);
@@ -199,7 +204,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_e = (px: number, py: number): number => {
-    const cx = -0.6;
+    const cx = LETTER_POSITIONS.E;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
     let ring = sdRing(px, py, cx, cy, r, STROKE_WIDTH);
@@ -210,7 +215,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_c = (px: number, py: number): number => {
-    const cx = 0.0;
+    const cx = LETTER_POSITIONS.C;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
     let ring = sdRing(px, py, cx, cy, r, STROKE_WIDTH);
@@ -219,14 +224,14 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_o = (px: number, py: number): number => {
-    const cx = 0.5;
+    const cx = LETTER_POSITIONS.O;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const r = 0.2;
     return sdRing(px, py, cx, cy, r, STROKE_WIDTH);
   };
 
   const dist_p = (px: number, py: number): number => {
-    const x = 1.0;
+    const x = LETTER_POSITIONS.P;
     const cy = BASELINE + X_HEIGHT * 0.5;
     const stem = sdSegment(px, py, x, BASELINE + X_HEIGHT, x, BASELINE + DESCENDER_DEPTH, STROKE_WIDTH);
     const bowl = sdRing(px, py, x + 0.2, cy, 0.17, STROKE_WIDTH);
@@ -234,7 +239,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_y = (px: number, py: number): number => {
-    const x = 1.9;
+    const x = LETTER_POSITIONS.Y;
     const top = BASELINE + X_HEIGHT;
     const mid = BASELINE + X_HEIGHT * 0.2;
     const leftArm = sdSegment(px, py, x - 0.15, top, x, mid, STROKE_WIDTH);
@@ -244,19 +249,19 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_dash = (px: number, py: number): number => {
-    const x = 2.4;
+    const x = LETTER_POSITIONS.DASH;
     return sdSegment(px, py, x - 0.1, BASELINE + X_HEIGHT * 0.5, x + 0.1, BASELINE + X_HEIGHT * 0.5, STROKE_WIDTH * 0.8);
   };
 
   const dist_alef = (px: number, py: number): number => {
-    const x = 2.9;
+    const x = LETTER_POSITIONS.ALEF;
     const stem = sdSegment(px, py, x, BASELINE + ARABIC_HEIGHT * 0.95, x, BASELINE, STROKE_WIDTH * 1.2);
     const base = sdSegment(px, py, x - 0.03, BASELINE, x + 0.03, BASELINE, STROKE_WIDTH * 1.5);
     return opUnion(stem, base);
   };
 
   const dist_lam = (px: number, py: number): number => {
-    const x = 3.3;
+    const x = LETTER_POSITIONS.LAM;
     const stem = sdSegment(px, py, x, BASELINE + ARABIC_HEIGHT * 0.95, x, BASELINE + 0.08, STROKE_WIDTH * 1.2);
     const hook = sdArc(px, py, x - 0.12, BASELINE + 0.08, 0.12, 0, Math.PI / 2, STROKE_WIDTH * 1.1);
     const hookEnd = sdSegment(px, py, x - 0.24, BASELINE, x - 0.15, BASELINE, STROKE_WIDTH);
@@ -264,7 +269,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_noon = (px: number, py: number): number => {
-    const x = 3.75;
+    const x = LETTER_POSITIONS.NOON;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
     const mainArc = sdArc(px, py, x, cy, 0.18, -Math.PI * 0.15, Math.PI * 0.85, STROKE_WIDTH * 1.1);
     const connector = sdSegment(px, py, x - 0.17, cy - 0.05, x - 0.08, BASELINE + 0.02, STROKE_WIDTH);
@@ -274,7 +279,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_seen = (px: number, py: number): number => {
-    const x = 4.25;
+    const x = LETTER_POSITIONS.SEEN;
     const baseY = BASELINE + 0.02;
     const toothHeight = ARABIC_HEIGHT * 0.35;
     const baseLine = sdSegment(px, py, x - 0.28, baseY, x + 0.28, baseY, STROKE_WIDTH * 1.1);
@@ -288,7 +293,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_khaa = (px: number, py: number): number => {
-    const x = 4.75;
+    const x = LETTER_POSITIONS.KHAA;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
     const mainArc = sdArc(px, py, x, cy, 0.2, Math.PI * 0.6, Math.PI * 2.4, STROKE_WIDTH * 1.1);
     const rightConnect = sdSegment(px, py, x + 0.15, cy - 0.12, x + 0.12, BASELINE, STROKE_WIDTH);
@@ -298,7 +303,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   const dist_taa_marbouta = (px: number, py: number): number => {
-    const x = 5.2;
+    const x = LETTER_POSITIONS.TAA_MARBOUTA;
     const cy = BASELINE + ARABIC_HEIGHT * 0.4;
     let circle = sdRing(px, py, x, cy, 0.17, STROKE_WIDTH * 1.1);
     const opening = sdBox(px - x, py - (cy - 0.05), 0.08, 0.08, 0);
@@ -357,10 +362,7 @@ export default function OptimizedParticleAnimation() {
       const colors = new Float32Array(numParticles * 3);
 
       // Sampling bounds
-      const minX = -2.1;
-      const maxX = 5.6;
-      const minY = -0.4;
-      const maxY = 0.85;
+      const { minX, maxX, minY, maxY } = SAMPLING_BOUNDS;
 
       let generatedCount = 0;
       const maxAttempts = 3000000;
@@ -385,7 +387,7 @@ export default function OptimizedParticleAnimation() {
             const z = Math.random() * thickness - thickness / 2;
 
             const d = dist(x, y);
-            const threshold = x > 2.5 ? 0.015 : 0.01;
+            const threshold = x > 2.5 ? PARTICLE_THRESHOLDS.arabic : PARTICLE_THRESHOLDS.english;
 
             if (d <= threshold) {
               const idx = generatedCount * 3;
@@ -557,13 +559,7 @@ export default function OptimizedParticleAnimation() {
   };
 
   useEffect(() => {
-    if (!canvasRef.current || typeof window === 'undefined') return;
-    
-    // Skip animation if user prefers reduced motion
-    if (prefersReducedMotion) {
-      console.log('[ParticleAnimation] Skipping animation - user prefers reduced motion');
-      return;
-    }
+    if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
     
@@ -640,16 +636,6 @@ export default function OptimizedParticleAnimation() {
         sceneRef.current.velocities = velocities;
         sceneRef.current.particleCount = count;
         sceneRef.current.isGenerated = true;
-
-        // Log LOD configuration for debugging
-        if (process.env.NODE_ENV === 'development' && lodConfig) {
-          console.log('🎨 Particle LOD Applied:', {
-            particles: count,
-            effectRadius: lodConfig.effectRadius,
-            updateFrequency: `${1000 / lodConfig.updateFrequency}fps`,
-            advancedEffects: lodConfig.enableAdvancedEffects,
-          });
-        }
       })
       .catch((error) => {
         console.error('❌ فشل في توليد الجسيمات:', error);
@@ -798,15 +784,6 @@ export default function OptimizedParticleAnimation() {
 
             renderer.render(scene, camera);
 
-            // Performance monitoring (log FPS every 60 frames in development)
-            if (process.env.NODE_ENV === 'development') {
-              const frameCount = performanceMonitor['frameTimeHistory']?.length || 0;
-              if (frameCount > 0 && frameCount % 60 === 0) {
-                const avgFPS = performanceMonitor.getAverageFPS();
-                console.log(`⚡ Particle Performance: ${avgFPS.toFixed(1)} FPS`);
-              }
-            }
-
             // Schedule next frame
             animationRef.current = requestAnimationFrame(animate);
           }
@@ -821,15 +798,15 @@ export default function OptimizedParticleAnimation() {
     // Start animation loop
     animationRef.current = requestAnimationFrame(animate);
 
-    // Mouse drag handlers
-    const handleMouseDown = (event: React.MouseEvent) => {
+    // Mouse drag handlers (using native event types for addEventListener)
+    const handleMouseDown = (event: MouseEvent) => {
       if (!sceneRef.current) return;
       sceneRef.current.isDragging = true;
       sceneRef.current.previousMouseX = event.clientX;
       sceneRef.current.previousMouseY = event.clientY;
     };
 
-    const handleMouseMove = (event: React.MouseEvent) => {
+    const handleMouseMove = (event: MouseEvent) => {
       if (!sceneRef.current || !sceneRef.current.isDragging) return;
 
       const deltaX = event.clientX - sceneRef.current.previousMouseX;
@@ -848,15 +825,15 @@ export default function OptimizedParticleAnimation() {
       }
     };
 
-    // Touch handlers
-    const handleTouchStart = (event: React.TouchEvent) => {
+    // Touch handlers (using native event types for addEventListener)
+    const handleTouchStart = (event: TouchEvent) => {
       if (!sceneRef.current || !event.touches[0]) return;
       sceneRef.current.isDragging = true;
       sceneRef.current.previousMouseX = event.touches[0].clientX;
       sceneRef.current.previousMouseY = event.touches[0].clientY;
     };
 
-    const handleTouchMove = (event: React.TouchEvent) => {
+    const handleTouchMove = (event: TouchEvent) => {
       if (!sceneRef.current || !sceneRef.current.isDragging || !event.touches[0]) return;
 
       const deltaX = event.touches[0].clientX - sceneRef.current.previousMouseX;
@@ -918,8 +895,8 @@ export default function OptimizedParticleAnimation() {
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseup", handleMouseUp);
     canvas.addEventListener("mouseleave", handleMouseUp);
-    canvas.addEventListener("touchstart", handleTouchStart as unknown as EventListener, { passive: true } as AddEventListenerOptions);
-    canvas.addEventListener("touchmove", handleTouchMove as unknown as EventListener, { passive: true } as AddEventListenerOptions);
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
+    canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
     canvas.addEventListener("touchend", handleTouchEnd);
 
     return cleanup;
@@ -932,7 +909,7 @@ export default function OptimizedParticleAnimation() {
         width={1400}
         height={600}
         className="block"
-        style={{ touchAction: 'none', pointerEvents: 'none' }}
+        style={{ touchAction: 'none' }}
       />
     </div>
   );

@@ -6,6 +6,7 @@
 
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
+import type { ServerOptions } from 'socket.io';
 import { getWebSocketConfig, WEBSOCKET_CONFIG } from '@/config/websocket.config';
 import { logger } from '@/utils/logger';
 import {
@@ -44,7 +45,7 @@ class WebSocketService {
       return;
     }
 
-    const config = getWebSocketConfig();
+    const config = getWebSocketConfig() as ServerOptions;
     this.io = new SocketIOServer(httpServer, config);
 
     this.setupEventHandlers();

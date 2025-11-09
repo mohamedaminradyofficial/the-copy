@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحديد إحداثيات الأحرف</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .text-area {
+            font-size: 24px;
+            line-height: 1.5;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin: 20px 0;
+            position: relative;
+            background: white;
+        }
+        .char {
+            position: relative;
+            cursor: pointer;
+            padding: 2px;
+        }
+        .char:hover {
+            background: yellow;
+        }
+        .selected {
+            background: #ff6b6b !important;
+            color: white;
+        }
+        .coordinates {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e8f4fd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .search {
+            margin: 10px 0;
+        }
+        .search input {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .highlight {
+            background: #90EE90 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تحديد إحداثيات الأحرف</h1>
+        
+        <div class="search">
+            <input type="text" id="searchChar" placeholder="ابحث عن حرف (مثل: t أو ة)" maxlength="1">
+            <button onclick="findCharacter()">بحث</button>
+            <button onclick="clearHighlights()">مسح</button>
+        </div>
+
+        <div class="text-area" id="textArea">
+            The Copy - النسخة
+        </div>
+
+        <div class="coordinates" id="coordinates">
+            اضغط على أي حرف لرؤية إحداثياته
+        </div>
+
+        <div class="coordinates" id="allCoordinates">
+            جميع الإحداثيات ستظهر هنا
+        </div>
+    </div>
+
+    <script>
+        function wrapCharacters() {
+            const textArea = document.getElementById('textArea');
+            const text = textArea.textContent;
+            textArea.innerHTML = '';
+            
+            text.split('').forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.dataset.index = index;
+                span.onclick = () => showCoordinates(span, char, index);
+                textArea.appendChild(span);
+            });
+        }
+
+        function showCoordinates(element, char, index) {
+            // Clear previous selections
+            document.querySelectorAll('.char').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+
+            const rect = element.getBoundingClientRect();
+            const containerRect = document.getElementById('textArea').getBoundingClientRect();
+            
+            const relativeX = rect.left - containerRect.left;
+            const relativeY = rect.top - containerRect.top;
+            
+            document.getElementById('coordinates').innerHTML = `
+                <strong>الحرف: "${char}"</strong><br>
+                الفهرس: ${index}<br>
+                الإحداثيات النسبية: X=${Math.round(relativeX)}px, Y=${Math.round(relativeY)}px<br>
+                الإحداثيات المطلقة: X=${Math.round(rect.left)}px, Y=${Math.round(rect.top)}px<br>
+                العرض: ${Math.round(rect.width)}px<br>
+                الارتفاع: ${Math.round(rect.height)}px
+            `;
+        }
+
+        function findCharacter() {
+            const searchChar = document.getElementById('searchChar').value;
+            if (!searchChar) return;
+
+            clearHighlights();
+            const chars = document.querySelectorAll('.char');
+            let found = [];
+
+            chars.forEach((char, index) => {
+                if (char.textContent === searchChar) {
+                    char.classList.add('highlight');
+                    const rect = char.getBoundingClientRect();
+                    const containerRect = document.getElementById('textArea').getBoundingClientRect();
+                    found.push({
+                        index: index,
+                        x: Math.round(rect.left - containerRect.left),
+                        y: Math.round(rect.top - containerRect.top),
+                        width: Math.round(rect.width),
+                        height: Math.round(rect.height)
+                    });
+                }
+            });
+
+            if (found.length > 0) {
+                let result = `<strong>نتائج البحث عن "${searchChar}":</strong><br>`;
+                found.forEach((item, i) => {
+                    result += `${i + 1}. الفهرس: ${item.index}, الإحداثيات: X=${item.x}px, Y=${item.y}px, العرض: ${item.width}px, الارتفاع: ${item.height}px<br>`;
+                });
+                document.getElementById('allCoordinates').innerHTML = result;
+            } else {
+                document.getElementById('allCoordinates').innerHTML = `لم يتم العثور على الحرف "${searchChar}"`;
+            }
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.char').forEach(c => {
+                c.classList.remove('highlight');
+                c.classList.remove('selected');
+            });
+        }
+
+        // Initialize
+        wrapCharacters();
+
+        // Auto-search for 't' and 'ة'
+        setTimeout(() => {
+            document.getElementById('searchChar').value = 't';
+            findCharacter();
+        }, 500);
+    </script>
+</body>
+</html>

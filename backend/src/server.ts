@@ -19,6 +19,7 @@ import { realtimeController } from '@/controllers/realtime.controller';
 import { authMiddleware } from '@/middleware/auth.middleware';
 import { logger } from '@/utils/logger';
 import { closeDatabase } from '@/db';
+import { connectMongoDB, closeMongoDB } from '@/config/mongodb';
 import { initializeWorkers, shutdownQueues } from '@/queues';
 import { setupBullBoard, getAuthenticatedBullBoardRouter } from '@/middleware/bull-board.middleware';
 import { queueController } from '@/controllers/queue.controller';
@@ -59,14 +60,27 @@ try {
   logger.error('Failed to initialize WebSocket service:', error);
 }
 
+// Initialize MongoDB connection
+(async () => {
+  try {
+    await connectMongoDB();
+    logger.info('MongoDB initialized');
+  } catch (error) {
+    logger.error('Failed to initialize MongoDB:', error);
+    // Continue without MongoDB - app can still function with PostgreSQL
+  }
+})();
+
 // Initialize background job workers (BullMQ)
-try {
-  initializeWorkers();
-  logger.info('Background job workers initialized');
-} catch (error) {
-  logger.error('Failed to initialize job workers:', error);
-  // Continue without workers - app can still function
-}
+(async () => {
+  try {
+    await initializeWorkers();
+    logger.info('Background job workers initialized');
+  } catch (error) {
+    logger.error('Failed to initialize job workers:', error);
+    // Continue without workers - app can still function
+  }
+})();
 
 // Setup Bull Board dashboard for queue monitoring (with authentication)
 // Access at: http://localhost:3000/admin/queues
@@ -80,13 +94,21 @@ try {
 }
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const { getRedisStatus } = await import('@/utils/redis-health');
+  const redisStatus = await getRedisStatus();
+  
   res.json({
     success: true,
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    services: {
+      redis: redisStatus,
+      mongodb: 'connected', // Will be enhanced later
+      database: 'connected'
+    }
   });
 });
 
@@ -224,6 +246,7 @@ process.on('SIGTERM', async (): Promise<void> => {
 
   // Close database connections
   await closeDatabase();
+  await closeMongoDB();
 
   if (runningServer) {
     runningServer.close(() => {
@@ -256,6 +279,7 @@ process.on('SIGINT', async (): Promise<void> => {
 
   // Close database connections
   await closeDatabase();
+  await closeMongoDB();
 
   if (runningServer) {
     runningServer.close(() => {

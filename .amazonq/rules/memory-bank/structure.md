@@ -1,138 +1,113 @@
-# Project Structure & Architecture
+# The Copy - Project Structure
 
-## Monorepo Organization
-The Copy is organized as a pnpm workspace monorepo with clear separation of concerns:
+## Architecture Overview
+The Copy is a full-stack monorepo application with separate frontend and backend services, following a microservices-oriented architecture with shared utilities and comprehensive tooling.
 
+## Directory Structure
+
+### Root Level
 ```
-the-copy/
-├── frontend/          # Next.js application (main UI)
+k:\New folder (48)/
+├── frontend/          # Next.js 15 React application
 ├── backend/           # Express.js API server
-├── scripts/           # Utility scripts and automation
-├── graphite-demo/     # Demo server implementation
-└── .amazonq/          # AI assistant rules and memory bank
+├── docs/             # Comprehensive documentation
+├── scripts/          # Build and maintenance scripts
+├── monitoring/       # Grafana/Prometheus configuration
+├── redis/            # Redis server binaries and config
+├── slidingcarousel/  # Standalone carousel component demo
+└── .amazonq/         # AI assistant rules and memory bank
 ```
 
-## Frontend Architecture (`/frontend`)
-
-### Core Application Structure
+### Frontend Structure (`frontend/`)
 ```
-src/
-├── app/                    # Next.js App Router (v15.4.7)
-│   ├── (main)/            # Route groups for main application
-│   │   ├── analysis/      # Analysis tools and interfaces
-│   │   ├── directors-studio/ # Director's studio workspace
-│   │   └── editor/        # Screenplay editor interface
-│   ├── api/               # API routes and endpoints
-│   ├── layout.tsx         # Root layout component
-│   └── globals.css        # Global styles
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui component library
-│   └── particle-background.tsx # 3D visual effects
-├── hooks/                # Custom React hooks
-├── lib/                  # Utilities and configurations
-│   ├── types/           # TypeScript type definitions
-│   ├── ai/              # AI helper functions
-│   └── utils.ts         # General utilities
-└── ai/                   # AI integration layer
-    ├── flows/           # Genkit AI flow definitions
-    ├── genkit.ts        # Genkit configuration
-    └── dev.ts           # AI development tools
+frontend/
+├── src/
+│   ├── app/                    # Next.js 15 App Router pages
+│   │   ├── (main)/            # Main application routes
+│   │   │   ├── directors-studio/  # Directors Studio feature
+│   │   │   └── seven-stations/    # Seven Stations Analysis
+│   │   ├── api/               # API route handlers
+│   │   └── globals.css        # Global styles
+│   ├── components/            # Reusable UI components
+│   │   ├── ui/               # shadcn/ui base components
+│   │   ├── card-scanner/     # Document scanning components
+│   │   └── [feature-specific]/
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utility functions and configurations
+│   ├── types/                # TypeScript type definitions
+│   ├── ai/                   # AI integration (Genkit)
+│   └── workers/              # Web Workers for heavy processing
+├── public/                   # Static assets
+├── tests/                    # Test suites (unit, e2e)
+└── docs/                     # Frontend-specific documentation
 ```
 
-### AI Processing Pipeline
+### Backend Structure (`backend/`)
 ```
-ai/
-├── stations/              # 7-station analysis pipeline
-│   ├── station1-text-analysis.js
-│   ├── station2-conceptual-analysis.js
-│   ├── station3-network-builder.js
-│   ├── station4-efficiency-metrics.js
-│   ├── station5-dynamic-symbolic-stylistic.js
-│   ├── station6-diagnostics-treatment.js
-│   └── station7-finalization.js
-├── constitutional/        # Constitutional AI components
-│   ├── multi-agent-debate.js
-│   ├── principles.js
-│   └── uncertainty-quantification.js
-├── core/                 # Core AI models and pipeline
-├── flows/                # Genkit flow definitions
-├── interfaces/           # Response type definitions
-└── services/             # AI service implementations
+backend/
+├── src/
+│   ├── controllers/          # Request handlers
+│   ├── services/            # Business logic layer
+│   ├── middleware/          # Express middleware
+│   ├── db/                  # Database schema and migrations
+│   ├── queues/              # BullMQ job processors
+│   ├── utils/               # Utility functions
+│   ├── types/               # TypeScript definitions
+│   └── config/              # Configuration management
+├── db-performance-analysis/ # Database optimization tools
+├── migrations/              # Database migration scripts
+└── docs/                    # Backend documentation
 ```
 
-## Backend Architecture (`/backend`)
-
-### API Server Structure
-```
-src/
-├── config/               # Application configuration
-│   └── env.ts           # Environment variable management
-├── controllers/         # Request handling logic
-│   └── analysis.controller.ts
-├── middleware/          # Express middleware
-│   └── index.ts        # CORS, Helmet, Rate limiting
-├── services/           # Business logic layer
-│   ├── analysis.service.ts
-│   └── gemini.service.ts
-├── types/              # TypeScript type definitions
-│   └── index.ts
-├── utils/              # Utility functions
-│   └── logger.ts       # Winston logger configuration
-└── server.ts           # Application entry point
-```
-
-## Core Components & Relationships
+## Core Components
 
 ### Frontend Components
-- **ScreenplayEditor**: Main text editing interface with AI integration
-- **ParticleBackground**: 3D visual effects using Three.js
-- **UI Components**: shadcn/ui based component library
-- **Analysis Tools**: Character analysis, theme extraction interfaces
+- **Directors Studio**: Project management interface with tabs for scenes, characters, shots
+- **Seven Stations Analysis**: AI-powered dramatic analysis interface
+- **Card Scanner**: Document upload and processing components
+- **UI Components**: shadcn/ui based design system with Arabic RTL support
 
 ### Backend Services
-- **Analysis Service**: Core text analysis logic
-- **Gemini Service**: Google AI integration layer
-- **File Processing**: PDF, DOCX, TXT file handling
-- **Security Middleware**: Authentication, rate limiting, validation
+- **Project Service**: CRUD operations for projects, scenes, characters
+- **Analysis Service**: AI integration for dramatic analysis
+- **Queue Service**: Background job processing with BullMQ
+- **SSE Service**: Server-sent events for real-time updates
+- **Cache Service**: Redis-based caching layer
 
-### AI Pipeline Architecture
-- **Station-Based Processing**: Sequential analysis through 7 specialized stations
-- **Constitutional AI**: Multi-agent debate system for balanced analysis
-- **Network Analysis**: Character and theme relationship mapping
-- **Metrics Calculation**: Efficiency and quality metrics for dramatic elements
+### Database Schema
+- **Projects**: Main project entities with metadata
+- **Scenes**: Individual scenes within projects
+- **Characters**: Character definitions and tracking
+- **Shots**: Shot planning and organization
+- **Users**: Authentication and user management
+- **Analysis Results**: Cached AI analysis results
 
 ## Architectural Patterns
 
 ### Frontend Patterns
-- **App Router**: Next.js 15 App Router for file-based routing
+- **App Router**: Next.js 15 file-based routing
 - **Server Components**: React Server Components for performance
-- **Client Components**: Interactive components with "use client" directive
-- **Custom Hooks**: Reusable state logic and side effects
-- **Component Composition**: Compound components with shadcn/ui
+- **Client Components**: Interactive components with state management
+- **Custom Hooks**: Reusable logic abstraction
+- **Component Composition**: Modular, reusable component design
 
 ### Backend Patterns
-- **Layered Architecture**: Controllers → Services → Utils separation
+- **MVC Architecture**: Controllers, Services, Models separation
 - **Middleware Pipeline**: Express middleware for cross-cutting concerns
-- **Service Layer**: Business logic abstraction
-- **Type Safety**: Full TypeScript with Zod validation
-- **Error Handling**: Centralized error handling and logging
+- **Queue Processing**: Asynchronous job processing with BullMQ
+- **Caching Strategy**: Multi-level caching with Redis
+- **Event-Driven**: Real-time updates via WebSocket + SSE
 
-### AI Integration Patterns
-- **Pipeline Architecture**: Sequential processing through specialized stations
-- **Flow-Based Processing**: Genkit flows for AI operations
-- **Service Abstraction**: AI services abstracted from business logic
-- **Constitutional AI**: Multi-agent systems for balanced analysis
+### Data Flow
+1. **Frontend** → API calls → **Backend Controllers**
+2. **Controllers** → **Services** → **Database/Cache**
+3. **Background Jobs** → **Queue Processors** → **External APIs**
+4. **Real-time Updates** → **SSE/WebSocket** → **Frontend**
 
-## Development Environment
-- **Monorepo Management**: pnpm workspace with shared dependencies
-- **Development Servers**: Frontend (port 9002), Backend (port 3001)
-- **Hot Reloading**: Next.js dev server with fast refresh
-- **Type Checking**: Shared TypeScript configuration
-- **Code Quality**: ESLint, Prettier, Husky git hooks
-
-## Build & Deployment Architecture
-- **Frontend Build**: Next.js static generation and optimization
-- **Backend Build**: TypeScript compilation to JavaScript
-- **Asset Optimization**: Bundle analysis, tree shaking, code splitting
-- **Deployment**: Firebase Hosting for frontend, containerized backend
-- **Monitoring**: Sentry error tracking, Web Vitals performance monitoring
+## Integration Points
+- **AI Services**: Google Gemini API for analysis
+- **Database**: PostgreSQL with Drizzle ORM
+- **Cache**: Redis for session and data caching
+- **Monitoring**: Sentry for error tracking, Prometheus for metrics
+- **File Storage**: Local file system with CDN integration
+- **Real-time**: WebSocket + Server-Sent Events for live updates

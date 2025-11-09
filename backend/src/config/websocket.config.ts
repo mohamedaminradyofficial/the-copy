@@ -24,7 +24,7 @@ export const socketIOOptions: Partial<ServerOptions> = {
   connectTimeout: 45000, // 45 seconds
 
   // Upgrade settings
-  transports: ['websocket', 'polling'] as any,
+  transports: ['websocket', 'polling'],
   allowUpgrades: true,
 
   // Performance settings
@@ -81,7 +81,7 @@ export const WEBSOCKET_CONFIG = {
 /**
  * Environment-specific configuration
  */
-export const getWebSocketConfig = () => {
+export const getWebSocketConfig = (): Partial<ServerOptions> => {
   const isDevelopment = env.NODE_ENV === 'development';
   const isProduction = env.NODE_ENV === 'production';
 
@@ -96,7 +96,7 @@ export const getWebSocketConfig = () => {
     }),
     // Production optimizations
     ...(isProduction && {
-      transports: ['websocket'], // Prefer websocket in production
+      transports: ['websocket'] as const, // Prefer websocket in production
       perMessageDeflate: {
         threshold: 1024, // Only compress messages larger than 1KB
       },

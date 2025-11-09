@@ -844,6 +844,7 @@
 
 # pnpm
 **/pnpm-lock.yaml
+!pnpm-lock.yaml
 **/.pnpm-store/
 
 # Bower
@@ -895,3 +896,6 @@
 # uploads/
 # downloads/
 
+
+# Sentry Config File
+.env.sentry-build-plugin
