@@ -1,0 +1,16 @@
+1.2M	frontend/src/lib/ai
+966K	frontend/src/lib/drama-analyst
+12K	frontend/src/lib/security
+9.5K	frontend/src/lib/types
+8.5K	frontend/src/lib/utils
+8.5K	frontend/src/lib/actions
+7.5K	frontend/src/lib/api.ts
+3.5K	frontend/src/lib/redis.ts
+3.0K	frontend/src/lib/cache-middleware.ts
+2.0K	frontend/src/lib/web-vitals.ts
+2.0K	frontend/src/lib/placeholder-images.json
+1.5K	frontend/src/lib/web-components.ts
+1.5K	frontend/src/lib/queryClient.ts
+1.0K	frontend/src/lib/projectStore.ts
+512	frontend/src/lib/utils.ts
+512	frontend/src/lib/placeholder-images.ts

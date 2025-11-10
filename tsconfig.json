@@ -1,0 +1,20 @@
+{
+  "files": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["frontend/src/*"],
+      "~/*": ["frontend/src/*"],
+      "@core/*": ["frontend/src/lib/drama-analyst/*"],
+      "@agents/*": ["frontend/src/lib/drama-analyst/agents/*"],
+      "@services/*": ["frontend/src/lib/drama-analyst/services/*"],
+      "@orchestration/*": ["frontend/src/lib/drama-analyst/orchestration/*"],
+      "@components/*": ["frontend/src/components/*"],
+      "@shared/*": ["frontend/src/app/(main)/directors-studio/shared/*"]
+    }
+  },
+  "references": [
+    { "path": "./frontend" },
+    { "path": "./backend" }
+  ]
+}

@@ -1,0 +1,15 @@
+frontend/tests
+frontend/public
+frontend/src
+frontend/stations
+frontend/.husky
+frontend/ai
+frontend/.github
+frontend/scripts
+frontend/constitutional
+frontend/docs
+frontend/analysis_output
+frontend/.idx
+frontend/core
+frontend/utils
+frontend/interfaces

@@ -1,0 +1,191 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Run export check
+      run: pnpm run check:exports
+
+    - name: Run lint
+      run: pnpm run lint
+
+    - name: Run typecheck
+      run: pnpm run typecheck
+
+    - name: Run tests
+      run: pnpm run test
+
+    - name: Build project
+      run: pnpm run build
+
+    - name: Run smoke tests
+      run: pnpm run smoke:tests
+      continue-on-error: true
+
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: frontend/.next/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Run security audit
+      run: pnpm audit --audit-level moderate
+      continue-on-error: true
+
+  performance-check:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build project
+      run: pnpm run build
+
+    - name: Check bundle size
+      run: |
+        cd frontend
+        du -sh .next/
+        find .next/ -name "*.js" -exec du -h {} + | sort -rh | head -10
+
+    - name: Analyze bundle size
+      run: |
+        cd frontend
+        node scripts/bundle-analysis.js
+      continue-on-error: true
+
+    - name: Check performance budgets
+      run: |
+        cd frontend
+        echo "Checking performance budgets against defined thresholds..."
+
+        # Define budget thresholds (in KB)
+        MAX_JS_SIZE=350
+        MAX_CSS_SIZE=50
+        MAX_TOTAL_SIZE=1000
+
+        # Calculate actual sizes
+        JS_SIZE=$(find .next/static -name "*.js" -type f -exec du -k {} + | awk '{s+=$1} END {print s}')
+        CSS_SIZE=$(find .next/static -name "*.css" -type f -exec du -k {} + | awk '{s+=$1} END {print s}')
+        TOTAL_SIZE=$(du -sk .next/static | awk '{print $1}')
+
+        echo "📊 Performance Budget Check:"
+        echo "JavaScript: ${JS_SIZE}KB / ${MAX_JS_SIZE}KB"
+        echo "CSS: ${CSS_SIZE}KB / ${MAX_CSS_SIZE}KB"
+        echo "Total: ${TOTAL_SIZE}KB / ${MAX_TOTAL_SIZE}KB"
+
+        # Check if budgets are exceeded
+        BUDGET_EXCEEDED=0
+
+        if [ "$JS_SIZE" -gt "$MAX_JS_SIZE" ]; then
+          echo "❌ JavaScript size exceeds budget!"
+          BUDGET_EXCEEDED=1
+        else
+          echo "✅ JavaScript size is within budget"
+        fi
+
+        if [ "$CSS_SIZE" -gt "$MAX_CSS_SIZE" ]; then
+          echo "⚠️  CSS size exceeds budget (warning only)"
+        else
+          echo "✅ CSS size is within budget"
+        fi
+
+        if [ "$TOTAL_SIZE" -gt "$MAX_TOTAL_SIZE" ]; then
+          echo "❌ Total size exceeds budget!"
+          BUDGET_EXCEEDED=1
+        else
+          echo "✅ Total size is within budget"
+        fi
+
+        # Create performance report
+        cat > performance-budget-report.md << EOF
+        # Performance Budget Report
+
+        | Resource Type | Actual | Budget | Status |
+        |---------------|--------|--------|--------|
+        | JavaScript    | ${JS_SIZE}KB | ${MAX_JS_SIZE}KB | $([ "$JS_SIZE" -le "$MAX_JS_SIZE" ] && echo "✅ Pass" || echo "❌ Fail") |
+        | CSS           | ${CSS_SIZE}KB | ${MAX_CSS_SIZE}KB | $([ "$CSS_SIZE" -le "$MAX_CSS_SIZE" ] && echo "✅ Pass" || echo "⚠️  Warning") |
+        | Total         | ${TOTAL_SIZE}KB | ${MAX_TOTAL_SIZE}KB | $([ "$TOTAL_SIZE" -le "$MAX_TOTAL_SIZE" ] && echo "✅ Pass" || echo "❌ Fail") |
+
+        ## Recommendations
+        - Keep JavaScript bundles under ${MAX_JS_SIZE}KB
+        - Use code splitting for large routes
+        - Lazy load non-critical components
+        - Monitor bundle size on each PR
+        EOF
+
+        cat performance-budget-report.md
+
+        # Fail the build if budget is exceeded
+        if [ "$BUDGET_EXCEEDED" -eq 1 ]; then
+          echo "❌ Performance budget check failed!"
+          exit 1
+        fi
+
+        echo "✅ All performance budgets are within limits!"
+      continue-on-error: false
+
+    - name: Upload performance report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-budget-report
+        path: frontend/performance-budget-report.md
+        retention-days: 30

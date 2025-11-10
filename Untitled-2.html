@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!-- 
+  تم ضبط اتجاه الصفحة إلى اليمين لليسار (rtl) لتناسب اللغة العربية
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>النسخة - تأثير الفيديو</title>
+  
+  <!-- 
+    1. جلب مكتبة Tailwind CSS لتنسيق الصفحة
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 
+    2. جلب الخطوط: 
+       - Inter (للغة الإنجليزية)
+       - Noto Kufi Arabic (للغة العربية لضمان ظهور كلمة "النسخة" بشكل صحيح)
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@700;900&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- 
+    *** إضافة جديدة: إعادة مكتبة GSAP و ScrollTrigger ***
+    هذه المكتبات هي المسؤولة عن رصد التمرير وتنفيذ الزوم والاختفاء
+  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+
+  <!-- 
+    3. أكواد CSS المخصصة للتأثيرات
+  -->
+  <style>
+    /* تطبيق الخطوط الأساسية على الصفحة */
+    body {
+      font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
+      background-color: #fff;
+      color: white;
+      /* هذا يمنع أي "قفزة" عند ظهور شريط التمرير */
+      overflow-x: hidden;
+    }
+    
+    /* --- 1. تأثير قناع الفيديو (Video Mask Effect) --- */
+    
+    /* الحاوية الرئيسية للقسم الأول */
+    .hero-container {
+      position: relative;
+      height: 100vh; /* ارتفاع الشاشة بالكامل */
+      background-color: #000; /* لون احتياطي */
+      overflow: hidden; /* إخفاء أي أجزاء زائدة من الفيديو */
+    }
+    
+    /* تنسيق الفيديو لملء الشاشة */
+    .hero-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover; /* يضمن ملء الشاشة بدون تشويه */
+      transform: translate(-50%, -50%);
+      z-index: 1; /* الفيديو في الخلف */
+    }
+    
+    /* هذه هي الطبقة التي تحتوي على القناع */
+    .mask-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2; /* القناع فوق الفيديو */
+      
+      /* --- الخدعة السحرية (Knockout Effect) --- */
+      
+      /* 1. هذه الطبقة لونها أبيض */
+      background-color: white; 
+      
+      /* 2. هذا الوضع يجعل اللون الأبيض "شفافاً" واللون الأسود "مصمتاً" */
+      mix-blend-mode: screen; 
+    }
+    
+    /* 3. النص نفسه لونه أسود، لذلك هو "يخرق" الطبقة البيضاء 
+         ويكشف الفيديو الذي يقع خلفها.
+    */
+    .mask-content h1 {
+      font-size: 20vw; /* حجم خط متجاوب مع عرض الشاشة */
+      font-weight: 900;
+      color: black; 
+      text-align: center;
+      line-height: 1;
+    }
+    
+    /* --- 2. تأثير التمرير المتكدس (Sticky Stacking) --- */
+    
+    /* الحاوية التي تحمل جميع الأقسام "اللزجة" */
+    .sticky-stack-container {
+      position: relative;
+    }
+    
+    /* *** تعديل: التأثير سيعتمد بالكامل على position: sticky ***
+      كل قسم داخل هذه الحاوية سيكون "لزجاً"
+    */
+    .sticky-panel {
+      position: sticky;
+      top: 0; /* يثبت في قمة الشاشة عند الوصول إليه */
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- 
+    الهيدر الثابت
+    هذا هو الهيدر الأسود الذي يظهر عندما يختفي القسم الأول
+    مخفي في البداية باستخدام (opacity-0) ويتم التحكم به عبر جافاسكريبت
+  -->
+  <header id="sticky-header" class="fixed top-0 left-0 w-full bg-black text-white p-4 z-50 opacity-0 transition-opacity duration-300">
+    <div class="container mx-auto flex justify-center items-center px-4">
+      <h2 class="text-2xl font-bold">النسخة</h2>
+    </div>
+  </header>
+
+
+  <!-- القسم الأول: بطل العرض (Hero Section) - (comp-mb1elno6) -->
+  <!-- هذا القسم لا يتم تثبيته (non-sticky) وسنحركه بالجافاسكريبت -->
+  <div class="hero-container" id="comp-mb1elno6">
+    
+    <!-- مشغل الفيديو (comp-mb1g9h8y) -->
+    <video 
+      class="hero-video" 
+      playsinline 
+      autoplay 
+      muted 
+      loop 
+      poster="https://placehold.co/1920x1080/000000/333333?text=Loading+Video...">
+      
+      <!-- ملاحظة: استخدمت فيديو احتياطي. يمكنك وضع رابط الفيديو الخاص بك هنا -->
+      <source src="https://static.videezy.com/system/resources/previews/000/044/226/original/51.mp4" type="video/mp4">
+    </video>
+    
+    <!-- طبقة القناع -->
+    <div class="mask-content">
+      <!-- 
+        هنا وضعنا كلمتك "النسخة" بدلاً من "PROMISE"
+      -->
+      <h1>النسخة</h1>
+    </div>
+  </div>
+
+  <!-- القسم الثاني: النص التمهيدي - (comp-mffpg5lw) -->
+  <!-- هذا القسم أيضاً لا يتم تثبيته (non-sticky) -->
+  <div id="comp-mffpg5lw" class="relative h-screen flex items-center justify-center text-center p-8 bg-white">
+    <!-- طبقة سوداء للديزولف -->
+    <div id="black-overlay" class="absolute inset-0 bg-black" style="opacity: 0; pointer-events: none;"></div>
+    
+    <h2 id="text-content" class="relative z-10 text-3xl md:text-5xl font-bold max-w-4xl leading-tight text-black" style="font-family: 'Inter', sans-serif;">
+      An entertainment studio built for the GenAI era, reimagining how visionary artists create film, series, and new forms of storytelling.
+    </h2>
+  </div>
+
+  <div class="h-screen bg-black"></div>
+
+  <!-- 
+    *** تعديل: كود JavaScript جديد باستخدام GSAP ***
+    هذا الكود ينفذ "تأثير الزوم والاختفاء" الذي وصفته
+  -->
+  <script>
+    // الانتظار حتى يتم تحميل الصفحة ومكتبة GSAP بالكامل
+    window.addEventListener('load', () => {
+      
+      // 1. تسجيل إضافة ScrollTrigger
+      gsap.registerPlugin(ScrollTrigger);
+
+      const heroSection = document.getElementById('comp-mb1elno6');
+      const header = document.getElementById('sticky-header');
+      const textSection = document.getElementById('comp-mffpg5lw');
+
+      if (!heroSection || !header || !textSection) {
+        console.error("عنصر واحد أو أكثر مفقود من الصفحة.");
+        return;
+      }
+      
+      // --- التحريك الرئيسي: تثبيت القسم الأول وتحريكه ---
+      // 1. ننشئ خط زمني (Timeline) واحد ليتحكم في كل ما يحدث
+      const heroTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: heroSection,  // المحفز هو القسم الأول
+          start: "top top",      // يبدأ عندما تصل قمة القسم لقمة الشاشة
+          end: "+=100%",         // *** هام: يثبت القسم الأول لمدة تمرير 100% من ارتفاع الشاشة
+          scrub: true,           // يربط التحريك بالتمرير
+          pin: true,             // *** هام: هذا هو الأمر الذي يقوم بتثبيت القسم في مكانه
+        }
+      });
+
+      // 2. أضف حركة التكبير والاختفاء للقسم الأول إلى الخط الزمني
+      heroTimeline.to(heroSection, {
+        scale: 1.1,         // تكبير
+        opacity: 0,         // اختفاء
+        ease: "power1.in"
+      });
+
+      // 3. أضف حركة ظهور الهيدر للخط الزمني
+      //    باستخدام "<" لنجعلها تحدث في نفس وقت الحركة السابقة
+      heroTimeline.to(header, {
+        opacity: 1,         // ظهور
+        ease: "power1.in"
+      }, "<"); 
+
+
+      // --- التحريك المنفصل: النص يطلع لفوق والخلفية تسود ---
+      const textContent = document.getElementById('text-content');
+      
+      gsap.to(textContent, {
+        y: -300,
+        ease: "none",
+        scrollTrigger: {
+          trigger: textSection,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        }
+      });
+
+      const blackOverlay = document.getElementById('black-overlay');
+      
+      gsap.to(blackOverlay, {
+        opacity: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: textSection,
+          start: "top center",
+          end: "bottom top",
+          scrub: true,
+        }
+      });
+      
+      gsap.to('body', {
+        backgroundColor: '#000',
+        ease: "none",
+        scrollTrigger: {
+          trigger: textSection,
+          start: "bottom top",
+          end: "bottom top",
+          scrub: true,
+        }
+      });
+
+    });
+  </script>
+
+</body>
+</html>

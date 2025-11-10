@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحريك العنصر</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .text-area {
+            font-size: 24px;
+            line-height: 1.5;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin: 20px 0;
+            position: relative;
+            background: white;
+            height: 100px;
+            overflow: visible;
+        }
+        .moveable-char {
+            position: absolute;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+            cursor: move;
+            font-weight: bold;
+            user-select: none;
+            z-index: 10;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .controls input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 80px;
+        }
+        .controls button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #0056b3;
+        }
+        .coordinates {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .original-text {
+            color: #666;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تحريك حرف "T"</h1>
+        
+        <div class="controls">
+            <label>X: <input type="number" id="xInput" value="1722"></label>
+            <label>Y: <input type="number" id="yInput" value="200"></label>
+            <button onclick="moveElement()">تحريك</button>
+            <button onclick="resetPosition()">إعادة تعيين</button>
+        </div>
+
+        <div class="text-area" id="textArea">
+            <div class="original-text">The Copy - النسخة</div>
+            <div class="moveable-char" id="moveableT">T</div>
+        </div>
+
+        <div class="coordinates" id="coordinates">
+            الموقع الحالي: X=1722px, Y=200px
+        </div>
+
+        <div class="coordinates">
+            <strong>التعليمات:</strong><br>
+            • غيّر القيم في المربعات أعلاه<br>
+            • اضغط "تحريك" لتطبيق الموقع الجديد<br>
+            • أو اسحب الحرف مباشرة بالماوس
+        </div>
+    </div>
+
+    <script>
+        const moveableT = document.getElementById('moveableT');
+        const xInput = document.getElementById('xInput');
+        const yInput = document.getElementById('yInput');
+        const coordinates = document.getElementById('coordinates');
+
+        // Set initial position
+        moveElement();
+
+        function moveElement() {
+            const x = parseInt(xInput.value);
+            const y = parseInt(yInput.value);
+            
+            moveableT.style.left = x + 'px';
+            moveableT.style.top = y + 'px';
+            
+            updateCoordinates(x, y);
+        }
+
+        function resetPosition() {
+            xInput.value = 1722;
+            yInput.value = 200;
+            moveElement();
+        }
+
+        function updateCoordinates(x, y) {
+            coordinates.innerHTML = `الموقع الحالي: X=${x}px, Y=${y}px<br>التغيير: ${x - 1722 > 0 ? '+' : ''}${x - 1722}px في X`;
+        }
+
+        // Make element draggable
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        moveableT.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = parseInt(moveableT.style.left) || 0;
+            initialY = parseInt(moveableT.style.top) || 0;
+            moveableT.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const newX = initialX + (e.clientX - startX);
+            const newY = initialY + (e.clientY - startY);
+            
+            moveableT.style.left = newX + 'px';
+            moveableT.style.top = newY + 'px';
+            
+            xInput.value = newX;
+            yInput.value = newY;
+            updateCoordinates(newX, newY);
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            moveableT.style.cursor = 'move';
+        });
+
+        // Quick move to 1522px
+        setTimeout(() => {
+            xInput.value = 1522;
+            moveElement();
+        }, 1000);
+    </script>
+</body>
+</html>

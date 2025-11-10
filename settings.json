@@ -1,0 +1,20 @@
+{
+    "window.commandCenter": true,
+    "cursor.rpcFileLogger.enabled": true,
+    "git.autofetch": true,
+    "amazonQ.allowFeatureDevelopmentToRunCodeAndTests": true,
+    "amazonQ.suppressPrompts": {
+        "createCredentialsProfile": true,
+        "codeWhispererNewWelcomeMessage": true,
+        "codeWhispererConnectionExpired": true,
+        "amazonQWelcomePage": true,
+        "amazonQSessionConfigurationMessage": true,
+        "minIdeVersion": true,
+        "ssoCacheError": true,
+        "amazonQLspManifestMessage": true,
+        "amazonQWorkspaceLspManifestMessage": true,
+        "amazonQChatDisclaimer": true,
+        "amazonQChatPairProgramming": false,
+        "amazonQSelectDeveloperProfile": false
+    }
+}
